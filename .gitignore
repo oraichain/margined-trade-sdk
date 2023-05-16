@@ -25,3 +25,4 @@ typings/
 
 # Ignore environment variables file
 .env
+build

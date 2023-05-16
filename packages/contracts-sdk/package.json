@@ -1,6 +1,6 @@
 {
   "name": "@oraichain/oraimargin-contracts-sdk",
   "version": "1.0.1",
-  "main": "src/index.ts",
+  "main": "build/index.js",
   "license": "MIT"
 }
