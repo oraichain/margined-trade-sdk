@@ -4,6 +4,6 @@
   "files": [
     "data"
   ],
-  "main": "index.ts",
+  "main": "build/index.js",
   "license": "MIT"
 }

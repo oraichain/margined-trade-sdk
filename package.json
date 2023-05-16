@@ -2,8 +2,8 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "build:sdk": "tsc -p packages/contracts-sdk/tsconfig.json",
-    "publish:sdk": "yarn publish --access public packages/contracts-sdk",
+    "build": "tsc -p",
+    "deploy": "yarn publish --access public",
     "docs": "typedoc --entryPointStrategy expand --name 'Orai Margin Trade SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json packages/contracts-sdk/src"
   },
   "workspaces": [
