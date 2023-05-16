@@ -2,7 +2,7 @@ import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { readFileSync } from 'fs';
 import path from 'path';
 
-const contractDir = path.join(path.dirname(module.filename), 'data');
+const contractDir = path.join(path.dirname(module.filename), '..', 'data');
 
 export type ContractName = 'margined_vamm' | 'margined_fee_pool' | 'margined_pricefeed' | 'margined_insurance_fund' | 'margined_engine';
 
