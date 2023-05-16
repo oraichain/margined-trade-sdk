@@ -1,0 +1,17 @@
+{
+  "name": "@oraichain/oraimargin-scripts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "deploy": "ts-node index.ts"
+  },
+  "dependencies": {
+    "@oraichain/oraimargin-contracts-build": "^1.0.0",
+    "@oraichain/oraimargin-contracts-sdk": "^1.0.0",
+    "@cosmjs/cosmwasm-stargate": "^0.29.5",
+    "@cosmjs/stargate": "^0.29.5",
+    "dotenv": "^10.0.0"
+  }
+}
