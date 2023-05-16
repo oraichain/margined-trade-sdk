@@ -1,9 +1,6 @@
 {
   "name": "@oraichain/oraimargin-contracts-build",
-  "version": "1.0.6",
-  "files": [
-    "data"
-  ],
+  "version": "1.0.7",
   "main": "build/index.js",
   "license": "MIT"
 }
