@@ -1,21 +1,32 @@
 diff --git a/packages/contracts-sdk/src/MarginedEngine.client.ts b/packages/contracts-sdk/src/MarginedEngine.client.ts
-index 935785b..0394851 100644
+index d54f911..8f6997e 100644
 --- a/packages/contracts-sdk/src/MarginedEngine.client.ts
 +++ b/packages/contracts-sdk/src/MarginedEngine.client.ts
-@@ -321,6 +321,12 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
+@@ -321,6 +321,23 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
      pause: boolean;
    }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
  }
 +/**
 + * The margin engine is responsible for managing user positions and collateral. Allows users to take positions in all registered vAMMs.
++ * 
 + * ```ts
++ * const client = isSimulate 
++ * ? new SimulateCosmWasmClient({
++ *   chainId: 'Oraichain',
++ *   bech32Prefix: 'orai'
++ * })
++ * : await SigningCosmWasmClient.connectWithSigner('https://rpc.orai.io', await keplr.getOfflineSignerAuto('Oraichain'), {
++ *   prefix: 'orai',
++ *   gasPrice: GasPrice.fromString(`0.002orai`)
++ * });
++ * 
 + * const engineClient = new MarginedEngineClient(client);
 + * ```
 + */
  export class MarginedEngineClient extends MarginedEngineQueryClient implements MarginedEngineInterface {
    client: SigningCosmWasmClient;
    sender: string;
-@@ -343,7 +349,12 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -343,7 +360,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
      this.withdrawMargin = this.withdrawMargin.bind(this);
      this.setPause = this.setPause.bind(this);
    }
@@ -23,39 +34,62 @@ index 935785b..0394851 100644
 +  /**
 +   * Enables owner to update key contract parameters.
 +   * ```ts
-+   * engineClient.updateConfig({ tollRatio: '5000', spreadRatio: '5000' })
++   * await engineClient.updateConfig({ 
++   *   tollRatio: '5000', 
++   *   spreadRatio: '5000' 
++   * })
 +   * ```
 +   */
    updateConfig = async ({
      feePool,
      initialMarginRatio,
-@@ -406,6 +417,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -406,6 +431,31 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /**
 +   * Enables a user to open a position for a specific vAMM with leverage. Also allows order to be placed with slippage limits.
++   * 
++   * If side is buy (direction is 'add_to_amm') then open position (increase)
++   * 
++   * ![Open Position Increase](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-increase.png)
++   * 
++   * If old position is larger then reduce position (decrease)
++   * 
++   * [Open Position Decrease](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-decrease.png)
++   * 
++   * Otherwise close position then swap out the entire position (reverse)
++   * 
++   * ![Open Position Reverse](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-reverse.png)
++   * 
 +   * ```ts
-+   * engineClient.openPosition({
-+      vamm: vammClient.contractAddress,
-+      side: 'buy',
-+      marginAmount: '10000000',
-+      leverage: '8000000',
-+      baseAssetLimit: '4000000'
-+    })
++   * await engineClient.openPosition({
++   *   vamm: vammClient.contractAddress,
++   *   side: 'buy',
++   *   marginAmount: '10000000',
++   *   leverage: '8000000',
++   *   baseAssetLimit: '4000000'
++   * })
 +   * ```   
 +   */
    openPosition = async ({
      baseAssetLimit,
      leverage,
-@@ -429,6 +452,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -429,6 +479,22 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /**
 +   * Enables a user to close a position they have for a specific vAMM including slippage limits.
++   * 
++   * ![Close Position](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/close-pos-partial.png)
++   * 
++   * If `partial_liquidation_ratio == 1` then close the whole position
++   * 
++   * ![Close Whole Position](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/close-pos-whole.png)
++   * 
 +   * ```ts
-+   * engineClient.closePosition({
++   * await engineClient.closePosition({
 +   *   vamm: vammClient.contractAddress,
 +   *   quoteAssetLimit: '0'
 +   * });
@@ -64,58 +98,98 @@ index 935785b..0394851 100644
    closePosition = async ({
      quoteAssetLimit,
      vamm
-@@ -443,6 +475,9 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -443,6 +509,23 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /***
 +   * Allows third parties to liquidate users positions when they are no longer sufficiently collateralised.
++   * 
++   * ![Liquidate Position](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/liq-pos-partial.png)
++   * 
++   * If `partial_liquidation_ratio == 0` then liquidate the whole position.
++   * 
++   * ![Liquidate Whole Position](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/liq-pos-whole.png)
++   * 
++   * ```ts
++   * await engineClient.liquidate({
++   *   vamm: vammClient.contractAddress,
++   *   trader: "orai...",
++   *   quoteAssetLimit: '0'
++   * });
++   * ```
 +   */
    liquidate = async ({
      quoteAssetLimit,
      trader,
-@@ -460,6 +495,9 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -460,6 +543,17 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /***
 +   * Allows third parties to trigger funding payments to be processed for a specific vAMM.
++   * 
++   * ![Pay Funding](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/pay-funding.png)
++   * 
++   * ```ts
++   * await engineContract.payFunding({ 
++   *   vamm: vammContract.contractAddress 
++   * });
++   * ```
 +   */
    payFunding = async ({
      vamm
    }: {
-@@ -471,6 +509,12 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -471,6 +565,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /***
 +   * Users can deposit additional margin to their positions to prevent them from becoming under-collateralised.
++   * 
++   * ![Deposit Margin](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/add-margin.png)
++   * 
 +   * ```ts
-+   * engineClient.depositMargin({ amount: '500000000', vamm: vammClient.contractAddress });
++   * await engineClient.depositMargin({ 
++   *   amount: '500000000', 
++   *   vamm: vammClient.contractAddress 
++   * });
 +   * ```
 +   */
    depositMargin = async ({
      amount,
      vamm
-@@ -485,6 +529,12 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -485,6 +591,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /**
 +   * Users can withdraw excess collateral from their positions if they are over-collateralised
++   * 
++   * ![Withdraw Margin](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/remove-margin.png)
++   * 
 +   * ```ts
-+   * engineClient.withdrawMargin({ amount: '500000000', vamm: vammClient.contractAddress });
++   * await engineClient.withdrawMargin({ 
++   *   amount: '500000000', 
++   *   vamm: vammClient.contractAddress 
++   * });
 +   * ```
 +   */
    withdrawMargin = async ({
      amount,
      vamm
-@@ -499,6 +549,9 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -499,6 +617,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /**
 +   * Enables owner to pause contracts in emergency situations   
++   * 
++   * ```ts
++   * await engineClient.setPause({
++   *   pause: true
++   * }); 
++   * ``
 +   */
    setPause = async ({
      pause

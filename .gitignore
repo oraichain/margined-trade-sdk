@@ -26,3 +26,4 @@ typings/
 # Ignore environment variables file
 .env
 build
+.DS_Store
