@@ -56,7 +56,7 @@ index d54f911..8f6997e 100644
 +   * 
 +   * If old position is larger then reduce position (decrease)
 +   * 
-+   * [Open Position Decrease](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-decrease.png)
++   * ![Open Position Decrease](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-decrease.png)
 +   * 
 +   * Otherwise close position then swap out the entire position (reverse)
 +   * 
