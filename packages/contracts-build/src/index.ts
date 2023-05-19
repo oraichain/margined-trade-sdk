@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 
 export type ContractName = 'margined_vamm' | 'margined_fee_pool' | 'margined_pricefeed' | 'margined_insurance_fund' | 'margined_engine';
-export type InstantiateMsg = MarginedEngineTypes.InstantiateMsg | MarginedFeePoolTypes.InstantiateMsg | MarginedPricefeedTypes.InstantiateMsg | MarginedInsuranceFundTypes.InstantiateMsg | MarginedVammTypes.InstantiateMsg;
+export type InstantiateMsg = MarginedEngineTypes.InstantiateMsg | MarginedPricefeedTypes.InstantiateMsg | MarginedInsuranceFundTypes.InstantiateMsg | MarginedVammTypes.InstantiateMsg;
 export type MigrateMsg = MarginedInsuranceFundTypes.MigrateMsg;
 
 const contractDir = path.join(path.dirname(module.filename), '..', 'data');
