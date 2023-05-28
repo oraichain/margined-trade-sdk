@@ -1,8 +1,131 @@
 diff --git a/packages/contracts-sdk/src/MarginedEngine.client.ts b/packages/contracts-sdk/src/MarginedEngine.client.ts
-index d54f911..8f6997e 100644
+index d54f911..c1ffeef 100644
 --- a/packages/contracts-sdk/src/MarginedEngine.client.ts
 +++ b/packages/contracts-sdk/src/MarginedEngine.client.ts
-@@ -321,6 +321,23 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
+@@ -93,22 +93,33 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+     this.balanceWithFundingPayment = this.balanceWithFundingPayment.bind(this);
+     this.positionWithFundingPayment = this.positionWithFundingPayment.bind(this);
+   }
+-
++  /**
++   * Returns the contracts configuration.
++   */
+   config = async (): Promise<ConfigResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       config: {}
+     });
+   };
++  /**
++   * Returns the state variables of the contract.
++   */
+   state = async (): Promise<StateResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       state: {}
+     });
+   };
++  /**
++   * Returns the pauser of the contract.
++   */
+   getPauser = async (): Promise<PauserResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       get_pauser: {}
+     });
+   };
++  /**
++   * Check a trader is in whitelist.
++   */
+   isWhitelisted = async ({
+     address
+   }: {
+@@ -120,11 +131,17 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns whitelist that can by pass some trader's restrictions.
++   */
+   getWhitelist = async (): Promise<HooksResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       get_whitelist: {}
+     });
+   };
++  /**
++   * Returns a user's position for a specific vAMM.
++   */
+   position = async ({
+     trader,
+     vamm
+@@ -139,6 +156,9 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns a user's positions for all vAMMs.
++   */
+   allPositions = async ({
+     trader
+   }: {
+@@ -150,6 +170,9 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns the unrealized PnL (profit and loss) of a user for a specific vAMM using a specific calculation method.
++   */
+   unrealizedPnl = async ({
+     calcOption,
+     trader,
+@@ -167,6 +190,9 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns the cumulative premium fraction of a vAMM.
++   */
+   cumulativePremiumFraction = async ({
+     vamm
+   }: {
+@@ -178,6 +204,9 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns the margin ratio of a user for a vAMM.
++   */
+   marginRatio = async ({
+     trader,
+     vamm
+@@ -192,6 +221,9 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns the excess collateral a user has for a vAMM.
++   */
+   freeCollateral = async ({
+     trader,
+     vamm
+@@ -206,6 +238,9 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns a user's margin balance across all vAMMs inclusive funding payments.
++   */
+   balanceWithFundingPayment = async ({
+     trader
+   }: {
+@@ -217,6 +252,9 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
+       }
+     });
+   };
++  /**
++   * Returns a user's margin balance inclusive funding payments for a specific vAMM.
++   */
+   positionWithFundingPayment = async ({
+     trader,
+     vamm
+@@ -321,6 +359,23 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
      pause: boolean;
    }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
  }
@@ -26,7 +149,7 @@ index d54f911..8f6997e 100644
  export class MarginedEngineClient extends MarginedEngineQueryClient implements MarginedEngineInterface {
    client: SigningCosmWasmClient;
    sender: string;
-@@ -343,7 +360,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -343,7 +398,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
      this.withdrawMargin = this.withdrawMargin.bind(this);
      this.setPause = this.setPause.bind(this);
    }
@@ -43,7 +166,7 @@ index d54f911..8f6997e 100644
    updateConfig = async ({
      feePool,
      initialMarginRatio,
-@@ -406,6 +431,31 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -406,6 +469,31 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -75,7 +198,7 @@ index d54f911..8f6997e 100644
    openPosition = async ({
      baseAssetLimit,
      leverage,
-@@ -429,6 +479,22 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -429,6 +517,22 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -98,7 +221,7 @@ index d54f911..8f6997e 100644
    closePosition = async ({
      quoteAssetLimit,
      vamm
-@@ -443,6 +509,23 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -443,6 +547,23 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -122,7 +245,7 @@ index d54f911..8f6997e 100644
    liquidate = async ({
      quoteAssetLimit,
      trader,
-@@ -460,6 +543,17 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -460,6 +581,17 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -140,7 +263,7 @@ index d54f911..8f6997e 100644
    payFunding = async ({
      vamm
    }: {
-@@ -471,6 +565,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -471,6 +603,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -159,7 +282,7 @@ index d54f911..8f6997e 100644
    depositMargin = async ({
      amount,
      vamm
-@@ -485,6 +591,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -485,6 +629,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -178,7 +301,7 @@ index d54f911..8f6997e 100644
    withdrawMargin = async ({
      amount,
      vamm
-@@ -499,6 +617,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -499,6 +655,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -194,3 +317,558 @@ index d54f911..8f6997e 100644
    setPause = async ({
      pause
    }: {
+diff --git a/packages/contracts-sdk/src/MarginedFeePool.client.ts b/packages/contracts-sdk/src/MarginedFeePool.client.ts
+index e752b87..dbc60d8 100644
+--- a/packages/contracts-sdk/src/MarginedFeePool.client.ts
++++ b/packages/contracts-sdk/src/MarginedFeePool.client.ts
+@@ -37,17 +37,25 @@ export class MarginedFeePoolQueryClient implements MarginedFeePoolReadOnlyInterf
+     this.getTokenLength = this.getTokenLength.bind(this);
+     this.getTokenList = this.getTokenList.bind(this);
+   }
+-
++  /**
++   * Returns contract parameters.
++   */
+   config = async (): Promise<ConfigResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       config: {}
+     });
+   };
++  /**
++   * Returns contract owner
++   */
+   getOwner = async (): Promise<OwnerResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       get_owner: {}
+     });
+   };
++  /**
++   * Returns bool showing if token is accepted as fees.
++   */
+   isToken = async ({
+     token
+   }: {
+@@ -59,11 +67,17 @@ export class MarginedFeePoolQueryClient implements MarginedFeePoolReadOnlyInterf
+       }
+     });
+   };
++  /**
++   * Returns number of tokens accepted as fees.
++   */
+   getTokenLength = async (): Promise<TokenLengthResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       get_token_length: {}
+     });
+   };
++  /**
++   * Returns list of fee tokens.
++   */
+   getTokenList = async ({
+     limit
+   }: {
+@@ -104,6 +118,10 @@ export interface MarginedFeePoolInterface extends MarginedFeePoolReadOnlyInterfa
+     token: string;
+   }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+ }
++
++/**
++ * The Fee Pool is simply a contract that accrues the fees generated by the protocol.
++ */
+ export class MarginedFeePoolClient extends MarginedFeePoolQueryClient implements MarginedFeePoolInterface {
+   client: SigningCosmWasmClient;
+   sender: string;
+@@ -119,7 +137,9 @@ export class MarginedFeePoolClient extends MarginedFeePoolQueryClient implements
+     this.removeToken = this.removeToken.bind(this);
+     this.sendToken = this.sendToken.bind(this);
+   }
+-
++  /**
++   * Transfers the contract owner.   
++   */
+   updateOwner = async ({
+     owner
+   }: {
+@@ -131,6 +151,9 @@ export class MarginedFeePoolClient extends MarginedFeePoolQueryClient implements
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**   
++   * Append token to be accepted for fee payments.
++   */
+   addToken = async ({
+     token
+   }: {
+@@ -142,6 +165,9 @@ export class MarginedFeePoolClient extends MarginedFeePoolQueryClient implements
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Remove token that is to be accepted for fee payments.
++   */
+   removeToken = async ({
+     token
+   }: {
+@@ -153,6 +179,9 @@ export class MarginedFeePoolClient extends MarginedFeePoolQueryClient implements
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Transfer tokens held by fee pool to a recipient address.
++   */
+   sendToken = async ({
+     amount,
+     recipient,
+diff --git a/packages/contracts-sdk/src/MarginedInsuranceFund.client.ts b/packages/contracts-sdk/src/MarginedInsuranceFund.client.ts
+index 998de01..8aa5f05 100644
+--- a/packages/contracts-sdk/src/MarginedInsuranceFund.client.ts
++++ b/packages/contracts-sdk/src/MarginedInsuranceFund.client.ts
+@@ -47,17 +47,25 @@ export class MarginedInsuranceFundQueryClient implements MarginedInsuranceFundRe
+     this.getAllVammStatus = this.getAllVammStatus.bind(this);
+     this.getVammStatus = this.getVammStatus.bind(this);
+   }
+-
++  /**
++   * Returns contract parameters.
++   */
+   config = async (): Promise<ConfigResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       config: {}
+     });
+   };
++  /**
++   * Returns the owner of the contract.
++   */
+   getOwner = async (): Promise<OwnerResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       get_owner: {}
+     });
+   };
++  /**
++   * Returns bool showing if vamm is supported.
++   */
+   isVamm = async ({
+     vamm
+   }: {
+@@ -69,6 +77,9 @@ export class MarginedInsuranceFundQueryClient implements MarginedInsuranceFundRe
+       }
+     });
+   };
++  /**
++   * Returns list of supported vAMMs.
++   */
+   getAllVamm = async ({
+     limit
+   }: {
+@@ -80,6 +91,9 @@ export class MarginedInsuranceFundQueryClient implements MarginedInsuranceFundRe
+       }
+     });
+   };
++  /**
++   * Returns the status of all vAMMs supported.
++   */
+   getAllVammStatus = async ({
+     limit
+   }: {
+@@ -91,6 +105,9 @@ export class MarginedInsuranceFundQueryClient implements MarginedInsuranceFundRe
+       }
+     });
+   };
++  /**
++   * Returns the status of a specific vAMM.
++   */
+   getVammStatus = async ({
+     vamm
+   }: {
+@@ -130,6 +147,10 @@ export interface MarginedInsuranceFundInterface extends MarginedInsuranceFundRea
+   }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+   shutdownVamms: ($fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+ }
++
++/**
++ * Insurance fund contains funds that are used to cover shortfall(slippage) in funding payments, additionally insurance fund accrues a portion of transaction fees and profits.
++ */
+ export class MarginedInsuranceFundClient extends MarginedInsuranceFundQueryClient implements MarginedInsuranceFundInterface {
+   client: SigningCosmWasmClient;
+   sender: string;
+@@ -147,6 +168,9 @@ export class MarginedInsuranceFundClient extends MarginedInsuranceFundQueryClien
+     this.shutdownVamms = this.shutdownVamms.bind(this);
+   }
+ 
++  /**
++   * Enables transfer of contract ownership and the beneficiary of insurance funds. Beneficiary is an address that is able to request funds held by the insurance fund contract.
++   */
+   updateOwner = async ({
+     owner
+   }: {
+@@ -158,6 +182,9 @@ export class MarginedInsuranceFundClient extends MarginedInsuranceFundQueryClien
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Append vamm to list of supported vAMMs.
++   */
+   addVamm = async ({
+     vamm
+   }: {
+@@ -169,6 +196,9 @@ export class MarginedInsuranceFundClient extends MarginedInsuranceFundQueryClien
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Remove vamm from list of supported vAMMs.
++   */
+   removeVamm = async ({
+     vamm
+   }: {
+@@ -180,6 +210,9 @@ export class MarginedInsuranceFundClient extends MarginedInsuranceFundQueryClien
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Enables the beneficiary to request contract funds.
++   */
+   withdraw = async ({
+     amount,
+     token
+@@ -194,6 +227,9 @@ export class MarginedInsuranceFundClient extends MarginedInsuranceFundQueryClien
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Emergency shutdown function that halts all vAMMs trading.
++   */
+   shutdownVamms = async ($fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+     return await this.client.execute(this.sender, this.contractAddress, {
+       shutdown_vamms: {}
+diff --git a/packages/contracts-sdk/src/MarginedPricefeed.client.ts b/packages/contracts-sdk/src/MarginedPricefeed.client.ts
+index 9d65fcf..a43d581 100644
+--- a/packages/contracts-sdk/src/MarginedPricefeed.client.ts
++++ b/packages/contracts-sdk/src/MarginedPricefeed.client.ts
+@@ -45,17 +45,25 @@ export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyIn
+     this.getPreviousPrice = this.getPreviousPrice.bind(this);
+     this.getTwapPrice = this.getTwapPrice.bind(this);
+   }
+-
++  /**
++   * Returns contract parameters.
++   */
+   config = async (): Promise<ConfigResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       config: {}
+     });
+   };
++  /**
++   * Returns the owner of the contract.
++   */
+   getOwner = async (): Promise<OwnerResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       get_owner: {}
+     });
+   };
++  /**
++   * Returns latest price submitted to the contract.
++   */
+   getPrice = async ({
+     key
+   }: {
+@@ -67,6 +75,9 @@ export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyIn
+       }
+     });
+   };
++  /**
++   * Returns a price submitted in a previous round.
++   */
+   getPreviousPrice = async ({
+     key,
+     numRoundBack
+@@ -81,6 +92,9 @@ export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyIn
+       }
+     });
+   };
++  /**
++   * Returns a twap of the prices submitted to the contract.
++   */
+   getTwapPrice = async ({
+     interval,
+     key
+@@ -123,6 +137,9 @@ export interface MarginedPricefeedInterface extends MarginedPricefeedReadOnlyInt
+     owner: string;
+   }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+ }
++/**
++ * The price feed performs TWAP of data retrieved from the data oracles for use throughout the protocol.
++ */
+ export class MarginedPricefeedClient extends MarginedPricefeedQueryClient implements MarginedPricefeedInterface {
+   client: SigningCosmWasmClient;
+   sender: string;
+@@ -137,7 +154,9 @@ export class MarginedPricefeedClient extends MarginedPricefeedQueryClient implem
+     this.appendMultiplePrice = this.appendMultiplePrice.bind(this);
+     this.updateOwner = this.updateOwner.bind(this);
+   }
+-
++  /**
++   * Store on-chain price oracles in the contract storage, will be replaced by oracle contract in later version.
++   */
+   appendPrice = async ({
+     key,
+     price,
+@@ -155,6 +174,9 @@ export class MarginedPricefeedClient extends MarginedPricefeedQueryClient implem
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Store multiple on-chain price oracles in the contract storage, will be replaced by oracle contract in later version.
++   */
+   appendMultiplePrice = async ({
+     key,
+     prices,
+@@ -172,6 +194,9 @@ export class MarginedPricefeedClient extends MarginedPricefeedQueryClient implem
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Transfers the contract owner.
++   */
+   updateOwner = async ({
+     owner
+   }: {
+diff --git a/packages/contracts-sdk/src/MarginedVamm.client.ts b/packages/contracts-sdk/src/MarginedVamm.client.ts
+index cd5d164..3354886 100644
+--- a/packages/contracts-sdk/src/MarginedVamm.client.ts
++++ b/packages/contracts-sdk/src/MarginedVamm.client.ts
+@@ -105,22 +105,33 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+     this.isOverSpreadLimit = this.isOverSpreadLimit.bind(this);
+     this.isOverFluctuationLimit = this.isOverFluctuationLimit.bind(this);
+   }
+-
++  /**
++   * Returns contract configuration.
++   */
+   config = async (): Promise<ConfigResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       config: {}
+     });
+   };
++  /**
++   * Returns contract state, including liquidity etc.
++   */
+   state = async (): Promise<StateResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       state: {}
+     });
+   };
++  /**
++   * Returns the owner of the contract.
++   */
+   getOwner = async (): Promise<OwnerResponse> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       get_owner: {}
+     });
+   };
++  /**
++   * Returns the average price for a trade of a given size.
++   */
+   inputPrice = async ({
+     amount,
+     direction
+@@ -135,6 +146,9 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns the average price for a trade of a given size.
++   */
+   outputPrice = async ({
+     amount,
+     direction
+@@ -149,6 +163,9 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns the amount for a trade of input with a given size.
++   */
+   inputAmount = async ({
+     amount,
+     direction
+@@ -163,6 +180,9 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns the amount for a trade of output with a given size.
++   */
+   outputAmount = async ({
+     amount,
+     direction
+@@ -177,6 +197,9 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns input twap price of the vAMM, using the reserve snapshots, default 15 minutes interval.
++   */
+   inputTwap = async ({
+     amount,
+     direction
+@@ -191,6 +214,9 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns output twap price of the vAMM, using the reserve snapshots, default 15 minutes interval.
++   */
+   outputTwap = async ({
+     amount,
+     direction
+@@ -205,11 +231,17 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns spot price of the vAMM.
++   */
+   spotPrice = async (): Promise<Uint128> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       spot_price: {}
+     });
+   };
++  /**
++   * Return twap price of the vAMM, using the reserve snapshots.
++   */
+   twapPrice = async ({
+     interval
+   }: {
+@@ -221,11 +253,17 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns latest price from PriceFeed contract.
++   */
+   underlyingPrice = async (): Promise<Uint128> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       underlying_price: {}
+     });
+   };
++  /**
++   * Returns a twap price from PriceFeed contract.
++   */
+   underlyingTwapPrice = async ({
+     interval
+   }: {
+@@ -237,6 +275,9 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns the total (i.e. toll + spread) fees for an amount.
++   */
+   calcFee = async ({
+     quoteAssetAmount
+   }: {
+@@ -248,11 +289,17 @@ export class MarginedVammQueryClient implements MarginedVammReadOnlyInterface {
+       }
+     });
+   };
++  /**
++   * Returns bool to show is spread limit has been exceeded.
++   */
+   isOverSpreadLimit = async (): Promise<Boolean> => {
+     return this.client.queryContractSmart(this.contractAddress, {
+       is_over_spread_limit: {}
+     });
+   };
++  /**
++   * Returns bool to show is fluctuation limit has been exceeded.
++   */
+   isOverFluctuationLimit = async ({
+     baseAssetAmount,
+     direction
+@@ -324,6 +371,9 @@ export interface MarginedVammInterface extends MarginedVammReadOnlyInterface {
+     open: boolean;
+   }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+ }
++/**
++ * The vAMM is the contract that enables user's to take perpetual positions through its "virtual" automated market maker.
++ */
+ export class MarginedVammClient extends MarginedVammQueryClient implements MarginedVammInterface {
+   client: SigningCosmWasmClient;
+   sender: string;
+@@ -341,7 +391,15 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
+     this.settleFunding = this.settleFunding.bind(this);
+     this.setOpen = this.setOpen.bind(this);
+   }
+-
++  /**
++   * Enables owner to update key contract parameters.
++   * 
++   * ```ts
++   * vammContract.updateConfig({
++   *  tollRatio: '0'
++   * });
++   * 
++   */
+   updateConfig = async ({
+     baseAssetHoldingCap,
+     fluctuationLimitRatio,
+@@ -377,6 +435,9 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Transfers the contract owner.
++   */
+   updateOwner = async ({
+     owner
+   }: {
+@@ -388,6 +449,9 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Allows the margin engine to swap quote asset into the vAMM.
++   */
+   swapInput = async ({
+     baseAssetLimit,
+     canGoOverFluctuation,
+@@ -408,6 +472,9 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Allows the margin engine to swap base asset into the vAMM.
++   */
+   swapOutput = async ({
+     baseAssetAmount,
+     direction,
+@@ -425,11 +492,17 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
+       }
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Calculates the funding payments due.
++   */
+   settleFunding = async ($fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+     return await this.client.execute(this.sender, this.contractAddress, {
+       settle_funding: {}
+     }, $fee, $memo, $funds);
+   };
++  /**
++   * Allows owner to open the vAMM enable positions to be taken.
++   */
+   setOpen = async ({
+     open
+   }: {
+diff --git a/packages/contracts-sdk/src/MarginedVamm.types.ts b/packages/contracts-sdk/src/MarginedVamm.types.ts
+index c75ecc4..6d3f71a 100644
+--- a/packages/contracts-sdk/src/MarginedVamm.types.ts
++++ b/packages/contracts-sdk/src/MarginedVamm.types.ts
+@@ -1,4 +1,7 @@
+ import {Uint128, Direction, Addr, Boolean, Integer} from "./types";
++/**
++ * The instantiation message takes the decimals to be used by the contract, the addresses of the pricefeed and margin engine contracts. It also takes the definition of the product pair to be traded on the vAMM including the initial liquidity.
++ */
+ export interface InstantiateMsg {
+   base_asset: string;
+   base_asset_reserve: Uint128;
