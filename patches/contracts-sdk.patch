@@ -1,5 +1,5 @@
 diff --git a/packages/contracts-sdk/src/MarginedEngine.client.ts b/packages/contracts-sdk/src/MarginedEngine.client.ts
-index d54f911..c1ffeef 100644
+index d54f911..c958e84 100644
 --- a/packages/contracts-sdk/src/MarginedEngine.client.ts
 +++ b/packages/contracts-sdk/src/MarginedEngine.client.ts
 @@ -93,22 +93,33 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
@@ -245,12 +245,14 @@ index d54f911..c1ffeef 100644
    liquidate = async ({
      quoteAssetLimit,
      trader,
-@@ -460,6 +581,17 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -460,6 +581,19 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
 +  /***
 +   * Allows third parties to trigger funding payments to be processed for a specific vAMM.
++   * 
++   * The funding rate helps keep the perp price in line with the underlying asset's spot price. When the perp trades at a premium, longs pay shorts. Conversely, at a discount, shorts pay longs. Although the funding rate can take place at any cadence, it is generally set to one hour. If a perp trades at a 0.1% discount for 24 hours, purchasers of that perp will receive 0.1% as the summation of the 24 funding period.
 +   * 
 +   * ![Pay Funding](https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/pay-funding.png)
 +   * 
@@ -263,7 +265,7 @@ index d54f911..c1ffeef 100644
    payFunding = async ({
      vamm
    }: {
-@@ -471,6 +603,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -471,6 +605,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -282,7 +284,7 @@ index d54f911..c1ffeef 100644
    depositMargin = async ({
      amount,
      vamm
-@@ -485,6 +629,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -485,6 +631,18 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
@@ -301,7 +303,7 @@ index d54f911..c1ffeef 100644
    withdrawMargin = async ({
      amount,
      vamm
-@@ -499,6 +655,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
+@@ -499,6 +657,15 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
        }
      }, $fee, $memo, $funds);
    };
