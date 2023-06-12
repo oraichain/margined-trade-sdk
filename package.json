@@ -4,7 +4,7 @@
   "scripts": {
     "postinstall": "patch-package",
     "build": "tsc -p",
-    "deploy": "yarn publish --access public",
+    "deploy": "yarn publish --access public --patch",
     "docs": "typedoc --entryPointStrategy expand --name 'Orai Margin Trade SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json packages/contracts-sdk/src"
   },
   "workspaces": [
