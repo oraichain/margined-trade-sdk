@@ -28,3 +28,4 @@ export type AssetInfo = {
   };
 };
 export type Boolean = boolean;
+export { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
