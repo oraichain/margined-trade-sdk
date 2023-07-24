@@ -1,4 +1,4 @@
-import {Uint128, Side, PnlCalcOption, Direction, Addr, ArrayOfPosition, Position, Integer, AssetInfo, Boolean} from "./types";
+import {Uint128, Side, PositionFilter, PnlCalcOption, Direction, Addr, ArrayOfPosition, Position, Integer, AssetInfo, Boolean} from "./types";
 export interface InstantiateMsg {
   eligible_collateral: string;
   fee_pool: string;
@@ -36,15 +36,32 @@ export type ExecuteMsg = {
     leverage: Uint128;
     margin_amount: Uint128;
     side: Side;
+    stop_loss?: Uint128 | null;
+    take_profit: Uint128;
+    vamm: string;
+  };
+} | {
+  update_tp_sl: {
+    position_id: number;
+    stop_loss?: Uint128 | null;
+    take_profit?: Uint128 | null;
     vamm: string;
   };
 } | {
   close_position: {
+    position_id: number;
+    quote_asset_limit: Uint128;
+    vamm: string;
+  };
+} | {
+  trigger_tp_sl: {
+    position_id: number;
     quote_asset_limit: Uint128;
     vamm: string;
   };
 } | {
   liquidate: {
+    position_id: number;
     quote_asset_limit: Uint128;
     trader: string;
     vamm: string;
@@ -56,11 +73,13 @@ export type ExecuteMsg = {
 } | {
   deposit_margin: {
     amount: Uint128;
+    position_id: number;
     vamm: string;
   };
 } | {
   withdraw_margin: {
     amount: Uint128;
+    position_id: number;
     vamm: string;
   };
 } | {
@@ -82,17 +101,29 @@ export type QueryMsg = {
   get_whitelist: {};
 } | {
   position: {
-    trader: string;
+    position_id: number;
     vamm: string;
   };
 } | {
   all_positions: {
+    limit?: number | null;
+    order_by?: number | null;
+    start_after?: number | null;
     trader: string;
+  };
+} | {
+  positions: {
+    filter: PositionFilter;
+    limit?: number | null;
+    order_by?: number | null;
+    side?: Side | null;
+    start_after?: number | null;
+    vamm: string;
   };
 } | {
   unrealized_pnl: {
     calc_option: PnlCalcOption;
-    trader: string;
+    position_id: number;
     vamm: string;
   };
 } | {
@@ -101,23 +132,25 @@ export type QueryMsg = {
   };
 } | {
   margin_ratio: {
-    trader: string;
+    position_id: number;
     vamm: string;
   };
 } | {
   free_collateral: {
-    trader: string;
+    position_id: number;
     vamm: string;
   };
 } | {
   balance_with_funding_payment: {
-    trader: string;
+    position_id: number;
   };
 } | {
   position_with_funding_payment: {
-    trader: string;
+    position_id: number;
     vamm: string;
   };
+} | {
+  last_position_id: {};
 };
 export interface MigrateMsg {}
 export interface ConfigResponse {
@@ -136,6 +169,9 @@ export interface PauserResponse {
 }
 export interface HooksResponse {
   hooks: string[];
+}
+export interface LastPositionIdResponse {
+  last_order_id: number;
 }
 export interface StateResponse {
   bad_debt: Uint128;

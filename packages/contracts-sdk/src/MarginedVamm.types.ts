@@ -34,12 +34,14 @@ export type ExecuteMsg = {
     base_asset_limit: Uint128;
     can_go_over_fluctuation: boolean;
     direction: Direction;
+    position_id: number;
     quote_asset_amount: Uint128;
   };
 } | {
   swap_output: {
     base_asset_amount: Uint128;
     direction: Direction;
+    position_id: number;
     quote_asset_limit: Uint128;
   };
 } | {
