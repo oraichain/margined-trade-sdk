@@ -33,7 +33,8 @@ export const mainnet: Config = {
     eligible_collateral: '',
     initial_margin_ratio: '50000',
     maintenance_margin_ratio: '50000',
-    liquidation_fee: '50000'
+    liquidation_fee: '50000',
+    tp_sl_spread: '50000'
   },
   vammInitMsg: {
     decimals: 6,

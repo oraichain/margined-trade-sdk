@@ -7,6 +7,7 @@ export interface InstantiateMsg {
   liquidation_fee: Uint128;
   maintenance_margin_ratio: Uint128;
   pauser: string;
+  tp_sl_spread: Uint128;
 }
 export type ExecuteMsg = {
   update_config: {
@@ -17,6 +18,7 @@ export type ExecuteMsg = {
     maintenance_margin_ratio?: Uint128 | null;
     owner?: string | null;
     partial_liquidation_ratio?: Uint128 | null;
+    tp_sl_spread?: Uint128 | null;
   };
 } | {
   update_pauser: {
@@ -163,6 +165,7 @@ export interface ConfigResponse {
   maintenance_margin_ratio: Uint128;
   owner: Addr;
   partial_liquidation_ratio: Uint128;
+  tp_sl_spread: Uint128;
 }
 export interface PauserResponse {
   pauser: Addr;

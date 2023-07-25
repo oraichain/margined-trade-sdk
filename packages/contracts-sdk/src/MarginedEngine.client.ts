@@ -306,7 +306,8 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
     liquidationFee,
     maintenanceMarginRatio,
     owner,
-    partialLiquidationRatio
+    partialLiquidationRatio,
+    tpSlSpread
   }: {
     feePool?: string;
     initialMarginRatio?: Uint128;
@@ -315,6 +316,7 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
     maintenanceMarginRatio?: Uint128;
     owner?: string;
     partialLiquidationRatio?: Uint128;
+    tpSlSpread?: Uint128;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   updatePauser: ({
     pauser
@@ -449,7 +451,8 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     liquidationFee,
     maintenanceMarginRatio,
     owner,
-    partialLiquidationRatio
+    partialLiquidationRatio,
+    tpSlSpread
   }: {
     feePool?: string;
     initialMarginRatio?: Uint128;
@@ -458,6 +461,7 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     maintenanceMarginRatio?: Uint128;
     owner?: string;
     partialLiquidationRatio?: Uint128;
+    tpSlSpread?: Uint128;
   }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
       update_config: {
@@ -467,7 +471,8 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
         liquidation_fee: liquidationFee,
         maintenance_margin_ratio: maintenanceMarginRatio,
         owner,
-        partial_liquidation_ratio: partialLiquidationRatio
+        partial_liquidation_ratio: partialLiquidationRatio,
+        tp_sl_spread: tpSlSpread
       }
     }, _fee, _memo, _funds);
   };
