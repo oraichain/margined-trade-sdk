@@ -7,7 +7,7 @@
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
 import {Uint128, Side, PositionFilter, PnlCalcOption, Direction, Addr, ArrayOfPosition, Position, Integer, AssetInfo, Boolean} from "./types";
-import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, PauserResponse, HooksResponse, LastPositionIdResponse, StateResponse, PositionUnrealizedPnlResponse} from "./MarginedEngine.types";
+import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, PauserResponse, HooksResponse, LastPositionIdResponse, StateResponse, TickResponse, TicksResponse, PositionUnrealizedPnlResponse} from "./MarginedEngine.types";
 export interface MarginedEngineReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<ConfigResponse>;
@@ -52,6 +52,28 @@ export interface MarginedEngineReadOnlyInterface {
     startAfter?: number;
     vamm: string;
   }) => Promise<ArrayOfPosition>;
+  tick: ({
+    entryPrice,
+    side,
+    vamm
+  }: {
+    entryPrice: Uint128;
+    side: Side;
+    vamm: string;
+  }) => Promise<TickResponse>;
+  ticks: ({
+    limit,
+    orderBy,
+    side,
+    startAfter,
+    vamm
+  }: {
+    limit?: number;
+    orderBy?: number;
+    side: Side;
+    startAfter?: Uint128;
+    vamm: string;
+  }) => Promise<TicksResponse>;
   unrealizedPnl: ({
     calcOption,
     positionId,
@@ -109,6 +131,8 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     this.position = this.position.bind(this);
     this.allPositions = this.allPositions.bind(this);
     this.positions = this.positions.bind(this);
+    this.tick = this.tick.bind(this);
+    this.ticks = this.ticks.bind(this);
     this.unrealizedPnl = this.unrealizedPnl.bind(this);
     this.cumulativePremiumFraction = this.cumulativePremiumFraction.bind(this);
     this.marginRatio = this.marginRatio.bind(this);
@@ -201,6 +225,46 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     return this.client.queryContractSmart(this.contractAddress, {
       positions: {
         filter,
+        limit,
+        order_by: orderBy,
+        side,
+        start_after: startAfter,
+        vamm
+      }
+    });
+  };
+  tick = async ({
+    entryPrice,
+    side,
+    vamm
+  }: {
+    entryPrice: Uint128;
+    side: Side;
+    vamm: string;
+  }): Promise<TickResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      tick: {
+        entry_price: entryPrice,
+        side,
+        vamm
+      }
+    });
+  };
+  ticks = async ({
+    limit,
+    orderBy,
+    side,
+    startAfter,
+    vamm
+  }: {
+    limit?: number;
+    orderBy?: number;
+    side: Side;
+    startAfter?: Uint128;
+    vamm: string;
+  }): Promise<TicksResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      ticks: {
         limit,
         order_by: orderBy,
         side,

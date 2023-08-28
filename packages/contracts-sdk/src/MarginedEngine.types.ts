@@ -123,6 +123,20 @@ export type QueryMsg = {
     vamm: string;
   };
 } | {
+  tick: {
+    entry_price: Uint128;
+    side: Side;
+    vamm: string;
+  };
+} | {
+  ticks: {
+    limit?: number | null;
+    order_by?: number | null;
+    side: Side;
+    start_after?: Uint128 | null;
+    vamm: string;
+  };
+} | {
   unrealized_pnl: {
     calc_option: PnlCalcOption;
     position_id: number;
@@ -179,6 +193,13 @@ export interface LastPositionIdResponse {
 export interface StateResponse {
   bad_debt: Uint128;
   open_interest_notional: Uint128;
+}
+export interface TickResponse {
+  entry_price: Uint128;
+  total_positions: number;
+}
+export interface TicksResponse {
+  ticks: TickResponse[];
 }
 export interface PositionUnrealizedPnlResponse {
   position_notional: Uint128;

@@ -8,6 +8,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@oraichain/oraimargin-contracts-sdk": "^1.0.23"
+    "@oraichain/oraimargin-contracts-sdk": "^1.0.24"
   }
 }

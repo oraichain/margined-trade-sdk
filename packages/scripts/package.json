@@ -10,8 +10,8 @@
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
-    "@oraichain/oraimargin-contracts-build": "^0.0.8",
-    "@oraichain/oraimargin-contracts-sdk": "^0.0.6",
+    "@oraichain/oraimargin-contracts-build": "^1.0.19",
+    "@oraichain/oraimargin-contracts-sdk": "^1.0.23",
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
