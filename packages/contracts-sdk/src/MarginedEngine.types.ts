@@ -65,7 +65,6 @@ export type ExecuteMsg = {
   liquidate: {
     position_id: number;
     quote_asset_limit: Uint128;
-    trader: string;
     vamm: string;
   };
 } | {

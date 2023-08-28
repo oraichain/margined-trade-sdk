@@ -446,12 +446,10 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
   liquidate: ({
     positionId,
     quoteAssetLimit,
-    trader,
     vamm
   }: {
     positionId: number;
     quoteAssetLimit: Uint128;
-    trader: string;
     vamm: string;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   payFunding: ({
@@ -659,19 +657,16 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
   liquidate = async ({
     positionId,
     quoteAssetLimit,
-    trader,
     vamm
   }: {
     positionId: number;
     quoteAssetLimit: Uint128;
-    trader: string;
     vamm: string;
   }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
       liquidate: {
         position_id: positionId,
         quote_asset_limit: quoteAssetLimit,
-        trader,
         vamm
       }
     }, _fee, _memo, _funds);

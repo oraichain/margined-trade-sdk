@@ -3,8 +3,8 @@ import { stringToPath } from "@cosmjs/crypto";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { GasPrice } from "@cosmjs/stargate";
 import dotenv from 'dotenv';
-import { delay, matchingPosition } from "./index";
-import { UserWallet } from "./helpers";
+import { matchingPosition } from "./index";
+import { UserWallet, delay } from "./helpers";
 dotenv.config();
 
 const mnemonicMinLength = 12; // 12 words
@@ -14,7 +14,7 @@ const mnemonicMinLength = 12; // 12 words
   const mnemonic = process.env["MNEMONIC"];
   const mnemonicWords = mnemonic.split(" ");
   const engine_contractAddr = process.env.ENGINE_CONTRACT;
-  const vamm_contractAddr = process.env.VAMM_CONTRACT;
+  // const vamm_contractAddr = process.env.VAMM_CONTRACT;
   const insurance_contractAddr = process.env.INSURANCE_FUND_CONTRACT;
   if (
     !mnemonic ||
@@ -40,24 +40,16 @@ const mnemonicMinLength = 12; // 12 words
       }
     )
   }
-  // const senderAddress = firstAccount.address;
-  // const client = await SigningCosmWasmClient.connectWithSigner(
-  //   process.env.RPC_URL!,
-  //   wallet,
-  //   {
-  //     gasPrice: GasPrice.fromString("0.002orai"),
-  //   }
-  // );
   
   let processInd = 0;
   while (processInd < 10) {
     try {
-      await matchingPosition(sender, engine_contractAddr, vamm_contractAddr, insurance_contractAddr, 30, "orai");
+      await matchingPosition(sender, engine_contractAddr, insurance_contractAddr, "orai");
     } catch (error) {
       console.error(error);
     }
 
     processInd ++;
-    await delay(2000);
+    await delay(1000);
   }
 })();
