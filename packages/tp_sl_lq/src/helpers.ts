@@ -13,3 +13,5 @@ export async function sendToken(
 
   return await client.sendTokens(senderAddress, recipientAddress, [{ denom: 'orai', amount: amount }], fee);
 }
+
+export type UserWallet = { address: string; client: SigningCosmWasmClient };

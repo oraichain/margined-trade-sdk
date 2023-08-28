@@ -4,6 +4,7 @@ import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { GasPrice } from "@cosmjs/stargate";
 import dotenv from 'dotenv';
 import { delay, matchingPosition } from "./index";
+import { UserWallet } from "./helpers";
 dotenv.config();
 
 const mnemonicMinLength = 12; // 12 words
@@ -29,19 +30,29 @@ const mnemonicMinLength = 12; // 12 words
     prefix,
   });
   const [firstAccount] = await wallet.getAccounts();
-  const senderAddress = firstAccount.address;
-  const client = await SigningCosmWasmClient.connectWithSigner(
-    process.env.RPC_URL!,
-    wallet,
-    {
-      gasPrice: GasPrice.fromString("0.002orai"),
-    }
-  );
+  const sender: UserWallet = {
+    address: firstAccount.address,
+    client: await SigningCosmWasmClient.connectWithSigner(
+      process.env.RPC_URL!,
+      wallet,
+      {
+        gasPrice: GasPrice.fromString("0.002orai"),
+      }
+    )
+  }
+  // const senderAddress = firstAccount.address;
+  // const client = await SigningCosmWasmClient.connectWithSigner(
+  //   process.env.RPC_URL!,
+  //   wallet,
+  //   {
+  //     gasPrice: GasPrice.fromString("0.002orai"),
+  //   }
+  // );
   
   let processInd = 0;
   while (processInd < 10) {
     try {
-      await matchingPosition(client, senderAddress, engine_contractAddr, vamm_contractAddr, insurance_contractAddr, 30, "orai");
+      await matchingPosition(sender, engine_contractAddr, vamm_contractAddr, insurance_contractAddr, 30, "orai");
     } catch (error) {
       console.error(error);
     }

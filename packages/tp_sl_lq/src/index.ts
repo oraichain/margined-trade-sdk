@@ -14,12 +14,12 @@ import {
   } from '@oraichain/oraimargin-contracts-sdk';
 import { TickResponse } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 import { log } from "console";
+import { UserWallet } from "./helpers";
 
   const minimumOraiBalance = 1000000; // 1 ORAI;
   
   const runPerpetualEngine = async (
-    client: SigningCosmWasmClient,
-    senderAddress: string,
+    sender: UserWallet,
     vamm_contractAddr: string,
     engine_contractAddr: string,
     vamm: any,
@@ -34,7 +34,7 @@ import { log } from "console";
       config: {},
     };
   
-    const config = await client.queryContractSmart(engine_contractAddr, query_config);
+    const config = await sender.client.queryContractSmart(engine_contractAddr, query_config);
     console.log({config});
     console.log("tp_sl_spread: ", config.tp_sl_spread);
     console.log("decimals: ", config.decimals);
@@ -47,19 +47,19 @@ import { log } from "console";
         vamm
       },
     };
-    const ticks = await client.queryContractSmart(engine_contractAddr, query_ticks) || [];
+    const ticks = await sender.client.queryContractSmart(engine_contractAddr, query_ticks) || [];
 
     const query_spot_price: MarginedVammTypes.QueryMsg = {
       spot_price: {},
     };
 
-    const spot_price = Number(await client.queryContractSmart(vamm_contractAddr, query_spot_price));
+    const spot_price = Number(await sender.client.queryContractSmart(vamm_contractAddr, query_spot_price));
     console.log({spot_price});
     
     console.log({side});
     console.dir(ticks, { depth: 4 });
 
-    ticks.ticks.forEach(async (tick: TickResponse) => {
+    for (const tick of ticks.ticks) {
       let tick_price = parseInt(tick.entry_price);
       console.log({tick_price});  
       const query_position_by_price: MarginedEngineTypes.QueryMsg = {
@@ -73,9 +73,8 @@ import { log } from "console";
           }
         },
       };
-      const position_by_price = await client.queryContractSmart(engine_contractAddr, query_position_by_price);
-      // console.log({position_by_price});
-      
+      const position_by_price = await sender.client.queryContractSmart(engine_contractAddr, query_position_by_price);
+
       for (const position of position_by_price) {
         console.log({position});
         const tp_spread = Number(position.take_profit)*(Number(config.tp_sl_spread))/Number(config.decimals);
@@ -85,12 +84,12 @@ import { log } from "console";
         if (side === "buy") {
           if (spot_price > Number(position.take_profit) || 
             Math.abs(Number(position.take_profit) - spot_price) <= tp_spread) {
-            console.log({side}, "trigger take profit");
+            console.log({side}, `position_id: ${position.position_id}`, "trigger take profit");
             tp_sl_flag = true;
           } else if (Number(position.stop_loss) > spot_price ||
             Number(position.stop_loss) > 0 && 
             Math.abs(Number(spot_price) - Number(position.stop_loss)) <= sl_spread) {
-            console.log({side}, "trigger stop loss");
+            console.log({side}, `position_id: ${position.position_id}`, "trigger stop loss");
             tp_sl_flag = true;
           }
         } else if (side === "sell") {
@@ -107,26 +106,32 @@ import { log } from "console";
         }
 
         if (tp_sl_flag) {
+          console.log("TRIGGER TAKE PROFIT/ STOPLOSS");
           let trigger_tp_sl: ExecuteInstruction = {
             contractAddress: engine_contractAddr,
             msg: {
               trigger_tp_sl: {
                 position_id: position.position_id,
-                quote_asset_limit: "",
+                quote_asset_limit: "0",
                 vamm
               }
             }
           };
-
+          tp_sl_flag = false;
           multipleMsg.push(trigger_tp_sl);
         }
       }
-    })
-    
-    let tx: any;
+    }
 
-    
-    return tx;
+    console.dir(multipleMsg, { depth: 4 });
+    if (multipleMsg.length > 0) {
+      try {
+        const res = await sender.client.executeMultiple(sender.address, multipleMsg, "auto");
+        console.log("take profit & stop loss - txHash:", res.transactionHash);
+      } catch (error) {
+        console.log({error});          
+      }
+    }
   };
   
   export const delay = (milliseconds: number) => {
@@ -134,8 +139,7 @@ import { log } from "console";
   };
   
   export async function matchingPosition(
-    client: SigningCosmWasmClient,
-    senderAddress: string,
+    sender: UserWallet,
     engine_contractAddr: string,
     vamm_contractAddr: string,
     insurance_contractAddr: string,
@@ -145,7 +149,7 @@ import { log } from "console";
     const allVamm: MarginedInsuranceFundTypes.QueryMsg = {
       get_all_vamm: {},
     };
-    const query_vamms = await client.queryContractSmart(insurance_contractAddr, allVamm);
+    const query_vamms = await sender.client.queryContractSmart(insurance_contractAddr, allVamm);
     console.log({query_vamms})
     console.log(`Excecuting perpetual engine contract ${engine_contractAddr}`);
   
@@ -156,20 +160,20 @@ import { log } from "console";
       execute_vamms.push(vamm);
     });
   
-    const { amount } = await client.getBalance(senderAddress, denom);
-    console.log(`balance of ${senderAddress} is ${amount}`);
+    const { amount } = await sender.client.getBalance(sender.address, denom);
+    console.log(`balance of ${sender.address} is ${amount}`);
     if (parseInt(amount) <= minimumOraiBalance) {
       throw new Error(
-        `Balance(${amount}) of ${senderAddress} must be greater than 1 ORAI`
+        `Balance(${amount}) of ${sender.address} must be greater than 1 ORAI`
       );
     }
     const promiseAllBuy = execute_vamms.map((item) =>
-      runPerpetualEngine(client, senderAddress, vamm_contractAddr, engine_contractAddr, item, "buy")
+      runPerpetualEngine(sender, vamm_contractAddr, engine_contractAddr, item, "buy")
     );
     (await Promise.all(promiseAllBuy)).filter(Boolean);
 
     const promiseAllSell = execute_vamms.map((item) =>
-      runPerpetualEngine(client, senderAddress, vamm_contractAddr, engine_contractAddr, item, "sell")
+      runPerpetualEngine(sender, vamm_contractAddr, engine_contractAddr, item, "sell")
     );
     (await Promise.all(promiseAllSell)).filter(Boolean);
   }
