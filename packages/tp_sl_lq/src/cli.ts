@@ -14,7 +14,6 @@ const mnemonicMinLength = 12; // 12 words
   const mnemonic = process.env["MNEMONIC"];
   const mnemonicWords = mnemonic.split(" ");
   const engine_contractAddr = process.env.ENGINE_CONTRACT;
-  // const vamm_contractAddr = process.env.VAMM_CONTRACT;
   const insurance_contractAddr = process.env.INSURANCE_FUND_CONTRACT;
   if (
     !mnemonic ||
@@ -40,16 +39,13 @@ const mnemonicMinLength = 12; // 12 words
       }
     )
   }
-  
-  let processInd = 0;
-  while (processInd < 10) {
+
+  while (true) {
     try {
       await matchingPosition(sender, engine_contractAddr, insurance_contractAddr, "orai");
     } catch (error) {
       console.error(error);
     }
-
-    processInd ++;
-    await delay(1000);
+    await delay(500);
   }
 })();
