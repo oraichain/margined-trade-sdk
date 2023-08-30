@@ -1,6 +1,6 @@
 {
   "name": "@oraichain/oraimargin-contracts-sdk",
-  "version": "1.0.20",
+  "version": "1.0.26",
   "main": "build/index.js",
   "files": [
     "build/"
