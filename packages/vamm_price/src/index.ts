@@ -23,10 +23,12 @@ const querySpotPrice = async (
     spot_price: {},
   };
   const spot_price = Number(await sender.client.queryContractSmart(vamm, query_spot_price));
-  console.log({ spot_price });
   
+  let time = Math.floor(Date.now() /1000);
+
+  console.log({ spot_price, epochTime: time });
   wss.clients.forEach(ws => {
-    ws.send(JSON.stringify({ base_asset: vamm_config.base_asset, quote_asset: vamm_config.quote_asset, spot_price }))
+    ws.send(JSON.stringify({ event: "market_price", pair: `${vamm_config.base_asset}/${vamm_config.quote_asset}`, spot_price, time }))
   })
 };
 
