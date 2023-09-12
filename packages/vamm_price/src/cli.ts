@@ -5,15 +5,20 @@ import { GasPrice } from "@cosmjs/stargate";
 import dotenv from 'dotenv';
 import { queryAllVammSpotPrice } from "./index";
 import { UserWallet, delay } from "./helpers";
+import WebSocket from 'ws';
 dotenv.config();
 
 const mnemonicMinLength = 12; // 12 words
+const wss = new WebSocket.Server({ port: 3001 });
 
 (async () => {
   const prefix = "orai";
   const mnemonic = process.env["MNEMONIC"];
   const mnemonicWords = mnemonic.split(" ");
   const insurance_contractAddr = process.env.INSURANCE_FUND_CONTRACT;
+  const sendTime = process.env.SEND_TIME ? Number(process.env.SEND_TIME) : 3600;
+  console.log({ sendTime });
+  
   if (
     !mnemonic ||
     (mnemonicWords.length != mnemonicMinLength &&
@@ -38,13 +43,48 @@ const mnemonicMinLength = 12; // 12 words
       }
     )
   }
-
+  let prevPrices: string[] = [];
+  let preTime: number = 0
   while (true) {
     try {
-      await queryAllVammSpotPrice(sender, insurance_contractAddr);
+      let curTime = Math.floor(Date.now() / 1000);
+      console.log({ curTime });
+      const alLPrices = await queryAllVammSpotPrice(sender, insurance_contractAddr);
+      console.log({ alLPrices });
+      const differencePrices = prevPrices.length === 0 ? alLPrices : prevPrices.filter(x => !alLPrices.includes(x));
+      prevPrices = alLPrices;
+      console.log({ differencePrices });
+      if (differencePrices.length > 0) {
+        console.log("PRICE CHANGE");
+        let time = Math.floor(Date.now() / 1000);
+        for (const spotPrice of differencePrices) {
+          wss.clients.forEach(ws => {
+            ws.send(JSON.stringify({
+              event: "market_price",
+              pair_price: spotPrice,
+              time
+            }));
+          })
+        }
+      }
+
+      if (curTime - preTime >= sendTime) {
+        console.log("Send prices sequentially");
+        preTime = curTime;
+        console.log({ preTime });
+        for (const spotPrice of alLPrices) {
+          wss.clients.forEach(ws => {
+            ws.send(JSON.stringify({
+              event: "market_price",
+              pair_price: spotPrice,
+              time: curTime
+            }));
+          })
+        }
+      }
     } catch (error) {
       console.error(error);
     }
-    await delay(500);
+    await delay(3000);
   }
 })();
