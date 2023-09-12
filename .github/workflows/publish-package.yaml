@@ -44,12 +44,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install Dependencies
-        # if: steps.yarn-cache.outputs.cache-hit != 'true'
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
       - name: Build
         run: yarn build packages/contracts-sdk && yarn --cwd packages/vamm_price build
       - name: Authenticate with private NPM package
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          git config --global user.email "mainnet@orai.io"
+          git config --global user.name "oraichain_official"
       - name: Publish
         id: publish
         continue-on-error: true
@@ -57,16 +60,16 @@ jobs:
         env:
           CI: false
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # - name: Install latest version
-      #   id: install
-      #   if: steps.publish.outcome != 'failure' 
-      #   continue-on-error: true
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.DOCKER_SWARM_MANAGER_ONE }}
-      #     username: root
-      #     key: ${{ secrets.DOCKER_SWARM_MANAGER_ONE_KEY }}
-      #     script: docker exec ${{ secrets.DOCKER_SWARM_MANAGER_ONE_NODE_16_ID}} sh -c 'yarn global add @oraichain/oraidex-server@latest --ignore-scripts'
+      - name: Install latest version
+        id: install
+        if: steps.publish.outcome != 'failure' 
+        continue-on-error: true
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DOCKER_SWARM_MANAGER_ONE }}
+          username: root
+          key: ${{ secrets.DOCKER_SWARM_MANAGER_ONE_KEY }}
+          script: docker exec ${{ secrets.DOCKER_SWARM_MANAGER_ONE_NODE_18_ID}} sh -c 'yarn global add @oraichain/oraidex-server@latest --ignore-scripts'
 
       - name: send result via discord
         uses: appleboy/discord-action@master
