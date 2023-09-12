@@ -27,3 +27,5 @@ typings/
 .env
 build
 .DS_Store
+
+dist
