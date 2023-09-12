@@ -8,48 +8,57 @@ import {
   Addr
 } from '@oraichain/oraimargin-contracts-sdk';
 
-const wss = new WebSocket.Server({ port: 1234 });
+const wss = new WebSocket.Server({ port: 3001 });
 
 const querySpotPrice = async (
   sender: UserWallet,
   vamm: Addr,
-) => {
-  const query_config: MarginedVammTypes.QueryMsg = {
+): Promise<string> => {
+  let time = Math.floor(Date.now() / 1000);
+
+  const queryConfig: MarginedVammTypes.QueryMsg = {
     config: {},
   };
-  const vamm_config = await sender.client.queryContractSmart(vamm, query_config);
+  const vammConfig = await sender.client.queryContractSmart(vamm, queryConfig);
 
   const query_spot_price: MarginedVammTypes.QueryMsg = {
     spot_price: {},
   };
-  const spot_price = Number(await sender.client.queryContractSmart(vamm, query_spot_price));
-  
-  let time = Math.floor(Date.now() /1000);
+  const spotPrice = Number(await sender.client.queryContractSmart(vamm, query_spot_price));
+  const pairPrice = JSON.stringify({
+    event: "market_price",
+    pair: `${vammConfig.base_asset}/${vammConfig.quote_asset}`,
+    spot_price: spotPrice,
+    time
+  });
 
-  console.log({ spot_price, epochTime: time });
+  console.log({ pairPrice });
   wss.clients.forEach(ws => {
-    ws.send(JSON.stringify({ event: "market_price", pair: `${vamm_config.base_asset}/${vamm_config.quote_asset}`, spot_price, time }))
+    ws.send(pairPrice)
   })
+  return pairPrice
 };
 
 export async function queryAllVammSpotPrice(
   sender: UserWallet,
   insurance_contractAddr: string
-): Promise<void> {
-  const allVamm: MarginedInsuranceFundTypes.QueryMsg = {
+): Promise<string[]> {
+  const queryAllVamms: MarginedInsuranceFundTypes.QueryMsg = {
     get_all_vamm: {},
   };
-  const query_vamms = await sender.client.queryContractSmart(insurance_contractAddr, allVamm);
+  const allVamms = await sender.client.queryContractSmart(insurance_contractAddr, queryAllVamms);
 
-  let execute_vamms: any[] = [];
+  let listVamms: any[] = [];
+  let listvammPrices: string[] = [];
 
-  query_vamms.vamm_list.forEach((vamm: any) => {
-    execute_vamms.push(vamm);
+  allVamms.vamm_list.forEach((vamm: any) => {
+    listVamms.push(vamm);
   });
 
-  const promiseSpotPrice = execute_vamms.map((item) =>
+  const promiseSpotPrice = listVamms.map((item) =>
     querySpotPrice(sender, item)
   );
-  (await Promise.all(promiseSpotPrice)).filter(Boolean);
+  (await Promise.all(promiseSpotPrice));
+  return listvammPrices
 }
 
