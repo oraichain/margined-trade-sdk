@@ -69,7 +69,7 @@ jobs:
           host: ${{ secrets.DOCKER_SWARM_MANAGER_ONE }}
           username: root
           key: ${{ secrets.DOCKER_SWARM_MANAGER_ONE_KEY }}
-          script: docker exec ${{ secrets.DOCKER_SWARM_MANAGER_ONE_NODE_18_ID}} sh -c 'yarn global add @oraichain/oraidex-server@latest --ignore-scripts'
+          script: docker exec ${{ secrets.DOCKER_SWARM_MANAGER_ONE_NODE_18_ID}} sh -c 'yarn global add @oraichain/oraidex-future-vamm-price@latest --ignore-scripts'
 
       - name: send result via discord
         uses: appleboy/discord-action@master
