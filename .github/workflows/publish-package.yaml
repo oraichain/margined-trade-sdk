@@ -47,7 +47,7 @@ jobs:
         # if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
       - name: Build
-        run: yarn build packages/contracts-sdk && yarn --cwd packages/vamm_price build
+        run: yarn build packages/contracts-sdk && yarn build packages/common && yarn --cwd packages/vamm_price build
       - name: Authenticate with private NPM package
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
