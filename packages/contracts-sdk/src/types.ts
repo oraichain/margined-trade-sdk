@@ -15,8 +15,4 @@ export type AssetInfo = {
   };
 };
 export type Boolean = boolean;
-export interface ConfigResponse {}
-export interface OwnerResponse {
-  owner: Addr;
-}
 export { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";

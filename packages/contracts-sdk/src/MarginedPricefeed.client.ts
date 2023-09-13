@@ -6,8 +6,8 @@
 
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
-import {Uint128, ConfigResponse, Addr, OwnerResponse} from "./types";
-import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg} from "./MarginedPricefeed.types";
+import {Uint128, Addr} from "./types";
+import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, OwnerResponse} from "./MarginedPricefeed.types";
 export interface MarginedPricefeedReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<ConfigResponse>;

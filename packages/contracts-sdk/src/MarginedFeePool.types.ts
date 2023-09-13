@@ -1,4 +1,4 @@
-import {Uint128, ConfigResponse, Addr, OwnerResponse, AssetInfo} from "./types";
+import {Uint128, Addr, AssetInfo} from "./types";
 export interface InstantiateMsg {}
 export type ExecuteMsg = {
   update_owner: {
@@ -35,6 +35,10 @@ export type QueryMsg = {
   };
 };
 export interface MigrateMsg {}
+export interface ConfigResponse {}
+export interface OwnerResponse {
+  owner: Addr;
+}
 export interface TokenLengthResponse {
   length: number;
 }

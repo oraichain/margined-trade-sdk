@@ -1,4 +1,4 @@
-import {Uint128, Direction, Addr, Integer, AssetInfo, ConfigResponse, Boolean} from "./types";
+import {Uint128, Direction, Addr, Integer, AssetInfo, Boolean} from "./types";
 export interface InstantiateMsg {
   eligible_collateral: string;
   fee_pool: string;
@@ -197,6 +197,18 @@ export interface Position {
   take_profit: Uint128;
   trader: Addr;
   vamm: Addr;
+}
+export interface ConfigResponse {
+  decimals: Uint128;
+  eligible_collateral: AssetInfo;
+  fee_pool: Addr;
+  initial_margin_ratio: Uint128;
+  insurance_fund?: Addr | null;
+  liquidation_fee: Uint128;
+  maintenance_margin_ratio: Uint128;
+  owner: Addr;
+  partial_liquidation_ratio: Uint128;
+  tp_sl_spread: Uint128;
 }
 export interface PauserResponse {
   pauser: Addr;

@@ -1,4 +1,4 @@
-import {Uint128, ConfigResponse, Addr, OwnerResponse} from "./types";
+import {Uint128, Addr} from "./types";
 export interface InstantiateMsg {
   oracle_hub_contract: string;
 }
@@ -39,3 +39,7 @@ export type QueryMsg = {
   };
 };
 export interface MigrateMsg {}
+export interface ConfigResponse {}
+export interface OwnerResponse {
+  owner: Addr;
+}

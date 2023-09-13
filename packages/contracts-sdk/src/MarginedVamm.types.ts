@@ -1,4 +1,4 @@
-import {Uint128, Direction, Addr, ConfigResponse, OwnerResponse, Boolean, Integer} from "./types";
+import {Uint128, Direction, Addr, Boolean, Integer} from "./types";
 export interface InstantiateMsg {
   base_asset: string;
   base_asset_reserve: Uint128;
@@ -115,6 +115,24 @@ export interface MigrateMsg {}
 export interface CalcFeeResponse {
   spread_fee: Uint128;
   toll_fee: Uint128;
+}
+export interface ConfigResponse {
+  base_asset: string;
+  base_asset_holding_cap: Uint128;
+  decimals: Uint128;
+  fluctuation_limit_ratio: Uint128;
+  funding_period: number;
+  insurance_fund: Addr;
+  margin_engine: Addr;
+  open_interest_notional_cap: Uint128;
+  pricefeed: Addr;
+  quote_asset: string;
+  spot_price_twap_interval: number;
+  spread_ratio: Uint128;
+  toll_ratio: Uint128;
+}
+export interface OwnerResponse {
+  owner: Addr;
 }
 export interface StateResponse {
   base_asset_reserve: Uint128;

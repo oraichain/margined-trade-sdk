@@ -6,8 +6,8 @@
 
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
-import {Uint128, ConfigResponse, Addr, OwnerResponse, AssetInfo} from "./types";
-import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, TokenLengthResponse, AllTokenResponse, TokenResponse} from "./MarginedFeePool.types";
+import {Uint128, Addr, AssetInfo} from "./types";
+import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, OwnerResponse, TokenLengthResponse, AllTokenResponse, TokenResponse} from "./MarginedFeePool.types";
 export interface MarginedFeePoolReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<ConfigResponse>;
