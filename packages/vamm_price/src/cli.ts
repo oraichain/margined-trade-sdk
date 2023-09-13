@@ -16,7 +16,10 @@ const wss = new WebSocket.Server({ port: 3001 });
   const sendTime = process.env.SEND_TIME ? Number(process.env.SEND_TIME) : 3600;
   console.log({ sendTime });
   const sender = await setupWallet(
-    decrypt(process.env.MNEMONIC_PASS, process.env.MNEMONIC_ENCRYPTED)
+    decrypt(
+      process.env.MNEMONIC_PASS,
+      process.env.MNEMONIC_ENCRYPTED
+    )
   );
 
   let prevPrices: string[] = [];
