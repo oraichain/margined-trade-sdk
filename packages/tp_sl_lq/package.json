@@ -1,19 +1,20 @@
 {
   "name": "@oraichain/oraimargin-matching",
   "version": "0.0.1",
-  "main": "build/index.js",
+  "main": "build/cli.js",
+  "bin": "build/cli.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/cli.ts"
+    "start": "ts-node src/cli.ts",
+    "build": "ncc build src/cli.ts --no-source-map-register -t -m"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@types/dotenv": "^8.2.0",
     "@cosmjs/cosmwasm-stargate": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "@oraichain/oraimargin-contracts-build": "^1.0.20",
     "@oraichain/oraimargin-contracts-sdk": "^1.0.26",
+    "@oraichain/oraimargin-common": "^0.0.2",
     "dotenv": "^10.0.0"
-  },
-  "devDependencies": {
-    "@types/dotenv": "^8.2.0"
   }
 }

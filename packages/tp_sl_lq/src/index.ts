@@ -1,16 +1,14 @@
-import { UserWallet } from "./helpers";
+import { UserWallet } from "@oraichain/oraimargin-common";
 
-import {
-  ExecuteInstruction,
-} from "@cosmjs/cosmwasm-stargate";
+import { ExecuteInstruction } from "@cosmjs/cosmwasm-stargate";
 
 import {
   MarginedInsuranceFundTypes,
   MarginedEngineTypes,
   MarginedVammTypes,
   Side,
-  Addr
-} from '@oraichain/oraimargin-contracts-sdk';
+  Addr,
+} from "@oraichain/oraimargin-contracts-sdk";
 
 const minimumOraiBalance = 1000000; // 1 ORAI;
 
@@ -26,27 +24,34 @@ const triggerTpSl = async (
     config: {},
   };
 
-  const config = await sender.client.queryContractSmart(engine_contractAddr, query_config);
+  const config = await sender.client.queryContractSmart(
+    engine_contractAddr,
+    query_config
+  );
 
   const query_ticks: MarginedEngineTypes.QueryMsg = {
     ticks: {
       limit: 100,
       order_by: side === "buy" ? 2 : 1,
       side,
-      vamm
+      vamm,
     },
   };
-  const ticks = await sender.client.queryContractSmart(engine_contractAddr, query_ticks) || [];
+  const ticks =
+    (await sender.client.queryContractSmart(
+      engine_contractAddr,
+      query_ticks
+    )) || [];
 
   const query_spot_price: MarginedVammTypes.QueryMsg = {
     spot_price: {},
   };
 
-  const spot_price = Number(await sender.client.queryContractSmart(vamm, query_spot_price));
-  // console.log({ spot_price });
+  const spot_price = Number(
+    await sender.client.queryContractSmart(vamm, query_spot_price)
+  );
 
   console.log({ side });
-  // console.dir(ticks, { depth: 4 });
 
   for (const tick of ticks.ticks) {
     let tick_price = parseInt(tick.entry_price);
@@ -58,38 +63,63 @@ const triggerTpSl = async (
         side,
         vamm,
         filter: {
-          price: tick.entry_price
-        }
+          price: tick.entry_price,
+        },
       },
     };
-    const position_by_price = await sender.client.queryContractSmart(engine_contractAddr, query_position_by_price);
+    const position_by_price = await sender.client.queryContractSmart(
+      engine_contractAddr,
+      query_position_by_price
+    );
 
     for (const position of position_by_price) {
       console.log({ position });
       let tp_sl_flag = false;
-      const tp_spread = Number(position.take_profit) * (Number(config.tp_sl_spread)) / Number(config.decimals);
-      const sl_spread = Number(position.stop_loss) * (Number(config.tp_sl_spread)) / Number(config.decimals);
+      const tp_spread =
+        (Number(position.take_profit) * Number(config.tp_sl_spread)) /
+        Number(config.decimals);
+      const sl_spread =
+        (Number(position.stop_loss) * Number(config.tp_sl_spread)) /
+        Number(config.decimals);
       console.log({ tp_spread, sl_spread });
 
       if (side === "buy") {
-        if (spot_price > Number(position.take_profit) ||
-          Math.abs(Number(position.take_profit) - spot_price) <= tp_spread) {
-          console.log({ side }, `position_id: ${position.position_id}`, "trigger take profit");
+        if (
+          spot_price > Number(position.take_profit) ||
+          Math.abs(Number(position.take_profit) - spot_price) <= tp_spread
+        ) {
+          console.log(
+            { side },
+            `position_id: ${position.position_id}`,
+            "trigger take profit"
+          );
           tp_sl_flag = true;
-        } else if (Number(position.stop_loss) > spot_price ||
-          Number(position.stop_loss) > 0 &&
-          Math.abs(Number(spot_price) - Number(position.stop_loss)) <= sl_spread) {
-          console.log({ side }, `position_id: ${position.position_id}`, "trigger stop loss");
+        } else if (
+          Number(position.stop_loss) > spot_price ||
+          (Number(position.stop_loss) > 0 &&
+            Math.abs(Number(spot_price) - Number(position.stop_loss)) <=
+              sl_spread)
+        ) {
+          console.log(
+            { side },
+            `position_id: ${position.position_id}`,
+            "trigger stop loss"
+          );
           tp_sl_flag = true;
         }
       } else if (side === "sell") {
-        if (Number(position.take_profit) > spot_price ||
-          Math.abs(spot_price - Number(position.take_profit)) <= tp_spread) {
+        if (
+          Number(position.take_profit) > spot_price ||
+          Math.abs(spot_price - Number(position.take_profit)) <= tp_spread
+        ) {
           console.log({ side }, "trigger take profit");
           tp_sl_flag = true;
-        } else if (spot_price > Number(position.stop_loss) ||
-          Number(position.stop_loss) > 0 &&
-          Math.abs(Number(position.stop_loss) - Number(spot_price)) <= sl_spread) {
+        } else if (
+          spot_price > Number(position.stop_loss) ||
+          (Number(position.stop_loss) > 0 &&
+            Math.abs(Number(position.stop_loss) - Number(spot_price)) <=
+              sl_spread)
+        ) {
           console.log({ side }, "trigger stop loss");
           tp_sl_flag = true;
         }
@@ -103,9 +133,9 @@ const triggerTpSl = async (
             trigger_tp_sl: {
               position_id: position.position_id,
               quote_asset_limit: "0",
-              vamm
-            }
-          }
+              vamm,
+            },
+          },
         };
         tp_sl_flag = false;
         multipleMsg.push(trigger_tp_sl);
@@ -116,7 +146,11 @@ const triggerTpSl = async (
   console.dir(multipleMsg, { depth: 4 });
   if (multipleMsg.length > 0) {
     try {
-      const res = await sender.client.executeMultiple(sender.address, multipleMsg, "auto");
+      const res = await sender.client.executeMultiple(
+        sender.address,
+        multipleMsg,
+        "auto"
+      );
       console.log("take profit & stop loss - txHash:", res.transactionHash);
     } catch (error) {
       console.log({ error });
@@ -138,7 +172,10 @@ const triggerLiquidate = async (
     config: {},
   };
 
-  const config = await sender.client.queryContractSmart(engine_contractAddr, query_config);
+  const config = await sender.client.queryContractSmart(
+    engine_contractAddr,
+    query_config
+  );
   console.log({ config });
   console.log("maintenance_margin_ratio: ", config.maintenance_margin_ratio);
 
@@ -147,10 +184,14 @@ const triggerLiquidate = async (
       limit: 100,
       order_by: side === "buy" ? 1 : 2,
       side,
-      vamm
+      vamm,
     },
   };
-  const ticks = await sender.client.queryContractSmart(engine_contractAddr, query_ticks) || [];
+  const ticks =
+    (await sender.client.queryContractSmart(
+      engine_contractAddr,
+      query_ticks
+    )) || [];
 
   console.log({ side });
   console.dir(ticks, { depth: 4 });
@@ -165,11 +206,14 @@ const triggerLiquidate = async (
         side,
         vamm,
         filter: {
-          price: tick.entry_price
-        }
+          price: tick.entry_price,
+        },
       },
     };
-    const position_by_price = await sender.client.queryContractSmart(engine_contractAddr, query_position_by_price);
+    const position_by_price = await sender.client.queryContractSmart(
+      engine_contractAddr,
+      query_position_by_price
+    );
 
     for (const position of position_by_price) {
       const query_margin_ratio: MarginedEngineTypes.QueryMsg = {
@@ -179,7 +223,12 @@ const triggerLiquidate = async (
         },
       };
 
-      const margin_ratio = Number(await sender.client.queryContractSmart(engine_contractAddr, query_margin_ratio));
+      const margin_ratio = Number(
+        await sender.client.queryContractSmart(
+          engine_contractAddr,
+          query_margin_ratio
+        )
+      );
       console.log({ margin_ratio });
 
       console.log({ position });
@@ -199,9 +248,9 @@ const triggerLiquidate = async (
             liquidate: {
               position_id: position.position_id,
               quote_asset_limit: "0",
-              vamm
-            }
-          }
+              vamm,
+            },
+          },
         };
         liquidate_flag = false;
         multipleMsg.push(liquidate);
@@ -212,7 +261,11 @@ const triggerLiquidate = async (
   console.dir(multipleMsg, { depth: 4 });
   if (multipleMsg.length > 0) {
     try {
-      const res = await sender.client.executeMultiple(sender.address, multipleMsg, "auto");
+      const res = await sender.client.executeMultiple(
+        sender.address,
+        multipleMsg,
+        "auto"
+      );
       console.log("liquidate - txHash:", res.transactionHash);
     } catch (error) {
       console.log({ error });
@@ -229,8 +282,11 @@ export async function matchingPosition(
   const allVamm: MarginedInsuranceFundTypes.QueryMsg = {
     get_all_vamm: {},
   };
-  const query_vamms = await sender.client.queryContractSmart(insurance_contractAddr, allVamm);
-  console.log({ query_vamms })
+  const query_vamms = await sender.client.queryContractSmart(
+    insurance_contractAddr,
+    allVamm
+  );
+  console.log({ query_vamms });
   console.log(`Excecuting perpetual engine contract ${engine_contractAddr}`);
 
   let execute_vamms: any[] = [];
@@ -248,13 +304,6 @@ export async function matchingPosition(
     );
   }
 
-  // execute_vamms.forEach((item) => {
-  //   triggerTpSl(sender, engine_contractAddr, item, "buy");
-  //   triggerLiquidate(sender, engine_contractAddr, item, "buy");
-  //   triggerTpSl(sender, engine_contractAddr, item, "sell");
-  //   triggerLiquidate(sender, engine_contractAddr, item, "sell")
-  // });
-
   const promiseBuyTpSl = execute_vamms.map((item) =>
     triggerTpSl(sender, engine_contractAddr, item, "buy")
   );
@@ -268,11 +317,10 @@ export async function matchingPosition(
     triggerLiquidate(sender, engine_contractAddr, item, "sell")
   );
 
-  (await Promise.all([
+  await Promise.all([
     Promise.all(promiseBuyTpSl),
     Promise.all(promiseSellTpSl),
     Promise.all(promiseBuyLiquidate),
-    Promise.all(promiseSellLiquidate)
-  ]));
+    Promise.all(promiseSellLiquidate),
+  ]);
 }
-
