@@ -2,9 +2,9 @@
 
 ```bash
 # build code:
-cwtools build ../perpetuals/contracts/* -o packages/contracts-build/data
+cwtools build ../perpetuals/contracts/margined_* -o packages/contracts-build/data
 # gen code:
-cwtools gents ../perpetuals/contracts/* -o packages/contracts-sdk/src
+cwtools gents ../perpetuals/contracts/margined_* -o packages/contracts-sdk/src
 # gen doc:
 yarn docs
 

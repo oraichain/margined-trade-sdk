@@ -1,4 +1,4 @@
-import {Uint128, AssetInfo, Addr} from "./types";
+import {Uint128, AssetInfo, Addr, ConfigResponse, OwnerResponse} from "./types";
 export interface InstantiateMsg {
   engine: string;
 }
@@ -44,17 +44,11 @@ export type QueryMsg = {
   };
 };
 export interface MigrateMsg {}
-export interface ConfigResponse {
-  engine: Addr;
-}
 export interface AllVammResponse {
   vamm_list: Addr[];
 }
 export interface AllVammStatusResponse {
   vamm_list_status: [Addr, boolean][];
-}
-export interface OwnerResponse {
-  owner: Addr;
 }
 export interface VammStatusResponse {
   vamm_status: boolean;

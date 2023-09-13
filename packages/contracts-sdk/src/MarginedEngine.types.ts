@@ -1,4 +1,4 @@
-import {Uint128, Side, PositionFilter, PnlCalcOption, Direction, Addr, ArrayOfPosition, Position, Integer, AssetInfo, Boolean} from "./types";
+import {Uint128, Direction, Addr, Integer, AssetInfo, ConfigResponse, Boolean} from "./types";
 export interface InstantiateMsg {
   eligible_collateral: string;
   fee_pool: string;
@@ -88,6 +88,7 @@ export type ExecuteMsg = {
     pause: boolean;
   };
 };
+export type Side = "buy" | "sell";
 export type QueryMsg = {
   config: {};
 } | {
@@ -151,6 +152,12 @@ export type QueryMsg = {
     vamm: string;
   };
 } | {
+  margin_ratio_by_calc_option: {
+    calc_option: PnlCalcOption;
+    position_id: number;
+    vamm: string;
+  };
+} | {
   free_collateral: {
     position_id: number;
     vamm: string;
@@ -167,18 +174,29 @@ export type QueryMsg = {
 } | {
   last_position_id: {};
 };
+export type PositionFilter = "none" | {
+  trader: string;
+} | {
+  price: Uint128;
+};
+export type PnlCalcOption = "spot_price" | "twap" | "oracle";
 export interface MigrateMsg {}
-export interface ConfigResponse {
-  decimals: Uint128;
-  eligible_collateral: AssetInfo;
-  fee_pool: Addr;
-  initial_margin_ratio: Uint128;
-  insurance_fund?: Addr | null;
-  liquidation_fee: Uint128;
-  maintenance_margin_ratio: Uint128;
-  owner: Addr;
-  partial_liquidation_ratio: Uint128;
-  tp_sl_spread: Uint128;
+export type ArrayOfPosition = Position[];
+export interface Position {
+  block_time: number;
+  direction: Direction;
+  entry_price: Uint128;
+  last_updated_premium_fraction: Integer;
+  margin: Uint128;
+  notional: Uint128;
+  pair: string;
+  position_id: number;
+  side: Side;
+  size: Integer;
+  stop_loss?: Uint128 | null;
+  take_profit: Uint128;
+  trader: Addr;
+  vamm: Addr;
 }
 export interface PauserResponse {
   pauser: Addr;
