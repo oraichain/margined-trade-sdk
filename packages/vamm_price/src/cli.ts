@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
 import { queryAllVammSpotPrice } from "./index";
 import {
-  encrypt,
   decrypt,
   delay,
   setupWallet,
@@ -12,7 +11,7 @@ dotenv.config();
 const wss = new WebSocket.Server({ port: 3001 });
 
 (async () => {
-  const insurance_contractAddr = process.env.INSURANCE_FUND_CONTRACT;
+  const insurance = process.env.INSURANCE_FUND_CONTRACT;
   const sendTime = process.env.SEND_TIME ? Number(process.env.SEND_TIME) : 3600;
   console.log({ sendTime });
   const sender = await setupWallet(
@@ -30,7 +29,7 @@ const wss = new WebSocket.Server({ port: 3001 });
       console.log({ curTime });
       const alLPrices = await queryAllVammSpotPrice(
         sender,
-        insurance_contractAddr
+        insurance
       );
       console.log({ alLPrices });
 
@@ -42,7 +41,7 @@ const wss = new WebSocket.Server({ port: 3001 });
       console.log({ differencePrices });
 
       if (differencePrices.length > 0) {
-        console.log("PRICE CHANGE");
+        console.log("SEND CHANGED PRICE");
         let time = Math.floor(Date.now() / 1000);
         for (const spotPrice of differencePrices) {
           wss.clients.forEach((ws) => {
@@ -58,7 +57,7 @@ const wss = new WebSocket.Server({ port: 3001 });
       }
 
       if (curTime - preTime >= sendTime) {
-        console.log("Send prices sequentially");
+        console.log("SEND PRICES SEQUENTIALLY");
         preTime = curTime;
         console.log({ preTime });
         for (const spotPrice of alLPrices) {

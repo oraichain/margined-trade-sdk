@@ -1,28 +1,38 @@
 import dotenv from "dotenv";
-import { matchingPosition } from "./index";
+import { executeEngine } from "./index";
 import { decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
 dotenv.config();
 
+const minimumOraiBalance = 1000000; // 1 ORAI;
+
 (async () => {
-  const engine_contractAddr = process.env.ENGINE_CONTRACT;
-  const insurance_contractAddr = process.env.INSURANCE_FUND_CONTRACT;
+  const engine = process.env.ENGINE_CONTRACT;
+  const insurance = process.env.INSURANCE_FUND_CONTRACT;
   const sender = await setupWallet(
     decrypt(
       process.env.MNEMONIC_PASS,
       process.env.MNEMONIC_ENCRYPTED
     )
   );
+
+  const { amount } = await sender.client.getBalance(sender.address, "orai");
+  console.log(`balance of ${sender.address} is ${amount}`);
+  if (parseInt(amount) <= minimumOraiBalance) {
+    throw new Error(
+      `Balance(${amount}) of ${sender.address} must be greater than 1 ORAI`
+    );
+  }
+
   while (true) {
     try {
-      await matchingPosition(
+      await executeEngine(
         sender,
-        engine_contractAddr,
-        insurance_contractAddr,
-        "orai"
+        engine,
+        insurance
       );
     } catch (error) {
       console.error(error);
     }
-    await delay(500);
+    await delay(1000);
   }
 })();

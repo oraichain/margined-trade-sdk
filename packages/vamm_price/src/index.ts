@@ -29,13 +29,13 @@ const querySpotPrice = async (
 
 export async function queryAllVammSpotPrice(
   sender: UserWallet,
-  insurance_contractAddr: string
+  insurance: Addr
 ): Promise<string[]> {
   const queryAllVamms: MarginedInsuranceFundTypes.QueryMsg = {
     get_all_vamm: {},
   };
   const allVamms = await sender.client.queryContractSmart(
-    insurance_contractAddr,
+    insurance,
     queryAllVamms
   );
 

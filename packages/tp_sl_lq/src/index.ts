@@ -6,30 +6,27 @@ import {
   MarginedInsuranceFundTypes,
   MarginedEngineTypes,
   MarginedVammTypes,
-  Side,
   Addr,
 } from "@oraichain/oraimargin-contracts-sdk";
 
-const minimumOraiBalance = 1000000; // 1 ORAI;
-
 const triggerTpSl = async (
   sender: UserWallet,
-  engine_contractAddr: string,
+  engine: Addr,
   vamm: Addr,
-  side: Side
+  side: MarginedEngineTypes.Side
 ) => {
-  console.log("triggerTpSl");
+  console.log("trigger TpSl");
   const multipleMsg: ExecuteInstruction[] = [];
   const query_config: MarginedEngineTypes.QueryMsg = {
     config: {},
   };
 
   const config = await sender.client.queryContractSmart(
-    engine_contractAddr,
+    engine,
     query_config
   );
 
-  const query_ticks: MarginedEngineTypes.QueryMsg = {
+  const queryTicks: MarginedEngineTypes.QueryMsg = {
     ticks: {
       limit: 100,
       order_by: side === "buy" ? 2 : 1,
@@ -39,24 +36,20 @@ const triggerTpSl = async (
   };
   const ticks =
     (await sender.client.queryContractSmart(
-      engine_contractAddr,
-      query_ticks
+      engine,
+      queryTicks
     )) || [];
 
-  const query_spot_price: MarginedVammTypes.QueryMsg = {
+  const querySpotPrice: MarginedVammTypes.QueryMsg = {
     spot_price: {},
   };
 
-  const spot_price = Number(
-    await sender.client.queryContractSmart(vamm, query_spot_price)
+  const spotPrice = Number(
+    await sender.client.queryContractSmart(vamm, querySpotPrice)
   );
 
-  console.log({ side });
-
   for (const tick of ticks.ticks) {
-    let tick_price = parseInt(tick.entry_price);
-    console.log({ tick_price });
-    const query_position_by_price: MarginedEngineTypes.QueryMsg = {
+    const queryPositionbyPrice: MarginedEngineTypes.QueryMsg = {
       positions: {
         limit: tick.total_positions,
         order_by: 1,
@@ -67,13 +60,12 @@ const triggerTpSl = async (
         },
       },
     };
-    const position_by_price = await sender.client.queryContractSmart(
-      engine_contractAddr,
-      query_position_by_price
+    const positionbyPrice = await sender.client.queryContractSmart(
+      engine,
+      queryPositionbyPrice
     );
 
-    for (const position of position_by_price) {
-      console.log({ position });
+    for (const position of positionbyPrice) {
       let tp_sl_flag = false;
       const tp_spread =
         (Number(position.take_profit) * Number(config.tp_sl_spread)) /
@@ -81,54 +73,40 @@ const triggerTpSl = async (
       const sl_spread =
         (Number(position.stop_loss) * Number(config.tp_sl_spread)) /
         Number(config.decimals);
-      console.log({ tp_spread, sl_spread });
 
       if (side === "buy") {
         if (
-          spot_price > Number(position.take_profit) ||
-          Math.abs(Number(position.take_profit) - spot_price) <= tp_spread
+          spotPrice > Number(position.take_profit) ||
+          Math.abs(Number(position.take_profit) - spotPrice) <= tp_spread
         ) {
-          console.log(
-            { side },
-            `position_id: ${position.position_id}`,
-            "trigger take profit"
-          );
           tp_sl_flag = true;
         } else if (
-          Number(position.stop_loss) > spot_price ||
+          Number(position.stop_loss) > spotPrice ||
           (Number(position.stop_loss) > 0 &&
-            Math.abs(Number(spot_price) - Number(position.stop_loss)) <=
-              sl_spread)
+            Math.abs(Number(spotPrice) - Number(position.stop_loss)) <=
+            sl_spread)
         ) {
-          console.log(
-            { side },
-            `position_id: ${position.position_id}`,
-            "trigger stop loss"
-          );
           tp_sl_flag = true;
         }
       } else if (side === "sell") {
         if (
-          Number(position.take_profit) > spot_price ||
-          Math.abs(spot_price - Number(position.take_profit)) <= tp_spread
+          Number(position.take_profit) > spotPrice ||
+          Math.abs(spotPrice - Number(position.take_profit)) <= tp_spread
         ) {
-          console.log({ side }, "trigger take profit");
           tp_sl_flag = true;
         } else if (
-          spot_price > Number(position.stop_loss) ||
+          spotPrice > Number(position.stop_loss) ||
           (Number(position.stop_loss) > 0 &&
-            Math.abs(Number(position.stop_loss) - Number(spot_price)) <=
-              sl_spread)
+            Math.abs(Number(position.stop_loss) - Number(spotPrice)) <=
+            sl_spread)
         ) {
-          console.log({ side }, "trigger stop loss");
           tp_sl_flag = true;
         }
       }
 
       if (tp_sl_flag) {
-        console.log("TRIGGER TAKE PROFIT/ STOPLOSS");
         let trigger_tp_sl: ExecuteInstruction = {
-          contractAddress: engine_contractAddr,
+          contractAddress: engine,
           msg: {
             trigger_tp_sl: {
               position_id: position.position_id,
@@ -145,6 +123,7 @@ const triggerTpSl = async (
 
   console.dir(multipleMsg, { depth: 4 });
   if (multipleMsg.length > 0) {
+    console.log("TRIGGER TAKE PROFIT / STOPLOSS");
     try {
       const res = await sender.client.executeMultiple(
         sender.address,
@@ -160,26 +139,23 @@ const triggerTpSl = async (
 
 const triggerLiquidate = async (
   sender: UserWallet,
-  engine_contractAddr: string,
+  engine: Addr,
   vamm: Addr,
-  side: Side
+  side: MarginedEngineTypes.Side
 ) => {
-  console.log("triggerLiquidate");
-
+  console.log("trigger Liquidate");
   const multipleMsg: ExecuteInstruction[] = [];
 
-  const query_config: MarginedEngineTypes.QueryMsg = {
+  const queryEngineConfig: MarginedEngineTypes.QueryMsg = {
     config: {},
   };
 
-  const config = await sender.client.queryContractSmart(
-    engine_contractAddr,
-    query_config
+  const engineConfig = await sender.client.queryContractSmart(
+    engine,
+    queryEngineConfig
   );
-  console.log({ config });
-  console.log("maintenance_margin_ratio: ", config.maintenance_margin_ratio);
 
-  const query_ticks: MarginedEngineTypes.QueryMsg = {
+  const queryTicks: MarginedEngineTypes.QueryMsg = {
     ticks: {
       limit: 100,
       order_by: side === "buy" ? 1 : 2,
@@ -189,17 +165,15 @@ const triggerLiquidate = async (
   };
   const ticks =
     (await sender.client.queryContractSmart(
-      engine_contractAddr,
-      query_ticks
+      engine,
+      queryTicks
     )) || [];
 
   console.log({ side });
   console.dir(ticks, { depth: 4 });
 
   for (const tick of ticks.ticks) {
-    let tick_price = parseInt(tick.entry_price);
-    console.log({ tick_price });
-    const query_position_by_price: MarginedEngineTypes.QueryMsg = {
+    const queryPositionbyPrice: MarginedEngineTypes.QueryMsg = {
       positions: {
         limit: tick.total_positions,
         order_by: 1,
@@ -210,40 +184,36 @@ const triggerLiquidate = async (
         },
       },
     };
-    const position_by_price = await sender.client.queryContractSmart(
-      engine_contractAddr,
-      query_position_by_price
+    const positionbyPrice = await sender.client.queryContractSmart(
+      engine,
+      queryPositionbyPrice
     );
 
-    for (const position of position_by_price) {
-      const query_margin_ratio: MarginedEngineTypes.QueryMsg = {
+    for (const position of positionbyPrice) {
+      const queryMarginRatio: MarginedEngineTypes.QueryMsg = {
         margin_ratio: {
           position_id: position.position_id,
           vamm,
         },
       };
 
-      const margin_ratio = Number(
+      const marginRatio = Number(
         await sender.client.queryContractSmart(
-          engine_contractAddr,
-          query_margin_ratio
+          engine,
+          queryMarginRatio
         )
       );
-      console.log({ margin_ratio });
 
-      console.log({ position });
-      let liquidate_flag = false;
-
-      if (margin_ratio <= Number(config.maintenance_margin_ratio)) {
-        if (margin_ratio > Number(config.liquidation_fee)) {
-          liquidate_flag = true;
+      let liquidateFlag = false;
+      if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
+        if (marginRatio > Number(engineConfig.liquidation_fee)) {
+          liquidateFlag = true;
         }
       }
 
-      if (liquidate_flag) {
-        console.log("TRIGGER LIQUIDATE");
+      if (liquidateFlag) {
         let liquidate: ExecuteInstruction = {
-          contractAddress: engine_contractAddr,
+          contractAddress: engine,
           msg: {
             liquidate: {
               position_id: position.position_id,
@@ -252,7 +222,7 @@ const triggerLiquidate = async (
             },
           },
         };
-        liquidate_flag = false;
+        liquidateFlag = false;
         multipleMsg.push(liquidate);
       }
     }
@@ -260,6 +230,7 @@ const triggerLiquidate = async (
 
   console.dir(multipleMsg, { depth: 4 });
   if (multipleMsg.length > 0) {
+    console.log("TRIGGER LIQUIDATE");
     try {
       const res = await sender.client.executeMultiple(
         sender.address,
@@ -273,54 +244,90 @@ const triggerLiquidate = async (
   }
 };
 
-export async function matchingPosition(
+const payFunding = async (
   sender: UserWallet,
-  engine_contractAddr: string,
-  insurance_contractAddr: string,
-  denom = "orai"
+  engine: Addr,
+  vamm: Addr
+) => {
+  console.log("pay Funding rate");
+  const queryVammState: MarginedVammTypes.QueryMsg = {
+    state: {},
+  };
+  const vammState = await sender.client.queryContractSmart(
+    vamm,
+    queryVammState
+  );
+  console.log({ vammState });
+  const nextFundingTime = Number(vammState.next_funding_time);
+  console.log({ nextFundingTime });
+  let time = Math.floor(Date.now() / 1000);
+  
+  if (time >= nextFundingTime) {
+    const payFunding: MarginedEngineTypes.ExecuteMsg = {
+      pay_funding: {
+        vamm
+      }
+    };
+
+    try {
+      const res = await sender.client.execute(
+        sender.address,
+        engine,
+        payFunding,
+        "auto"
+      );
+      console.log("payFunding - txHash:", res.transactionHash);
+    } catch (error) {
+      console.log({ error });
+    }
+  }
+};
+
+export async function executeEngine(
+  sender: UserWallet,
+  engine: Addr,
+  insurance: Addr
 ): Promise<void> {
-  const allVamm: MarginedInsuranceFundTypes.QueryMsg = {
+  console.log(`Excecuting perpetual engine contract ${engine}`);
+
+  const queryAllVamms: MarginedInsuranceFundTypes.QueryMsg = {
     get_all_vamm: {},
   };
-  const query_vamms = await sender.client.queryContractSmart(
-    insurance_contractAddr,
-    allVamm
+  const allVamms = await sender.client.queryContractSmart(
+    insurance,
+    queryAllVamms
   );
-  console.log({ query_vamms });
-  console.log(`Excecuting perpetual engine contract ${engine_contractAddr}`);
+  console.log({ allVamms });
 
   let execute_vamms: any[] = [];
 
-  query_vamms.vamm_list.forEach((vamm: any) => {
+  allVamms.vamm_list.forEach((vamm: any) => {
     console.log({ vamm });
     execute_vamms.push(vamm);
   });
 
-  const { amount } = await sender.client.getBalance(sender.address, denom);
-  console.log(`balance of ${sender.address} is ${amount}`);
-  if (parseInt(amount) <= minimumOraiBalance) {
-    throw new Error(
-      `Balance(${amount}) of ${sender.address} must be greater than 1 ORAI`
-    );
-  }
-
   const promiseBuyTpSl = execute_vamms.map((item) =>
-    triggerTpSl(sender, engine_contractAddr, item, "buy")
+    triggerTpSl(sender, engine, item, "buy")
   );
   const promiseSellTpSl = execute_vamms.map((item) =>
-    triggerTpSl(sender, engine_contractAddr, item, "sell")
+    triggerTpSl(sender, engine, item, "sell")
   );
   const promiseBuyLiquidate = execute_vamms.map((item) =>
-    triggerLiquidate(sender, engine_contractAddr, item, "buy")
+    triggerLiquidate(sender, engine, item, "buy")
   );
   const promiseSellLiquidate = execute_vamms.map((item) =>
-    triggerLiquidate(sender, engine_contractAddr, item, "sell")
+    triggerLiquidate(sender, engine, item, "sell")
   );
+
+  const payFundingRate = execute_vamms.map((item) =>
+    payFunding(sender, engine, item)
+  )
 
   await Promise.all([
     Promise.all(promiseBuyTpSl),
     Promise.all(promiseSellTpSl),
     Promise.all(promiseBuyLiquidate),
     Promise.all(promiseSellLiquidate),
+    Promise.all(payFundingRate),
   ]);
 }
