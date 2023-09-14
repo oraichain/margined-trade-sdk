@@ -10,6 +10,23 @@ dotenv.config();
 
 const wss = new WebSocket.Server({ port: 3001 });
 
+const sendPrice = async (
+  time: number,
+  prices: string[],
+) => {
+  for (const spotPrice of prices) {
+    wss.clients.forEach((ws) => {
+      ws.send(
+        JSON.stringify({
+          event: "market_price",
+          pair_price: spotPrice,
+          time,
+        })
+      );
+    });
+  }
+};
+
 (async () => {
   const insurance = process.env.INSURANCE_FUND_CONTRACT;
   const sendTime = process.env.SEND_TIME ? Number(process.env.SEND_TIME) : 3600;
@@ -23,54 +40,40 @@ const wss = new WebSocket.Server({ port: 3001 });
 
   let prevPrices: string[] = [];
   let preTime: number = 0;
+  let clientConnected: boolean = false;
+
+  wss.on("connection", function () {
+    console.log("client connected");
+    clientConnected = true;
+  });
+
   while (true) {
     try {
       let curTime = Math.floor(Date.now() / 1000);
-      console.log({ curTime });
-      const alLPrices = await queryAllVammSpotPrice(
-        sender,
-        insurance
-      );
+      const alLPrices = await queryAllVammSpotPrice(sender, insurance);
       console.log({ alLPrices });
 
       const differencePrices =
         prevPrices.length === 0
           ? alLPrices
-          : prevPrices.filter((x) => !alLPrices.includes(x));
+          : alLPrices.filter((x) => !prevPrices.includes(x));
       prevPrices = alLPrices;
-      console.log({ differencePrices });
 
       if (differencePrices.length > 0) {
         console.log("SEND CHANGED PRICE");
-        let time = Math.floor(Date.now() / 1000);
-        for (const spotPrice of differencePrices) {
-          wss.clients.forEach((ws) => {
-            ws.send(
-              JSON.stringify({
-                event: "market_price",
-                pair_price: spotPrice,
-                time,
-              })
-            );
-          });
-        }
+        console.log({ differencePrices });
+        sendPrice(curTime, differencePrices);
       }
 
+      if (clientConnected) {
+        console.log("CLIENT CONNECTED - SEND PRICES");
+        clientConnected = false;
+        sendPrice(curTime, alLPrices);
+      }
       if (curTime - preTime >= sendTime) {
         console.log("SEND PRICES SEQUENTIALLY");
         preTime = curTime;
-        console.log({ preTime });
-        for (const spotPrice of alLPrices) {
-          wss.clients.forEach((ws) => {
-            ws.send(
-              JSON.stringify({
-                event: "market_price",
-                pair_price: spotPrice,
-                time: curTime,
-              })
-            );
-          });
-        }
+        sendPrice(curTime, alLPrices);
       }
     } catch (error) {
       console.error(error);
