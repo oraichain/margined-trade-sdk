@@ -9,10 +9,12 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
   const engine = process.env.ENGINE_CONTRACT;
   const insurance = process.env.INSURANCE_FUND_CONTRACT;
   const sender = await setupWallet(
-    decrypt(
-      process.env.MNEMONIC_PASS,
-      process.env.MNEMONIC_ENCRYPTED
-    )
+    decrypt(process.env.MNEMONIC_PASS, process.env.MNEMONIC_ENCRYPTED),
+    {
+      hdPath: process.env.HD_PATH,
+      rpcUrl: process.env.RPC_URL,
+      prefix: process.env.PREFIX,
+    }
   );
 
   const { amount } = await sender.client.getBalance(sender.address, "orai");
@@ -25,11 +27,7 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
 
   while (true) {
     try {
-      await executeEngine(
-        sender,
-        engine,
-        insurance
-      );
+      await executeEngine(sender, engine, insurance);
     } catch (error) {
       console.error(error);
     }

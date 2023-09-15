@@ -8,25 +8,6 @@ export type UserWallet = { address: string; client: SigningCosmWasmClient };
 const truncDecimals = 6;
 export const atomic = 10 ** truncDecimals;
 
-export async function sendToken(
-  client: SigningCosmWasmClient,
-  senderAddress: string,
-  recipientAddress: string,
-  amount: string
-) {
-  const fee = {
-    gas: "30000000",
-    amount: [{ denom: "orai", amount: "150000" }],
-  };
-
-  return await client.sendTokens(
-    senderAddress,
-    recipientAddress,
-    [{ denom: "orai", amount: amount }],
-    fee
-  );
-}
-
 export const delay = (milliseconds: number) => {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
@@ -109,24 +90,32 @@ export const toDisplay = (
 
 export async function setupWallet(
   mnemonic: string,
-  prefix?: string
+  config: {
+    hdPath?: string;
+    rpcUrl?: string;
+    gasPrices?: string;
+    prefix?: string;
+  },
+  cosmwasmClient?: SigningCosmWasmClient
 ): Promise<UserWallet> {
   if (!mnemonic || mnemonic.length < 48) {
     throw new Error("Must set MNEMONIC to a 12 word phrase");
   }
   const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-    hdPaths: [stringToPath(process.env.HD_PATH || "m/44'/118'/0'/0/0")],
-    prefix: prefix ?? "orai",
+    hdPaths: [stringToPath(config.hdPath ?? "m/44'/118'/0'/0/0")],
+    prefix: config.prefix ?? "orai",
   });
   const [firstAccount] = await wallet.getAccounts();
   const address = firstAccount.address;
-  const client = await SigningCosmWasmClient.connectWithSigner(
-    process.env.RPC_URL!,
-    wallet,
-    {
-      gasPrice: GasPrice.fromString("0.002orai"),
-    }
-  );
+  const client =
+    cosmwasmClient ??
+    (await SigningCosmWasmClient.connectWithSigner(
+      config.rpcUrl || "https://rpc.orai.io",
+      wallet,
+      {
+        gasPrice: GasPrice.fromString(`${config.gasPrices ?? "0.005"}orai`),
+      }
+    ));
 
   return { address, client };
 }

@@ -1,19 +1,12 @@
 import dotenv from "dotenv";
 import { queryAllVammSpotPrice } from "./index";
-import {
-  decrypt,
-  delay,
-  setupWallet,
-} from "@oraichain/oraimargin-common";
+import { decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
 import WebSocket from "ws";
 dotenv.config();
 
 const wss = new WebSocket.Server({ port: 3001 });
 
-const sendPrice = async (
-  time: number,
-  prices: string[],
-) => {
+const sendPrice = async (time: number, prices: string[]) => {
   for (const spotPrice of prices) {
     wss.clients.forEach((ws) => {
       ws.send(
@@ -32,10 +25,12 @@ const sendPrice = async (
   const sendTime = process.env.SEND_TIME ? Number(process.env.SEND_TIME) : 3600;
   console.log({ sendTime });
   const sender = await setupWallet(
-    decrypt(
-      process.env.MNEMONIC_PASS,
-      process.env.MNEMONIC_ENCRYPTED
-    )
+    decrypt(process.env.MNEMONIC_PASS, process.env.MNEMONIC_ENCRYPTED),
+    {
+      hdPath: process.env.HD_PATH,
+      rpcUrl: process.env.RPC_URL,
+      prefix: process.env.PREFIX,
+    }
   );
 
   let prevPrices: string[] = [];
