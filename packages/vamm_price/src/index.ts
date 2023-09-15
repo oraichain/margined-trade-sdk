@@ -1,24 +1,17 @@
 import { UserWallet } from "@oraichain/oraimargin-common";
 import {
-  MarginedInsuranceFundTypes,
-  MarginedVammTypes,
   Addr,
+  MarginedVammQueryClient,
+  MarginedInsuranceFundQueryClient,
 } from "@oraichain/oraimargin-contracts-sdk";
 
 const querySpotPrice = async (
   sender: UserWallet,
   vamm: Addr
 ): Promise<string> => {
-  const queryConfig: MarginedVammTypes.QueryMsg = {
-    config: {},
-  };
-  const vammConfig = await sender.client.queryContractSmart(vamm, queryConfig);
-  const query_spot_price: MarginedVammTypes.QueryMsg = {
-    spot_price: {},
-  };
-  const spotPrice = Number(
-    await sender.client.queryContractSmart(vamm, query_spot_price)
-  );
+  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
+  const vammConfig = await vammClient.config();
+  const spotPrice = Number(await vammClient.spotPrice());
   const pairPrice = JSON.stringify({
     pair: `${vammConfig.base_asset}/${vammConfig.quote_asset}`,
     spot_price: spotPrice,
@@ -31,17 +24,15 @@ export async function queryAllVammSpotPrice(
   sender: UserWallet,
   insurance: Addr
 ): Promise<string[]> {
-  const queryAllVamms: MarginedInsuranceFundTypes.QueryMsg = {
-    get_all_vamm: {},
-  };
-  const allVamms = await sender.client.queryContractSmart(
-    insurance,
-    queryAllVamms
+  const insuranceClient = new MarginedInsuranceFundQueryClient(
+    sender.client,
+    insurance
   );
+  const allVamms = await insuranceClient.getAllVamm({});
 
-  let listVamms: any[] = [];
+  let listVamms: string[] = [];
 
-  allVamms.vamm_list.forEach((vamm: any) => {
+  allVamms.vamm_list.forEach((vamm: string) => {
     listVamms.push(vamm);
   });
 
