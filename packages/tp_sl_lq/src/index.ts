@@ -285,7 +285,7 @@ export async function executeEngine(
   sender: UserWallet,
   engine: Addr,
   insurance: Addr
-): Promise<void> {
+) {
   console.log(`Excecuting perpetual engine contract ${engine}`);
   const insuranceClient = new MarginedInsuranceFundQueryClient(
     sender.client,
@@ -311,18 +311,5 @@ export async function executeEngine(
       instructions = instructions.concat(res.value);
     }
   }
-  try {
-    const res = await sender.client.executeMultiple(
-      sender.address,
-      instructions,
-      "auto"
-    );
-    console.log("take profit & stop loss - txHash:", res.transactionHash);
-  } catch (error) {
-    // TODO: add send noti to discord
-    console.log(
-      "error in processing triggering TpSl, liquidate & pay funding: ",
-      { error }
-    );
-  }
+  return sender.client.executeMultiple(sender.address, instructions, "auto");
 }

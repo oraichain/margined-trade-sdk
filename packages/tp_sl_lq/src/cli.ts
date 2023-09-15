@@ -26,10 +26,15 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
   }
 
   while (true) {
+    // TODO: add send noti to discord
     try {
-      await executeEngine(sender, engine, insurance);
+      const res = await executeEngine(sender, engine, insurance);
+      console.log("take profit & stop loss - txHash:", res.transactionHash);
     } catch (error) {
-      console.error(error);
+      console.log(
+        "error in processing triggering TpSl, liquidate & pay funding: ",
+        { error }
+      );
     }
     await delay(
       process.env.BOT_INTERVAL ? parseInt(process.env.BOT_INTERVAL) : 6000

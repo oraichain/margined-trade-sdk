@@ -42,6 +42,7 @@ const sendPrice = async (time: number, prices: string[]) => {
     clientConnected = true;
   });
 
+  // TODO: send logs to discord
   while (true) {
     try {
       let curTime = Math.floor(Date.now() / 1000);
@@ -71,7 +72,7 @@ const sendPrice = async (time: number, prices: string[]) => {
         sendPrice(curTime, alLPrices);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error updating oracle price: ", error);
     }
     await delay(
       process.env.BOT_INTERVAL ? parseInt(process.env.BOT_INTERVAL) : 6000
