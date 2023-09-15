@@ -31,6 +31,8 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
     } catch (error) {
       console.error(error);
     }
-    await delay(1000);
+    await delay(
+      process.env.BOT_INTERVAL ? parseInt(process.env.BOT_INTERVAL) : 6000
+    );
   }
 })();

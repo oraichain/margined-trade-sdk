@@ -3,68 +3,48 @@ import { UserWallet } from "@oraichain/oraimargin-common";
 import { ExecuteInstruction } from "@cosmjs/cosmwasm-stargate";
 
 import {
-  MarginedInsuranceFundTypes,
   MarginedEngineTypes,
-  MarginedVammTypes,
   Addr,
+  MarginedEngineQueryClient,
+  MarginedVammQueryClient,
+  MarginedInsuranceFundQueryClient,
 } from "@oraichain/oraimargin-contracts-sdk";
+
+export class TpSlHandler {}
 
 const triggerTpSl = async (
   sender: UserWallet,
   engine: Addr,
   vamm: Addr,
   side: MarginedEngineTypes.Side
-) => {
+): Promise<ExecuteInstruction[]> => {
   console.log("trigger TpSl");
   const multipleMsg: ExecuteInstruction[] = [];
-  const query_config: MarginedEngineTypes.QueryMsg = {
-    config: {},
-  };
+  const margineClient = new MarginedEngineQueryClient(sender.client, engine);
+  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
 
-  const config = await sender.client.queryContractSmart(
-    engine,
-    query_config
-  );
+  const config = await margineClient.config();
+  const ticks = await margineClient.ticks({
+    limit: 100, // TODO: why only limit 100?
+    orderBy: side === "buy" ? 2 : 1,
+    side,
+    vamm,
+  });
 
-  const queryTicks: MarginedEngineTypes.QueryMsg = {
-    ticks: {
-      limit: 100,
-      order_by: side === "buy" ? 2 : 1,
-      side,
-      vamm,
-    },
-  };
-  const ticks =
-    (await sender.client.queryContractSmart(
-      engine,
-      queryTicks
-    )) || [];
-
-  const querySpotPrice: MarginedVammTypes.QueryMsg = {
-    spot_price: {},
-  };
-
-  const spotPrice = Number(
-    await sender.client.queryContractSmart(vamm, querySpotPrice)
-  );
+  const spotPrice = Number(await vammClient.spotPrice());
 
   for (const tick of ticks.ticks) {
-    const queryPositionbyPrice: MarginedEngineTypes.QueryMsg = {
-      positions: {
-        limit: tick.total_positions,
-        order_by: 1,
-        side,
-        vamm,
-        filter: {
-          price: tick.entry_price,
-        },
+    const positionbyPrice = await margineClient.positions({
+      limit: tick.total_positions,
+      orderBy: 1,
+      side,
+      vamm,
+      filter: {
+        price: tick.entry_price,
       },
-    };
-    const positionbyPrice = await sender.client.queryContractSmart(
-      engine,
-      queryPositionbyPrice
-    );
+    });
 
+    // TODO: need to refactor and write tests for these
     for (const position of positionbyPrice) {
       let tp_sl_flag = false;
       const tp_spread =
@@ -84,7 +64,7 @@ const triggerTpSl = async (
           Number(position.stop_loss) > spotPrice ||
           (Number(position.stop_loss) > 0 &&
             Math.abs(Number(spotPrice) - Number(position.stop_loss)) <=
-            sl_spread)
+              sl_spread)
         ) {
           tp_sl_flag = true;
         }
@@ -98,7 +78,7 @@ const triggerTpSl = async (
           spotPrice > Number(position.stop_loss) ||
           (Number(position.stop_loss) > 0 &&
             Math.abs(Number(position.stop_loss) - Number(spotPrice)) <=
-            sl_spread)
+              sl_spread)
         ) {
           tp_sl_flag = true;
         }
@@ -122,19 +102,7 @@ const triggerTpSl = async (
   }
 
   console.dir(multipleMsg, { depth: 4 });
-  if (multipleMsg.length > 0) {
-    console.log("TRIGGER TAKE PROFIT / STOPLOSS");
-    try {
-      const res = await sender.client.executeMultiple(
-        sender.address,
-        multipleMsg,
-        "auto"
-      );
-      console.log("take profit & stop loss - txHash:", res.transactionHash);
-    } catch (error) {
-      console.log({ error });
-    }
-  }
+  return multipleMsg;
 };
 
 const triggerLiquidate = async (
@@ -142,66 +110,37 @@ const triggerLiquidate = async (
   engine: Addr,
   vamm: Addr,
   side: MarginedEngineTypes.Side
-) => {
+): Promise<ExecuteInstruction[]> => {
   console.log("trigger Liquidate");
+  const margineClient = new MarginedEngineQueryClient(sender.client, engine);
   const multipleMsg: ExecuteInstruction[] = [];
-
-  const queryEngineConfig: MarginedEngineTypes.QueryMsg = {
-    config: {},
-  };
-
-  const engineConfig = await sender.client.queryContractSmart(
-    engine,
-    queryEngineConfig
-  );
-
-  const queryTicks: MarginedEngineTypes.QueryMsg = {
-    ticks: {
-      limit: 100,
-      order_by: side === "buy" ? 1 : 2,
-      side,
-      vamm,
-    },
-  };
-  const ticks =
-    (await sender.client.queryContractSmart(
-      engine,
-      queryTicks
-    )) || [];
-
+  const engineConfig = await margineClient.config();
+  const ticks = await margineClient.ticks({
+    limit: 100, // TODO: why only limit 100?
+    orderBy: side === "buy" ? 1 : 2, // while changing order by here
+    side,
+    vamm,
+  });
   console.log({ side });
   console.dir(ticks, { depth: 4 });
 
   for (const tick of ticks.ticks) {
-    const queryPositionbyPrice: MarginedEngineTypes.QueryMsg = {
-      positions: {
-        limit: tick.total_positions,
-        order_by: 1,
-        side,
-        vamm,
-        filter: {
-          price: tick.entry_price,
-        },
+    const positionbyPrice = await margineClient.positions({
+      limit: tick.total_positions,
+      orderBy: 1,
+      side,
+      vamm,
+      filter: {
+        price: tick.entry_price,
       },
-    };
-    const positionbyPrice = await sender.client.queryContractSmart(
-      engine,
-      queryPositionbyPrice
-    );
+    });
 
     for (const position of positionbyPrice) {
-      const queryMarginRatio: MarginedEngineTypes.QueryMsg = {
-        margin_ratio: {
-          position_id: position.position_id,
-          vamm,
-        },
-      };
-
       const marginRatio = Number(
-        await sender.client.queryContractSmart(
-          engine,
-          queryMarginRatio
-        )
+        await margineClient.marginRatio({
+          positionId: position.position_id,
+          vamm,
+        })
       );
 
       let liquidateFlag = false;
@@ -229,58 +168,36 @@ const triggerLiquidate = async (
   }
 
   console.dir(multipleMsg, { depth: 4 });
-  if (multipleMsg.length > 0) {
-    console.log("TRIGGER LIQUIDATE");
-    try {
-      const res = await sender.client.executeMultiple(
-        sender.address,
-        multipleMsg,
-        "auto"
-      );
-      console.log("liquidate - txHash:", res.transactionHash);
-    } catch (error) {
-      console.log({ error });
-    }
-  }
+  return multipleMsg;
 };
 
 const payFunding = async (
   sender: UserWallet,
   engine: Addr,
   vamm: Addr
-) => {
+): Promise<ExecuteInstruction[]> => {
   console.log("pay Funding rate");
-  const queryVammState: MarginedVammTypes.QueryMsg = {
-    state: {},
-  };
-  const vammState = await sender.client.queryContractSmart(
-    vamm,
-    queryVammState
-  );
+  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
+  const vammState = await vammClient.state();
   console.log({ vammState });
   const nextFundingTime = Number(vammState.next_funding_time);
   console.log({ nextFundingTime });
   let time = Math.floor(Date.now() / 1000);
-  
+
   if (time >= nextFundingTime) {
     const payFunding: MarginedEngineTypes.ExecuteMsg = {
       pay_funding: {
-        vamm
-      }
+        vamm,
+      },
     };
-
-    try {
-      const res = await sender.client.execute(
-        sender.address,
-        engine,
-        payFunding,
-        "auto"
-      );
-      console.log("payFunding - txHash:", res.transactionHash);
-    } catch (error) {
-      console.log({ error });
-    }
+    return [
+      {
+        contractAddress: engine,
+        msg: payFunding,
+      },
+    ];
   }
+  return [];
 };
 
 export async function executeEngine(
@@ -289,45 +206,42 @@ export async function executeEngine(
   insurance: Addr
 ): Promise<void> {
   console.log(`Excecuting perpetual engine contract ${engine}`);
-
-  const queryAllVamms: MarginedInsuranceFundTypes.QueryMsg = {
-    get_all_vamm: {},
-  };
-  const allVamms = await sender.client.queryContractSmart(
-    insurance,
-    queryAllVamms
+  const insuranceClient = new MarginedInsuranceFundQueryClient(
+    sender.client,
+    insurance
   );
-  console.log({ allVamms });
+  const { vamm_list: vammList } = await insuranceClient.getAllVamm({});
+  console.log({ vammList });
 
-  let execute_vamms: any[] = [];
+  const executePromises = vammList
+    .map((item) => [
+      triggerTpSl(sender, engine, item, "buy"),
+      triggerTpSl(sender, engine, item, "sell"),
+      triggerLiquidate(sender, engine, item, "buy"),
+      triggerLiquidate(sender, engine, item, "sell"),
+      payFunding(sender, engine, item),
+    ])
+    .flat();
 
-  allVamms.vamm_list.forEach((vamm: any) => {
-    console.log({ vamm });
-    execute_vamms.push(vamm);
-  });
-
-  const promiseBuyTpSl = execute_vamms.map((item) =>
-    triggerTpSl(sender, engine, item, "buy")
-  );
-  const promiseSellTpSl = execute_vamms.map((item) =>
-    triggerTpSl(sender, engine, item, "sell")
-  );
-  const promiseBuyLiquidate = execute_vamms.map((item) =>
-    triggerLiquidate(sender, engine, item, "buy")
-  );
-  const promiseSellLiquidate = execute_vamms.map((item) =>
-    triggerLiquidate(sender, engine, item, "sell")
-  );
-
-  const payFundingRate = execute_vamms.map((item) =>
-    payFunding(sender, engine, item)
-  )
-
-  await Promise.all([
-    Promise.all(promiseBuyTpSl),
-    Promise.all(promiseSellTpSl),
-    Promise.all(promiseBuyLiquidate),
-    Promise.all(promiseSellLiquidate),
-    Promise.all(payFundingRate),
-  ]);
+  let instructions: ExecuteInstruction[] = [];
+  const results = await Promise.allSettled(executePromises);
+  for (let res of results) {
+    if (res.status === "fulfilled") {
+      instructions = instructions.concat(res.value);
+    }
+  }
+  try {
+    const res = await sender.client.executeMultiple(
+      sender.address,
+      instructions,
+      "auto"
+    );
+    console.log("take profit & stop loss - txHash:", res.transactionHash);
+  } catch (error) {
+    // TODO: add send noti to discord
+    console.log(
+      "error in processing triggering TpSl, liquidate & pay funding: ",
+      { error }
+    );
+  }
 }

@@ -30,13 +30,7 @@ export async function queryAllVammSpotPrice(
   );
   const allVamms = await insuranceClient.getAllVamm({});
 
-  let listVamms: string[] = [];
-
-  allVamms.vamm_list.forEach((vamm: string) => {
-    listVamms.push(vamm);
-  });
-
-  const promiseSpotPrice = listVamms.map((item) =>
+  const promiseSpotPrice = allVamms.vamm_list.map((item) =>
     querySpotPrice(sender, item)
   );
   const listvammPrices = await Promise.all(promiseSpotPrice);
