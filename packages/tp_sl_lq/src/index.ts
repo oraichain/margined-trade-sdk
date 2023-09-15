@@ -1,5 +1,4 @@
-import { UserWallet } from "@oraichain/oraimargin-common";
-
+import { UserWallet, bigAbs } from "@oraichain/oraimargin-common";
 import { ExecuteInstruction } from "@cosmjs/cosmwasm-stargate";
 
 import {
@@ -16,8 +15,8 @@ const queryAllTicks = async (
   vamm: Addr,
   client: MarginedEngineQueryClient,
   side: MarginedEngineTypes.Side,
-  limit?: number,
-): Promise<MarginedEngineTypes.TickResponse[]> =>{
+  limit?: number
+): Promise<MarginedEngineTypes.TickResponse[]> => {
   let totalTicks: MarginedEngineTypes.TickResponse[] = [];
   let tickQuery = {
     limit: limit ?? 100,
@@ -29,13 +28,79 @@ const queryAllTicks = async (
   let length = ticks.length;
   while (length > 0) {
     totalTicks = totalTicks.concat(ticks);
-    const lastTick = totalTicks.slice(-1)[0].entry_price;
+    const lastTick = ticks.slice(-1)[0].entry_price;
     tickQuery["startAfter"] = lastTick;
     ticks = (await client.ticks(tickQuery)).ticks;
     length = ticks.length;
   }
   return totalTicks;
-}
+};
+
+const queryAllPositions = async (
+  client: MarginedEngineQueryClient,
+  vamm: Addr,
+  side: MarginedEngineTypes.Side,
+  entryPrice: string,
+  limit?: number
+) => {
+  let totalPositions: MarginedEngineTypes.Position[] = [];
+  let positionQuery = {
+    limit: limit ?? 100,
+    orderBy: 1,
+    side,
+    vamm,
+    filter: {
+      price: entryPrice,
+    },
+  };
+  let positionsbyPrice = await client.positions(positionQuery);
+  let length = positionsbyPrice.length;
+  while (length > 0) {
+    totalPositions = totalPositions.concat(positionsbyPrice);
+    const lastPositionId = positionsbyPrice.slice(-1)[0].position_id;
+    positionQuery["startAfter"] = lastPositionId;
+    positionsbyPrice = await client.positions(positionQuery);
+    length = positionsbyPrice.length;
+  }
+  return totalPositions;
+};
+
+const calculateSpreadValue = (
+  amount: string,
+  spread: string,
+  decimals: string
+) => {
+  return (BigInt(amount) * BigInt(spread)) / BigInt(decimals);
+};
+
+const willTpSl = (
+  spotPrice: bigint,
+  takeProfitValue: bigint,
+  stopLossValue: bigint,
+  tpSpread: string,
+  slSpread: string,
+  side: MarginedEngineTypes.Side
+) => {
+  let a = spotPrice;
+  let b = takeProfitValue;
+  let c = stopLossValue;
+  let d = spotPrice;
+  if (side === "sell") {
+    a = takeProfitValue;
+    b = spotPrice;
+    c = spotPrice;
+    d = stopLossValue;
+  }
+  if (
+    a >= b ||
+    bigAbs(b - a) <= BigInt(tpSpread) ||
+    c >= d ||
+    (stopLossValue > 0n && bigAbs(d - c) <= BigInt(slSpread))
+  ) {
+    return true;
+  }
+  return false;
+};
 
 const triggerTpSl = async (
   sender: UserWallet,
@@ -51,73 +116,79 @@ const triggerTpSl = async (
   const config = await engineClient.config();
   const ticks = await queryAllTicks(vamm, engineClient, side);
 
-  const spotPrice = Number(await vammClient.spotPrice());
-
+  const spotPrice = await vammClient.spotPrice();
   for (const tick of ticks) {
-    const positionbyPrice = await engineClient.positions({
-      limit: tick.total_positions,
-      orderBy: 1,
-      side,
+    const positionbyPrice = await queryAllPositions(
+      engineClient,
       vamm,
-      filter: {
-        price: tick.entry_price,
-      },
-    });
+      side,
+      tick.entry_price
+    );
 
     // TODO: need to refactor and write tests for these
     for (const position of positionbyPrice) {
-      let tp_sl_flag = false;
-      const tp_spread =
-        (Number(position.take_profit) * Number(config.tp_sl_spread)) /
-        Number(config.decimals);
-      const sl_spread =
-        (Number(position.stop_loss) * Number(config.tp_sl_spread)) /
-        Number(config.decimals);
+      // let tp_sl_flag = false;
+      const tpSpread = calculateSpreadValue(
+        position.take_profit,
+        config.tp_sl_spread,
+        config.decimals
+      );
+      const slSpread = calculateSpreadValue(
+        position.stop_loss ?? "0",
+        config.tp_sl_spread,
+        config.decimals
+      );
+      const willTriggetTpSl = willTpSl(
+        BigInt(spotPrice),
+        BigInt(position.take_profit),
+        BigInt(position.stop_loss ?? "0"),
+        tpSpread.toString(),
+        slSpread.toString(),
+        position.side
+      );
 
-      if (side === "buy") {
-        if (
-          spotPrice > Number(position.take_profit) ||
-          Math.abs(Number(position.take_profit) - spotPrice) <= tp_spread
-        ) {
-          tp_sl_flag = true;
-        } else if (
-          Number(position.stop_loss) > spotPrice ||
-          (Number(position.stop_loss) > 0 &&
-            Math.abs(Number(spotPrice) - Number(position.stop_loss)) <=
-              sl_spread)
-        ) {
-          tp_sl_flag = true;
-        }
-      } else if (side === "sell") {
-        if (
-          Number(position.take_profit) > spotPrice ||
-          Math.abs(spotPrice - Number(position.take_profit)) <= tp_spread
-        ) {
-          tp_sl_flag = true;
-        } else if (
-          spotPrice > Number(position.stop_loss) ||
-          (Number(position.stop_loss) > 0 &&
-            Math.abs(Number(position.stop_loss) - Number(spotPrice)) <=
-              sl_spread)
-        ) {
-          tp_sl_flag = true;
-        }
-      }
+      // if (side === "buy") {
+      //   if (
+      //     spotPrice > Number(position.take_profit) ||
+      //     Math.abs(Number(position.take_profit) - spotPrice) <= tp_spread
+      //   ) {
+      //     tp_sl_flag = true;
+      //   } else if (
+      //     Number(position.stop_loss) > spotPrice ||
+      //     (Number(position.stop_loss) > 0 &&
+      //       Math.abs(Number(spotPrice) - Number(position.stop_loss)) <=
+      //         sl_spread)
+      //   ) {
+      //     tp_sl_flag = true;
+      //   }
+      // } else if (side === "sell") {
+      //   if (
+      //     Number(position.take_profit) > spotPrice ||
+      //     Math.abs(spotPrice - Number(position.take_profit)) <= tp_spread
+      //   ) {
+      //     tp_sl_flag = true;
+      //   } else if (
+      //     spotPrice > Number(position.stop_loss) ||
+      //     (Number(position.stop_loss) > 0 &&
+      //       Math.abs(Number(position.stop_loss) - Number(spotPrice)) <=
+      //         sl_spread)
+      //   ) {
+      //     tp_sl_flag = true;
+      //   }
+      // }
 
-      if (tp_sl_flag) {
-        let trigger_tp_sl: ExecuteInstruction = {
-          contractAddress: engine,
-          msg: {
-            trigger_tp_sl: {
-              position_id: position.position_id,
-              quote_asset_limit: "0",
-              vamm,
-            },
+      if (!willTriggetTpSl) continue;
+      let trigger_tp_sl: ExecuteInstruction = {
+        contractAddress: engine,
+        msg: {
+          trigger_tp_sl: {
+            position_id: position.position_id,
+            quote_asset_limit: "0",
+            vamm,
           },
-        };
-        tp_sl_flag = false;
-        multipleMsg.push(trigger_tp_sl);
-      }
+        },
+      };
+      multipleMsg.push(trigger_tp_sl);
     }
   }
 
@@ -138,15 +209,12 @@ const triggerLiquidate = async (
   const ticks = await queryAllTicks(vamm, engineClient, side);
 
   for (const tick of ticks) {
-    const positionbyPrice = await engineClient.positions({
-      limit: tick.total_positions,
-      orderBy: 1,
-      side,
+    const positionbyPrice = await queryAllPositions(
+      engineClient,
       vamm,
-      filter: {
-        price: tick.entry_price,
-      },
-    });
+      side,
+      tick.entry_price
+    );
 
     for (const position of positionbyPrice) {
       const marginRatio = Number(
@@ -169,7 +237,7 @@ const triggerLiquidate = async (
           msg: {
             liquidate: {
               position_id: position.position_id,
-              quote_asset_limit: "0",
+              quote_asset_limit: "0", // why limit 0?
               vamm,
             },
           },

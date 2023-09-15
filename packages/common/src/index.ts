@@ -88,6 +88,9 @@ export const toDisplay = (
   }
 };
 
+// bigint abs
+export const bigAbs = (n: bigint) => (n < 0n ? -n : n);
+
 export async function setupWallet(
   mnemonic: string,
   config: {
