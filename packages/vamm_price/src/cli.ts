@@ -73,6 +73,8 @@ const sendPrice = async (time: number, prices: string[]) => {
     } catch (error) {
       console.error(error);
     }
-    await delay(3000);
+    await delay(
+      process.env.BOT_INTERVAL ? parseInt(process.env.BOT_INTERVAL) : 6000
+    );
   }
 })();
