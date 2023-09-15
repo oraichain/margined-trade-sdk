@@ -12,6 +12,31 @@ import {
 
 export class TpSlHandler {}
 
+const queryAllTicks = async (
+  vamm: Addr,
+  client: MarginedEngineQueryClient,
+  side: MarginedEngineTypes.Side,
+  limit?: number,
+): Promise<MarginedEngineTypes.TickResponse[]> =>{
+  let totalTicks: MarginedEngineTypes.TickResponse[] = [];
+  let tickQuery = {
+    limit: limit ?? 100,
+    orderBy: side === "buy" ? 2 : 1,
+    side,
+    vamm,
+  };
+  let ticks = (await client.ticks(tickQuery)).ticks;
+  let length = ticks.length;
+  while (length > 0) {
+    totalTicks = totalTicks.concat(ticks);
+    const lastTick = totalTicks.slice(-1)[0].entry_price;
+    tickQuery["startAfter"] = lastTick;
+    ticks = (await client.ticks(tickQuery)).ticks;
+    length = ticks.length;
+  }
+  return totalTicks;
+}
+
 const triggerTpSl = async (
   sender: UserWallet,
   engine: Addr,
@@ -20,21 +45,16 @@ const triggerTpSl = async (
 ): Promise<ExecuteInstruction[]> => {
   console.log("trigger TpSl");
   const multipleMsg: ExecuteInstruction[] = [];
-  const margineClient = new MarginedEngineQueryClient(sender.client, engine);
+  const engineClient = new MarginedEngineQueryClient(sender.client, engine);
   const vammClient = new MarginedVammQueryClient(sender.client, vamm);
 
-  const config = await margineClient.config();
-  const ticks = await margineClient.ticks({
-    limit: 100, // TODO: why only limit 100?
-    orderBy: side === "buy" ? 2 : 1,
-    side,
-    vamm,
-  });
+  const config = await engineClient.config();
+  const ticks = await queryAllTicks(vamm, engineClient, side);
 
   const spotPrice = Number(await vammClient.spotPrice());
 
-  for (const tick of ticks.ticks) {
-    const positionbyPrice = await margineClient.positions({
+  for (const tick of ticks) {
+    const positionbyPrice = await engineClient.positions({
       limit: tick.total_positions,
       orderBy: 1,
       side,
@@ -112,20 +132,13 @@ const triggerLiquidate = async (
   side: MarginedEngineTypes.Side
 ): Promise<ExecuteInstruction[]> => {
   console.log("trigger Liquidate");
-  const margineClient = new MarginedEngineQueryClient(sender.client, engine);
+  const engineClient = new MarginedEngineQueryClient(sender.client, engine);
   const multipleMsg: ExecuteInstruction[] = [];
-  const engineConfig = await margineClient.config();
-  const ticks = await margineClient.ticks({
-    limit: 100, // TODO: why only limit 100?
-    orderBy: side === "buy" ? 1 : 2, // while changing order by here
-    side,
-    vamm,
-  });
-  console.log({ side });
-  console.dir(ticks, { depth: 4 });
+  const engineConfig = await engineClient.config();
+  const ticks = await queryAllTicks(vamm, engineClient, side);
 
-  for (const tick of ticks.ticks) {
-    const positionbyPrice = await margineClient.positions({
+  for (const tick of ticks) {
+    const positionbyPrice = await engineClient.positions({
       limit: tick.total_positions,
       orderBy: 1,
       side,
@@ -137,7 +150,7 @@ const triggerLiquidate = async (
 
     for (const position of positionbyPrice) {
       const marginRatio = Number(
-        await margineClient.marginRatio({
+        await engineClient.marginRatio({
           positionId: position.position_id,
           vamm,
         })
@@ -179,11 +192,11 @@ const payFunding = async (
   console.log("pay Funding rate");
   const vammClient = new MarginedVammQueryClient(sender.client, vamm);
   const vammState = await vammClient.state();
-  console.log({ vammState });
   const nextFundingTime = Number(vammState.next_funding_time);
-  console.log({ nextFundingTime });
   let time = Math.floor(Date.now() / 1000);
 
+  console.log({ vammState });
+  console.log({ nextFundingTime });
   if (time >= nextFundingTime) {
     const payFunding: MarginedEngineTypes.ExecuteMsg = {
       pay_funding: {
