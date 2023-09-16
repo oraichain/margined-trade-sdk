@@ -65,6 +65,7 @@ const queryAllPositions = async (
   return totalPositions;
 };
 
+// TODO: write test cases
 const calculateSpreadValue = (
   amount: string,
   spread: string,
@@ -73,6 +74,7 @@ const calculateSpreadValue = (
   return (BigInt(amount) * BigInt(spread)) / BigInt(decimals);
 };
 
+// TODO: write test cases
 const willTpSl = (
   spotPrice: bigint,
   takeProfitValue: bigint,
