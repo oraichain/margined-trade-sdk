@@ -36,6 +36,7 @@ const queryAllTicks = async (
   return totalTicks;
 };
 
+// TODO: write test cases
 const queryAllPositions = async (
   client: MarginedEngineQueryClient,
   vamm: Addr,
