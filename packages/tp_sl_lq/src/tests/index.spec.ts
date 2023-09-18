@@ -1,11 +1,10 @@
-import { GenericError, SimulateCosmWasmClient } from '@oraichain/cw-simulate';
+import { SimulateCosmWasmClient } from '@oraichain/cw-simulate';
 
 import { MarginedEngineClient, MarginedEngineTypes, MarginedVammClient, MarginedPricefeedClient, MarginedInsuranceFundClient, MarginedFeePoolClient, SigningCosmWasmClient } from '@oraichain/oraimargin-contracts-sdk';
-import { OraiswapTokenClient, OraiswapTokenTypes } from '@oraichain/oraidex-contracts-sdk';
+import { OraiswapTokenClient } from '@oraichain/oraidex-contracts-sdk';
 import { deployEngine, senderAddress, deployFeePool, deployInsuranceFund, deployPricefeed, deployToken, deployVamm, toDecimals, aliceAddress, bobAddress, carolAddress } from './common';
 
 import { triggerTpSl } from '../index';
-import { Ok } from 'ts-results';
 import { UserWallet } from '@oraichain/oraimargin-common';
 
 const client = new SimulateCosmWasmClient({
@@ -59,7 +58,6 @@ describe('perpetual-engine', () => {
 
     vammContract = await deployVamm(client, {
       pricefeed: pricefeedContract.contractAddress,
-      // margin_engine: engineContract.contractAddress,
       insurance_fund: insuranceFundContract.contractAddress,
       base_asset_reserve: toDecimals(100),
       quote_asset_reserve: toDecimals(1000),
@@ -149,7 +147,9 @@ describe('perpetual-engine', () => {
     expect(bobPosition.take_profit).toEqual(toDecimals(20));
     expect(bobPosition.stop_loss).toEqual(toDecimals(28));
 
-    let msgs = await triggerTpSl(sender, engineContract.contractAddress, vammContract.contractAddress, 'buy');
-    console.log({ msgs });
+    const msgs = await triggerTpSl(sender, engineContract.contractAddress, vammContract.contractAddress, 'buy'); 
+    const tx = await sender.client.executeMultiple(sender.address, msgs, 'auto');
+    console.dir(tx.events, {depth: 4});
+    
   });
 });

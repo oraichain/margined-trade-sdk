@@ -75,9 +75,8 @@ export const willTpSl = (spotPrice: bigint, takeProfitValue: bigint, stopLossVal
 export const triggerTpSl = async (sender: UserWallet, engine: Addr, vamm: Addr, side: MarginedEngineTypes.Side): Promise<ExecuteInstruction[]> => {
   console.log('trigger TpSl');
   const multipleMsg: ExecuteInstruction[] = [];
-  const client = sender.client as CosmWasmClient;
-  const engineClient = new MarginedEngineQueryClient(client, engine);
-  const vammClient = new MarginedVammQueryClient(client, vamm);
+  const engineClient = new MarginedEngineQueryClient(sender.client, engine);
+  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
 
   const config = await engineClient.config();
   const ticks = await queryAllTicks(vamm, engineClient, side);
@@ -138,7 +137,6 @@ export const triggerTpSl = async (sender: UserWallet, engine: Addr, vamm: Addr, 
     }
   }
 
-  console.dir(multipleMsg, { depth: 4 });
   return multipleMsg;
 };
 
@@ -190,7 +188,7 @@ export const triggerLiquidate = async (sender: UserWallet, engine: Addr, vamm: A
 
 export const payFunding = async (sender: UserWallet, engine: Addr, vamm: Addr): Promise<ExecuteInstruction[]> => {
   console.log('pay Funding rate');
-  const vammClient = new MarginedVammQueryClient(sender.client as unknown as CosmWasmClient, vamm);
+  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
   const vammState = await vammClient.state();
   const nextFundingTime = Number(vammState.next_funding_time);
   let time = Math.floor(Date.now() / 1000);
@@ -215,7 +213,7 @@ export const payFunding = async (sender: UserWallet, engine: Addr, vamm: Addr): 
 
 export async function executeEngine(sender: UserWallet, engine: Addr, insurance: Addr) {
   console.log(`Excecuting perpetual engine contract ${engine}`);
-  const insuranceClient = new MarginedInsuranceFundQueryClient(sender.client as unknown as CosmWasmClient, insurance);
+  const insuranceClient = new MarginedInsuranceFundQueryClient(sender.client, insurance);
   const { vamm_list: vammList } = await insuranceClient.getAllVamm({});
   console.log({ vammList });
 
