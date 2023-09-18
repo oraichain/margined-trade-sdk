@@ -1,30 +1,10 @@
 import { GenericError, SimulateCosmWasmClient } from '@oraichain/cw-simulate';
 
-import {
-  MarginedEngineClient,
-  MarginedEngineTypes,
-  MarginedVammClient,
-  MarginedPricefeedClient,
-  MarginedInsuranceFundClient,
-  MarginedFeePoolClient,
-  SigningCosmWasmClient
-} from '@oraichain/oraimargin-contracts-sdk';
+import { MarginedEngineClient, MarginedEngineTypes, MarginedVammClient, MarginedPricefeedClient, MarginedInsuranceFundClient, MarginedFeePoolClient, SigningCosmWasmClient } from '@oraichain/oraimargin-contracts-sdk';
 import { OraiswapTokenClient, OraiswapTokenTypes } from '@oraichain/oraidex-contracts-sdk';
-import {
-  deployEngine,
-  senderAddress,
-  deployFeePool,
-  deployInsuranceFund,
-  deployPricefeed,
-  deployToken,
-  deployVamm,
-  toDecimals,
-  aliceAddress,
-  bobAddress,
-  carolAddress
-} from './common';
+import { deployEngine, senderAddress, deployFeePool, deployInsuranceFund, deployPricefeed, deployToken, deployVamm, toDecimals, aliceAddress, bobAddress, carolAddress } from './common';
 
-import { triggerTpSl } from "../index"
+import { triggerTpSl } from '../index';
 import { Ok } from 'ts-results';
 import { UserWallet } from '@oraichain/oraimargin-common';
 
@@ -43,12 +23,10 @@ describe('perpetual-engine', () => {
   let vammContract: MarginedVammClient;
   let sender: UserWallet;
   beforeEach(async () => {
-    [senderAddress, bobAddress].forEach((address) =>
-      client.app.bank.setBalance(address, [{ denom: 'orai', amount: '5000000000' }])
-    );
+    [senderAddress, bobAddress].forEach((address) => client.app.bank.setBalance(address, [{ denom: 'orai', amount: '5000000000' }]));
 
     sender = { client, address: senderAddress };
-    
+
     [pricefeedContract, feepoolContract, usdcContract] = await Promise.all([
       deployPricefeed(client),
       deployFeePool(client),
@@ -152,7 +130,6 @@ describe('perpetual-engine', () => {
     const spotPrice = await vammContract.spotPrice();
     expect(spotPrice).toEqual(toDecimals(25.6));
 
-
     engineContract.sender = bobAddress;
     await engineContract.openPosition({
       vamm: vammContract.contractAddress,
@@ -167,15 +144,12 @@ describe('perpetual-engine', () => {
       positionId: 2,
       vamm: vammContract.contractAddress
     });
-    
+
     expect(bobPosition.margin).toEqual(toDecimals(6));
     expect(bobPosition.take_profit).toEqual(toDecimals(20));
     expect(bobPosition.stop_loss).toEqual(toDecimals(28));
 
-    let msgs = await triggerTpSl(sender, engineContract.contractAddress, vammContract.contractAddress, "buy");
+    let msgs = await triggerTpSl(sender, engineContract.contractAddress, vammContract.contractAddress, 'buy');
     console.log({ msgs });
-    
-    
   });
-
 });

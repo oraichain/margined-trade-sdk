@@ -8,13 +8,18 @@
     "start": "ts-node src/cli.ts",
     "build": "ncc build src/cli.ts --no-source-map-register -t -m"
   },
+  "dependencies": {
+    "@oraichain/common-contracts-build": "^1.0.26",
+    "@oraichain/common-contracts-sdk": "^1.0.24",
+    "@oraichain/dao-contracts-build": "^1.0.0",
+    "@oraichain/dao-contracts-sdk": "^1.0.0",
+    "@oraichain/oraidex-contracts-build": "^1.0.14",
+    "@oraichain/oraimargin-contracts-build": "^1.0.20",
+    "@oraichain/oraidex-contracts-sdk": "^1.0.22"
+  },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
-    "@cosmjs/cosmwasm-stargate": "^0.29.5",
-    "@cosmjs/stargate": "^0.29.5",
-    "@oraichain/oraimargin-contracts-build": "^1.0.20",
-    "@oraichain/oraimargin-contracts-sdk": "^1.0.28",
-    "@oraichain/oraimargin-common": "^0.0.2",
+    "@oraichain/cw-simulate": "^2.8.62",
     "discord.js": "^14.13.0",
     "dotenv": "^10.0.0"
   }

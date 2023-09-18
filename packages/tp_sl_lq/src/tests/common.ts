@@ -1,18 +1,9 @@
 import * as oraidexArtifacts from '@oraichain/oraidex-contracts-build';
 import { deployContract } from '@oraichain/oraimargin-contracts-build';
 import { SimulateCosmWasmClient } from '@oraichain/cw-simulate';
-
-import {
-  Cw20Coin,
-  OraiswapTokenClient
-} from '@oraichain/oraidex-contracts-sdk';
-import {
-  MarginedEngineClient,
-  MarginedFeePoolClient,
-  MarginedInsuranceFundClient,
-  MarginedPricefeedClient,
-  MarginedVammClient
-} from '@oraichain/oraimargin-contracts-sdk';
+import { Cw20Coin } from '@oraichain/common-contracts-sdk';
+import { OraiswapTokenClient } from '@oraichain/oraidex-contracts-sdk';
+import { MarginedEngineClient, MarginedFeePoolClient, MarginedInsuranceFundClient, MarginedPricefeedClient, MarginedVammClient } from '@oraichain/oraimargin-contracts-sdk';
 
 export const TOKEN1 = 'orai10ldgzued6zjp0mkqwsv2mux3ml50l97c74x8sg';
 export const TOKEN2 = 'orai1lus0f0rhx8s03gdllx2n6vhkmf0536dv57wfge';
@@ -25,12 +16,7 @@ export const carolAddress = 'orai12zyu8w93h0q2lcnt50g3fn0w3yqnhy4fvawaqz';
 
 export const deployToken = async (
   client: SimulateCosmWasmClient,
-  {
-    symbol,
-    name,
-    decimals = 6,
-    initial_balances = [{ address: senderAddress, amount: '1000000000' }]
-  }: { symbol: string; name: string; decimals?: number; initial_balances?: Cw20Coin[] }
+  { symbol, name, decimals = 6, initial_balances = [{ address: senderAddress, amount: '1000000000' }] }: { symbol: string; name: string; decimals?: number; initial_balances?: Cw20Coin[] }
 ): Promise<OraiswapTokenClient> => {
   return new OraiswapTokenClient(
     client,
@@ -90,11 +76,7 @@ export const deployEngine = async (
 };
 
 export const deployFeePool = async (client: SimulateCosmWasmClient): Promise<MarginedFeePoolClient> => {
-  return new MarginedFeePoolClient(
-    client,
-    senderAddress,
-    await deployContract(client, senderAddress, 'margined_fee_pool').then((res) => res.contractAddress)
-  );
+  return new MarginedFeePoolClient(client, senderAddress, await deployContract(client, senderAddress, 'margined_fee_pool').then((res) => res.contractAddress));
 };
 
 export const deployPricefeed = async (client: SimulateCosmWasmClient): Promise<MarginedPricefeedClient> => {
@@ -107,10 +89,7 @@ export const deployPricefeed = async (client: SimulateCosmWasmClient): Promise<M
   );
 };
 
-export const deployInsuranceFund = async (
-  client: SimulateCosmWasmClient,
-  { engine }: { engine: string }
-): Promise<MarginedInsuranceFundClient> => {
+export const deployInsuranceFund = async (client: SimulateCosmWasmClient, { engine }: { engine: string }): Promise<MarginedInsuranceFundClient> => {
   return new MarginedInsuranceFundClient(
     client,
     senderAddress,
