@@ -1,4 +1,4 @@
-import {Uint128, AssetInfo, Addr} from "./types";
+import {Uint128, Addr} from "./types";
 export interface InstantiateMsg {
   engine: string;
 }
@@ -21,6 +21,15 @@ export type ExecuteMsg = {
   };
 } | {
   shutdown_vamms: {};
+};
+export type AssetInfo = {
+  token: {
+    contract_addr: Addr;
+  };
+} | {
+  native_token: {
+    denom: string;
+  };
 };
 export type QueryMsg = {
   config: {};
