@@ -7,11 +7,12 @@ import {
   MarginedEngineQueryClient,
   MarginedVammQueryClient,
   MarginedInsuranceFundQueryClient,
+  CosmWasmClient,
 } from "@oraichain/oraimargin-contracts-sdk";
 
 export class TpSlHandler {}
 
-const queryAllTicks = async (
+export const queryAllTicks = async (
   vamm: Addr,
   client: MarginedEngineQueryClient,
   side: MarginedEngineTypes.Side,
@@ -37,7 +38,7 @@ const queryAllTicks = async (
 };
 
 // TODO: write test cases
-const queryAllPositions = async (
+export const queryAllPositions = async (
   client: MarginedEngineQueryClient,
   vamm: Addr,
   side: MarginedEngineTypes.Side,
@@ -67,7 +68,7 @@ const queryAllPositions = async (
 };
 
 // TODO: write test cases
-const calculateSpreadValue = (
+export const calculateSpreadValue = (
   amount: string,
   spread: string,
   decimals: string
@@ -76,7 +77,7 @@ const calculateSpreadValue = (
 };
 
 // TODO: write test cases
-const willTpSl = (
+export const willTpSl = (
   spotPrice: bigint,
   takeProfitValue: bigint,
   stopLossValue: bigint,
@@ -105,7 +106,7 @@ const willTpSl = (
   return false;
 };
 
-const triggerTpSl = async (
+export const triggerTpSl = async (
   sender: UserWallet,
   engine: Addr,
   vamm: Addr,
@@ -113,8 +114,9 @@ const triggerTpSl = async (
 ): Promise<ExecuteInstruction[]> => {
   console.log("trigger TpSl");
   const multipleMsg: ExecuteInstruction[] = [];
-  const engineClient = new MarginedEngineQueryClient(sender.client, engine);
-  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
+  const client = sender.client as unknown as CosmWasmClient;
+  const engineClient = new MarginedEngineQueryClient(client, engine);
+  const vammClient = new MarginedVammQueryClient(client, vamm);
 
   const config = await engineClient.config();
   const ticks = await queryAllTicks(vamm, engineClient, side);
@@ -199,7 +201,7 @@ const triggerTpSl = async (
   return multipleMsg;
 };
 
-const triggerLiquidate = async (
+export const triggerLiquidate = async (
   sender: UserWallet,
   engine: Addr,
   vamm: Addr,
@@ -255,13 +257,13 @@ const triggerLiquidate = async (
   return multipleMsg;
 };
 
-const payFunding = async (
+export const payFunding = async (
   sender: UserWallet,
   engine: Addr,
   vamm: Addr
 ): Promise<ExecuteInstruction[]> => {
   console.log("pay Funding rate");
-  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
+  const vammClient = new MarginedVammQueryClient(sender.client as unknown as CosmWasmClient, vamm);
   const vammState = await vammClient.state();
   const nextFundingTime = Number(vammState.next_funding_time);
   let time = Math.floor(Date.now() / 1000);
@@ -291,7 +293,7 @@ export async function executeEngine(
 ) {
   console.log(`Excecuting perpetual engine contract ${engine}`);
   const insuranceClient = new MarginedInsuranceFundQueryClient(
-    sender.client,
+    sender.client as unknown as CosmWasmClient,
     insurance
   );
   const { vamm_list: vammList } = await insuranceClient.getAllVamm({});
