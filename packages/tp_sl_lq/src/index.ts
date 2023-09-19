@@ -7,7 +7,6 @@ import {
   MarginedEngineQueryClient,
   MarginedVammQueryClient,
   MarginedInsuranceFundQueryClient,
-  CosmWasmClient,
 } from "@oraichain/oraimargin-contracts-sdk";
 
 export class TpSlHandler {}
@@ -37,7 +36,6 @@ export const queryAllTicks = async (
   return totalTicks;
 };
 
-// TODO: write test cases
 export const queryPositionsbyPrice = async (
   client: MarginedEngineQueryClient,
   vamm: Addr,
@@ -67,7 +65,6 @@ export const queryPositionsbyPrice = async (
   return totalPositions;
 };
 
-// TODO: write test cases
 export const calculateSpreadValue = (
   amount: string,
   spread: string,
@@ -76,7 +73,6 @@ export const calculateSpreadValue = (
   return (BigInt(amount) * BigInt(spread)) / BigInt(decimals);
 };
 
-// TODO: write test cases
 export const willTpSl = (
   spotPrice: bigint,
   takeProfitValue: bigint,
@@ -131,7 +127,6 @@ export const triggerTpSl = async (
 
     // TODO: need to refactor and write tests for these
     for (const position of positionbyPrice) {
-      // let tp_sl_flag = false;
       const tpSpread = calculateSpreadValue(
         position.take_profit,
         config.tp_sl_spread,
@@ -150,36 +145,6 @@ export const triggerTpSl = async (
         slSpread.toString(),
         position.side
       );
-
-      // if (side === "buy") {
-      //   if (
-      //     spotPrice > Number(position.take_profit) ||
-      //     Math.abs(Number(position.take_profit) - spotPrice) <= tp_spread
-      //   ) {
-      //     tp_sl_flag = true;
-      //   } else if (
-      //     Number(position.stop_loss) > spotPrice ||
-      //     (Number(position.stop_loss) > 0 &&
-      //       Math.abs(Number(spotPrice) - Number(position.stop_loss)) <=
-      //         sl_spread)
-      //   ) {
-      //     tp_sl_flag = true;
-      //   }
-      // } else if (side === "sell") {
-      //   if (
-      //     Number(position.take_profit) > spotPrice ||
-      //     Math.abs(spotPrice - Number(position.take_profit)) <= tp_spread
-      //   ) {
-      //     tp_sl_flag = true;
-      //   } else if (
-      //     spotPrice > Number(position.stop_loss) ||
-      //     (Number(position.stop_loss) > 0 &&
-      //       Math.abs(Number(position.stop_loss) - Number(spotPrice)) <=
-      //         sl_spread)
-      //   ) {
-      //     tp_sl_flag = true;
-      //   }
-      // }
 
       if (!willTriggetTpSl) continue;
       let trigger_tp_sl: ExecuteInstruction = {
@@ -207,10 +172,13 @@ export const triggerLiquidate = async (
 ): Promise<ExecuteInstruction[]> => {
   console.log("trigger Liquidate");
   const engineClient = new MarginedEngineQueryClient(sender.client, engine);
+  const vammClient = new MarginedVammQueryClient(sender.client, vamm);
   const multipleMsg: ExecuteInstruction[] = [];
   const engineConfig = await engineClient.config();
   const ticks = await queryAllTicks(vamm, engineClient, side);
 
+  const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
+  console.log({ isOverSpreadLimit });
   for (const tick of ticks) {
     const positionbyPrice = await queryPositionsbyPrice(
       engineClient,
@@ -220,18 +188,37 @@ export const triggerLiquidate = async (
     );
 
     for (const position of positionbyPrice) {
-      const marginRatio = Number(
+      let marginRatio = Number(
         await engineClient.marginRatio({
           positionId: position.position_id,
           vamm,
         })
       );
+      console.log({ marginRatio });
 
       let liquidateFlag = false;
-      if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
-        if (marginRatio > Number(engineConfig.liquidation_fee)) {
-          liquidateFlag = true;
+      if (isOverSpreadLimit) {
+        const oracleMarginRatio = Number(
+          await engineClient.marginRatioByCalcOption({
+            vamm,
+            positionId: position.position_id,
+            calcOption: "oracle",
+          })
+        );
+        console.log({ oracleMarginRatio });
+        if (oracleMarginRatio - marginRatio > 0) {
+          console.log("UPGRADE MARGIN RATIO value");
+          marginRatio = oracleMarginRatio;
+          console.log({ marginRatio });
         }
+      }
+      console.log(
+        "maintenance_margin_ratio:",
+        engineConfig.maintenance_margin_ratio
+      );
+
+      if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
+        liquidateFlag = true;
       }
 
       if (liquidateFlag) {
@@ -314,5 +301,9 @@ export async function executeEngine(
       instructions = instructions.concat(res.value);
     }
   }
-  return sender.client.executeMultiple(sender.address, instructions, "auto");
+  if (instructions.length > 0) {
+    return sender.client.executeMultiple(sender.address, instructions, "auto");
+  } else {
+    throw new Error("No execute instructions messages available");
+  }
 }
