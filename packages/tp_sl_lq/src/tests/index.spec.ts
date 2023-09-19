@@ -106,6 +106,9 @@ describe('perpetual-engine', () => {
   });
 
   it('test_take_profit', async () => {
+    let balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe('5000000000000');
+
     engineContract.sender = aliceAddress;
     await engineContract.openPosition({
       vamm: vammContract.contractAddress,
@@ -120,12 +123,14 @@ describe('perpetual-engine', () => {
       positionId: 1,
       vamm: vammContract.contractAddress
     });
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe('4940000000000');
 
     expect(alicePosition.margin).toEqual(toDecimals(60));
     expect(alicePosition.take_profit).toEqual(toDecimals(20));
     expect(alicePosition.stop_loss).toEqual(toDecimals(14));
 
-    const spotPrice = await vammContract.spotPrice();
+    let spotPrice = await vammContract.spotPrice();
     expect(spotPrice).toEqual(toDecimals(25.6));
 
     engineContract.sender = bobAddress;
@@ -143,13 +148,24 @@ describe('perpetual-engine', () => {
       vamm: vammContract.contractAddress
     });
 
+    spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("24087039999");
+
     expect(bobPosition.margin).toEqual(toDecimals(6));
     expect(bobPosition.take_profit).toEqual(toDecimals(20));
     expect(bobPosition.stop_loss).toEqual(toDecimals(28));
 
-    const msgs = await triggerTpSl(sender, engineContract.contractAddress, vammContract.contractAddress, 'buy'); 
-    const tx = await sender.client.executeMultiple(sender.address, msgs, 'auto');
-    console.dir(tx.events, {depth: 4});
+    const longMsgs = await triggerTpSl(sender, engineContract.contractAddress, vammContract.contractAddress, 'buy'); 
+    const longTx = await sender.client.executeMultiple(sender.address, longMsgs, 'auto');
+    console.dir(longTx.events, {depth: 4});
+    await expect(
+      engineContract.position({
+        positionId: 1,
+        vamm: vammContract.contractAddress
+      })
+    ).rejects.toThrow('margined_perp::margined_engine::Position not found');
     
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe('4970963337545');
   });
 });
