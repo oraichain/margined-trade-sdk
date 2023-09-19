@@ -24,7 +24,7 @@ import {
   carolAddress,
 } from "./common";
 
-import { queryPositionsbyPrice, queryAllTicks, triggerTpSl } from "../index";
+import { queryPositionsbyPrice, queryAllTicks, triggerTpSl, calculateSpreadValue, willTpSl } from "../index";
 import { UserWallet } from "@oraichain/oraimargin-common";
 import { waitForDebugger } from "inspector";
 
@@ -142,6 +142,116 @@ describe("perpetual-engine", () => {
       tp_sl_spread: "50000000",
       liquidation_fee: "50000000",
     });
+  });
+
+  it("test_calculateSpreadValue", async () => {
+    const tpPrice = "20000000";
+    const slPrice = "10000000";
+    const tpslSpread = "5000";
+    const decimals = "1000000";
+    const tpSpread = calculateSpreadValue(
+      tpPrice,
+      tpslSpread,
+      decimals
+    );
+    const slSpread = calculateSpreadValue(
+      slPrice,
+      tpslSpread,
+      decimals
+    );
+    expect(Number(tpSpread)).toEqual(100000);
+    expect(Number(slSpread)).toEqual(50000);
+  });
+
+  it("test_willTpSl", async () => {
+    let spotPrice = "20000000";
+    const tpPrice = "20000000";
+    const slPrice = "10000000";
+    const tpslSpread = "5000";
+    const decimals = "1000000";
+    const tpSpread = calculateSpreadValue(
+      tpPrice,
+      tpslSpread,
+      decimals
+    );
+    const slSpread = calculateSpreadValue(
+      slPrice,
+      tpslSpread,
+      decimals
+    );
+    expect(Number(tpSpread)).toEqual(100000);
+    expect(Number(slSpread)).toEqual(50000);
+    
+    // spot price = take profit price
+    let willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(true);
+    
+    // spot price > take profit price
+    spotPrice = "21000000";
+    willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(true);
+    
+    // spot price < take profit price
+    spotPrice = "19000000";
+    willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(false);
+
+    // spot price = stop loss price
+    spotPrice = "10000000";
+    willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(true);
+
+    // spot price < stop loss price
+    spotPrice = "9000000";
+    willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(true);
+
+    // spot price < stop loss price
+    spotPrice = "10000001";
+    willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(true);
   });
 
   it("test_queryAllPositions", async () => {
