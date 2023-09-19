@@ -12,7 +12,7 @@
     "@oraichain/common-contracts-build": "^1.0.26",
     "@oraichain/common-contracts-sdk": "^1.0.24",
     "@oraichain/oraidex-contracts-build": "^1.0.14",
-    "@oraichain/oraimargin-contracts-build": "^1.0.21",
+    "@oraichain/oraimargin-contracts-build": "^1.0.24",
     "@oraichain/oraidex-contracts-sdk": "^1.0.22"
   },
   "devDependencies": {

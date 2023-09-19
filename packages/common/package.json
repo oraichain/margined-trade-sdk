@@ -4,7 +4,7 @@
   "main": "build/index.js",
   "license": "MIT",
   "dependencies": {
-    "@oraichain/oraimargin-contracts-build": "^1.0.21",
+    "@oraichain/oraimargin-contracts-build": "^1.0.24",
     "@oraichain/oraimargin-contracts-sdk": "^1.0.29"
   }
 }

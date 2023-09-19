@@ -376,5 +376,85 @@ describe("perpetual-engine", () => {
 
     balanceRes = await usdcContract.balance({ address: aliceAddress });
     expect(balanceRes.balance).toBe("4970963337545");
+    expect(longTx.events[1].attributes[1].value).toContain("trigger_take_profit");
+  });
+
+  it("test_stop_loss", async () => {
+    let balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("5000000000000");
+
+    engineContract.sender = aliceAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(6),
+      leverage: toDecimals(2),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(20),
+      stopLoss: toDecimals(10),
+    });
+
+    engineContract.sender = aliceAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(6),
+      leverage: toDecimals(1),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(20),
+      stopLoss: toDecimals(10),
+    });
+
+    const alicePosition = await engineContract.position({
+      positionId: 1,
+      vamm: vammContract.contractAddress,
+    });
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("4988000000000");
+
+    expect(alicePosition.margin).toEqual(toDecimals(6));
+    expect(alicePosition.take_profit).toEqual(toDecimals(20));
+    expect(alicePosition.stop_loss).toEqual(toDecimals(10));
+
+    let spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("10363239999");
+
+    engineContract.sender = bobAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(4),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(40),
+    });
+    let bobPosition = await engineContract.position({
+      positionId: 3,
+      vamm: vammContract.contractAddress,
+    });
+
+    spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("9564839999");
+
+    expect(bobPosition.margin).toEqual(toDecimals(4));
+    expect(bobPosition.take_profit).toEqual(toDecimals(5));
+    expect(bobPosition.stop_loss).toEqual(toDecimals(40));
+
+    const longMsgs = await triggerTpSl(
+      sender,
+      engineContract.contractAddress,
+      vammContract.contractAddress,
+      "buy"
+    );
+    const longTx = await sender.client.executeMultiple(
+      sender.address,
+      longMsgs,
+      "auto"
+    );
+    console.dir(longTx, { depth: 4});
+    expect(longTx.events[1].attributes[1].value).toContain("trigger_stop_loss");
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("4998624802520")
   });
 });
