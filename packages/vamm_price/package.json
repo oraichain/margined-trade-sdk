@@ -17,8 +17,6 @@
     "@types/ws": "^8.5.5",
     "typescript": "^5.2.2",
     "@vercel/ncc": "=0.34.0",
-    "@cosmjs/cosmwasm-stargate": "^0.29.5",
-    "@cosmjs/stargate": "^0.29.5",
     "@oraichain/oraimargin-contracts-build": "^1.0.20",
     "@oraichain/oraimargin-contracts-sdk": "^1.0.26",
     "@oraichain/oraimargin-common": "^0.0.2",

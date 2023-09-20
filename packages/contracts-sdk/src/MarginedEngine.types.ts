@@ -217,7 +217,7 @@ export interface HooksResponse {
   hooks: string[];
 }
 export interface LastPositionIdResponse {
-  last_order_id: number;
+  last_position_id: number;
 }
 export interface StateResponse {
   bad_debt: Uint128;
