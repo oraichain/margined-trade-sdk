@@ -24,7 +24,7 @@ import {
   carolAddress,
 } from "./common";
 
-import { queryPositionsbyPrice, queryAllTicks, triggerTpSl, calculateSpreadValue, willTpSl } from "../index";
+import { queryPositionsbyPrice, queryAllTicks, triggerTpSl, calculateSpreadValue, willTpSl, triggerLiquidate } from "../index";
 import { UserWallet } from "@oraichain/oraimargin-common";
 import { waitForDebugger } from "inspector";
 
@@ -164,18 +164,17 @@ describe("perpetual-engine", () => {
   });
 
   it("test_willTpSl", async () => {
-    let spotPrice = "20000000";
-    const tpPrice = "20000000";
-    const slPrice = "10000000";
+    const tpPrice = 20000000;
+    const slPrice = 10000000;
     const tpslSpread = "5000";
     const decimals = "1000000";
     const tpSpread = calculateSpreadValue(
-      tpPrice,
+      tpPrice.toString(),
       tpslSpread,
       decimals
     );
     const slSpread = calculateSpreadValue(
-      slPrice,
+      slPrice.toString(),
       tpslSpread,
       decimals
     );
@@ -183,6 +182,7 @@ describe("perpetual-engine", () => {
     expect(Number(slSpread)).toEqual(50000);
     
     // spot price = take profit price
+    let spotPrice = tpPrice;
     let willTriggetTpSl = willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
@@ -194,7 +194,8 @@ describe("perpetual-engine", () => {
     expect(willTriggetTpSl).toEqual(true);
     
     // spot price > take profit price
-    spotPrice = "21000000";
+    spotPrice = tpPrice + Number(tpSpread);
+    expect(spotPrice).toEqual(20100000);
     willTriggetTpSl = willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
@@ -205,8 +206,22 @@ describe("perpetual-engine", () => {
     );
     expect(willTriggetTpSl).toEqual(true);
     
-    // spot price < take profit price
-    spotPrice = "19000000";
+    // spot price + tpSpread = take profit price
+    spotPrice = tpPrice - Number(tpSpread);
+    expect(spotPrice).toEqual(19900000);
+    willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(true);
+
+    // spot price + tpSpread + 1 = take profit price
+    spotPrice = tpPrice - Number(tpSpread) - 1;
+    expect(spotPrice).toEqual(19899999);
     willTriggetTpSl = willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
@@ -218,7 +233,7 @@ describe("perpetual-engine", () => {
     expect(willTriggetTpSl).toEqual(false);
 
     // spot price = stop loss price
-    spotPrice = "10000000";
+    spotPrice = slPrice;
     willTriggetTpSl = willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
@@ -230,7 +245,8 @@ describe("perpetual-engine", () => {
     expect(willTriggetTpSl).toEqual(true);
 
     // spot price < stop loss price
-    spotPrice = "9000000";
+    spotPrice = slPrice - Number(slSpread);
+    expect(spotPrice).toEqual(9950000);
     willTriggetTpSl = willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
@@ -241,8 +257,9 @@ describe("perpetual-engine", () => {
     );
     expect(willTriggetTpSl).toEqual(true);
 
-    // spot price < stop loss price
-    spotPrice = "10000001";
+    // spot price = stop loss price + slSpread
+    spotPrice = slPrice + Number(slSpread);
+    expect(spotPrice).toEqual(10050000);
     willTriggetTpSl = willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
@@ -252,6 +269,19 @@ describe("perpetual-engine", () => {
       "buy"
     );
     expect(willTriggetTpSl).toEqual(true);
+
+    // spot price = stop loss price + slSpread + 1
+    spotPrice = slPrice + Number(slSpread) + 1;
+    expect(spotPrice).toEqual(10050001);
+    willTriggetTpSl = willTpSl(
+      BigInt(spotPrice),
+      BigInt(tpPrice),
+      BigInt(slPrice ?? "0"),
+      tpSpread.toString(),
+      slSpread.toString(),
+      "buy"
+    );
+    expect(willTriggetTpSl).toEqual(false);
   });
 
   it("test_queryAllPositions", async () => {
@@ -566,5 +596,52 @@ describe("perpetual-engine", () => {
     expect(longTx.events[1].attributes[1].value).toContain("trigger_stop_loss");
     balanceRes = await usdcContract.balance({ address: aliceAddress });
     expect(balanceRes.balance).toBe("4998624802520")
+  });
+
+  it("test_liquidate", async () => {
+    let balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("5000000000000");
+
+    engineContract.sender = aliceAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(25),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(20),
+      stopLoss: toDecimals(10),
+    });
+
+    let spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("15625000000");
+
+    engineContract.sender = bobAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(40),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(30),
+    });
+    spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("7224999999");
+    const liquidateMsgs = await triggerLiquidate(
+      sender,
+      engineContract.contractAddress,
+      vammContract.contractAddress,
+      "buy"
+    );
+    const tx = await sender.client.executeMultiple(
+      sender.address,
+      liquidateMsgs,
+      "auto"
+    );
+    console.dir(tx, { depth: 4});
+    expect(tx.events[1].attributes[1].value).toContain("liquidate");
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("4975000000000")
   });
 });
