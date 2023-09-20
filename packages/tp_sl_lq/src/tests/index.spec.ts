@@ -23,14 +23,7 @@ import {
   carolAddress,
 } from "./common";
 
-import {
-  queryPositionsbyPrice,
-  queryAllTicks,
-  triggerTpSl,
-  calculateSpreadValue,
-  willTpSl,
-  triggerLiquidate,
-} from "../index";
+import { EngineHandler } from "../index";
 import { UserWallet } from "@oraichain/oraimargin-common";
 
 const client = new SimulateCosmWasmClient({
@@ -47,6 +40,7 @@ describe("perpetual-engine", () => {
   let feepoolContract: MarginedFeePoolClient;
   let vammContract: MarginedVammClient;
   let sender: UserWallet;
+  let engineHandler: EngineHandler;
   beforeEach(async () => {
     [senderAddress, bobAddress].forEach((address) =>
       client.app.bank.setBalance(address, [
@@ -129,6 +123,8 @@ describe("perpetual-engine", () => {
         });
       })
     );
+
+    engineHandler = new EngineHandler(sender, engineContract.contractAddress);
   });
 
   it("test_instantiation", async () => {
@@ -154,8 +150,16 @@ describe("perpetual-engine", () => {
     const slPrice = "10000000";
     const tpslSpread = "5000";
     const decimals = "1000000";
-    const tpSpread = calculateSpreadValue(tpPrice, tpslSpread, decimals);
-    const slSpread = calculateSpreadValue(slPrice, tpslSpread, decimals);
+    const tpSpread = engineHandler.calculateSpreadValue(
+      tpPrice,
+      tpslSpread,
+      decimals
+    );
+    const slSpread = engineHandler.calculateSpreadValue(
+      slPrice,
+      tpslSpread,
+      decimals
+    );
     expect(Number(tpSpread)).toEqual(100000);
     expect(Number(slSpread)).toEqual(50000);
   });
@@ -165,12 +169,12 @@ describe("perpetual-engine", () => {
     const slPrice = 10000000;
     const tpslSpread = "5000";
     const decimals = "1000000";
-    const tpSpread = calculateSpreadValue(
+    const tpSpread = engineHandler.calculateSpreadValue(
       tpPrice.toString(),
       tpslSpread,
       decimals
     );
-    const slSpread = calculateSpreadValue(
+    const slSpread = engineHandler.calculateSpreadValue(
       slPrice.toString(),
       tpslSpread,
       decimals
@@ -180,7 +184,7 @@ describe("perpetual-engine", () => {
 
     // spot price = take profit price
     let spotPrice = tpPrice;
-    let willTriggetTpSl = willTpSl(
+    let willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -193,7 +197,7 @@ describe("perpetual-engine", () => {
     // spot price > take profit price
     spotPrice = tpPrice + Number(tpSpread);
     expect(spotPrice).toEqual(20100000);
-    willTriggetTpSl = willTpSl(
+    willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -206,7 +210,7 @@ describe("perpetual-engine", () => {
     // spot price + tpSpread = take profit price
     spotPrice = tpPrice - Number(tpSpread);
     expect(spotPrice).toEqual(19900000);
-    willTriggetTpSl = willTpSl(
+    willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -219,7 +223,7 @@ describe("perpetual-engine", () => {
     // spot price + tpSpread + 1 = take profit price
     spotPrice = tpPrice - Number(tpSpread) - 1;
     expect(spotPrice).toEqual(19899999);
-    willTriggetTpSl = willTpSl(
+    willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -231,7 +235,7 @@ describe("perpetual-engine", () => {
 
     // spot price = stop loss price
     spotPrice = slPrice;
-    willTriggetTpSl = willTpSl(
+    willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -244,7 +248,7 @@ describe("perpetual-engine", () => {
     // spot price < stop loss price
     spotPrice = slPrice - Number(slSpread);
     expect(spotPrice).toEqual(9950000);
-    willTriggetTpSl = willTpSl(
+    willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -257,7 +261,7 @@ describe("perpetual-engine", () => {
     // spot price = stop loss price + slSpread
     spotPrice = slPrice + Number(slSpread);
     expect(spotPrice).toEqual(10050000);
-    willTriggetTpSl = willTpSl(
+    willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -270,7 +274,7 @@ describe("perpetual-engine", () => {
     // spot price = stop loss price + slSpread + 1
     spotPrice = slPrice + Number(slSpread) + 1;
     expect(spotPrice).toEqual(10050001);
-    willTriggetTpSl = willTpSl(
+    willTriggetTpSl = engineHandler.willTpSl(
       BigInt(spotPrice),
       BigInt(tpPrice),
       BigInt(slPrice ?? "0"),
@@ -338,9 +342,8 @@ describe("perpetual-engine", () => {
       stopLoss: toDecimals(14),
     });
 
-    let ticks = await queryAllTicks(
+    let ticks = await engineHandler.queryAllTicks(
       vammContract.contractAddress,
-      engineContract,
       "buy"
     );
     console.log({ ticks });
@@ -349,8 +352,7 @@ describe("perpetual-engine", () => {
       entry_price: "52500000000",
       total_positions: 1,
     });
-    let postions = await queryPositionsbyPrice(
-      engineContract,
+    let postions = await engineHandler.queryPositionsbyPrice(
       vammContract.contractAddress,
       "buy",
       ticks[0].entry_price
@@ -364,8 +366,7 @@ describe("perpetual-engine", () => {
       entry_price: "41999999999",
       total_positions: 1,
     });
-    postions = await queryPositionsbyPrice(
-      engineContract,
+    postions = await engineHandler.queryPositionsbyPrice(
       vammContract.contractAddress,
       "buy",
       ticks[1].entry_price
@@ -379,8 +380,7 @@ describe("perpetual-engine", () => {
       entry_price: "33600000002",
       total_positions: 1,
     });
-    postions = await queryPositionsbyPrice(
-      engineContract,
+    postions = await engineHandler.queryPositionsbyPrice(
       vammContract.contractAddress,
       "buy",
       ticks[2].entry_price
@@ -394,8 +394,7 @@ describe("perpetual-engine", () => {
       entry_price: "16000000000",
       total_positions: 1,
     });
-    postions = await queryPositionsbyPrice(
-      engineContract,
+    postions = await engineHandler.queryPositionsbyPrice(
       vammContract.contractAddress,
       "buy",
       ticks[3].entry_price
@@ -405,9 +404,8 @@ describe("perpetual-engine", () => {
     expect(postions[0].take_profit).toEqual("20000000000");
     expect(postions[0].stop_loss).toEqual("14000000000");
 
-    ticks = await queryAllTicks(
+    ticks = await engineHandler.queryAllTicks(
       vammContract.contractAddress,
-      engineContract,
       "sell"
     );
     console.log({ ticks });
@@ -415,8 +413,7 @@ describe("perpetual-engine", () => {
       entry_price: "43999999994",
       total_positions: 1,
     });
-    postions = await queryPositionsbyPrice(
-      engineContract,
+    postions = await engineHandler.queryPositionsbyPrice(
       vammContract.contractAddress,
       "sell",
       ticks[0].entry_price
@@ -430,8 +427,7 @@ describe("perpetual-engine", () => {
       entry_price: "54999999995",
       total_positions: 1,
     });
-    postions = await queryPositionsbyPrice(
-      engineContract,
+    postions = await engineHandler.queryPositionsbyPrice(
       vammContract.contractAddress,
       "sell",
       ticks[1].entry_price
@@ -784,9 +780,7 @@ describe("perpetual-engine", () => {
     expect(bobPosition.take_profit).toEqual(toDecimals(20));
     expect(bobPosition.stop_loss).toEqual(toDecimals(28));
 
-    const longMsgs = await triggerTpSl(
-      sender,
-      engineContract.contractAddress,
+    const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
       "buy"
     );
@@ -872,9 +866,7 @@ describe("perpetual-engine", () => {
     expect(bobPosition.take_profit).toEqual(toDecimals(5));
     expect(bobPosition.stop_loss).toEqual(toDecimals(40));
 
-    const longMsgs = await triggerTpSl(
-      sender,
-      engineContract.contractAddress,
+    const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
       "buy"
     );
@@ -919,9 +911,7 @@ describe("perpetual-engine", () => {
     });
     spotPrice = await vammContract.spotPrice();
     expect(spotPrice).toEqual("7224999999");
-    const liquidateMsgs = await triggerLiquidate(
-      sender,
-      engineContract.contractAddress,
+    const liquidateMsgs = await engineHandler.triggerLiquidate(
       vammContract.contractAddress,
       "buy"
     );
