@@ -1,10 +1,7 @@
 import { UserWallet, bigAbs } from "@oraichain/oraimargin-common";
 import { ExecuteInstruction } from "@cosmjs/cosmwasm-stargate";
 
-import { OraiswapTokenClient } from "@oraichain/oraidex-contracts-sdk";
-
 import {
-  MarginedEngineTypes,
   Addr,
   MarginedEngineQueryClient,
   MarginedVammQueryClient,
@@ -49,7 +46,7 @@ export class EngineHandler {
     decimals: string
   ): bigint => {
     return (BigInt(amount) * BigInt(spread)) / BigInt(decimals);
-  };
+  }
 
   willTpSl = (
     spotPrice: bigint,
@@ -78,7 +75,7 @@ export class EngineHandler {
       return true;
     }
     return false;
-  };
+  }
 
   async queryAllTicks(
     vamm: Addr,
@@ -191,12 +188,10 @@ export class EngineHandler {
     side: Side
   ): Promise<ExecuteInstruction[]> {
     console.log("trigger Liquidate");
-    // const engineClient = new MarginedEngineQueryClient(sender.client, engine);
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const multipleMsg: ExecuteInstruction[] = [];
     const engineConfig = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
-
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
     console.log({ isOverSpreadLimit });
     for (const tick of ticks) {

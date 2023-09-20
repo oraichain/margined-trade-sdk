@@ -29,7 +29,7 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
     // TODO: add send noti to discord
     try {
       const res = await executeEngine(sender, engine, insurance);
-      console.log("take profit | stop loss | liquidate | payfunding- txHash:", res.transactionHash);
+      console.log("take profit | stop loss | liquidate | payfunding - txHash:", res.transactionHash);
     } catch (error) {
       console.log(
         "error in processing triggering TpSl, liquidate & pay funding: ",
