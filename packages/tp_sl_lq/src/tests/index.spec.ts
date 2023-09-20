@@ -644,7 +644,7 @@ describe("perpetual-engine", () => {
       })
     ).rejects.toThrow("margined_perp::margined_engine::Position not found");
 
-    // amount: position side
+    // amount: position size
     // direction: - long <-> add_to_amm
     //            - short <-> remove_from_amm
     console.log("alicePosition_4.size: ", alicePosition_4.size.toString());
