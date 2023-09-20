@@ -784,11 +784,7 @@ describe("perpetual-engine", () => {
       vammContract.contractAddress,
       "buy"
     );
-    const longTx = await sender.client.executeMultiple(
-      sender.address,
-      longMsgs,
-      "auto"
-    );
+    const longTx = await engineHandler.executeMultiple(longMsgs);
     console.dir(longTx.events, { depth: 4 });
     await expect(
       engineContract.position({
@@ -870,11 +866,7 @@ describe("perpetual-engine", () => {
       vammContract.contractAddress,
       "buy"
     );
-    const longTx = await sender.client.executeMultiple(
-      sender.address,
-      longMsgs,
-      "auto"
-    );
+    const longTx = await engineHandler.executeMultiple(longMsgs);
     console.dir(longTx, { depth: 4 });
     expect(longTx.events[1].attributes[1].value).toContain("trigger_stop_loss");
     balanceRes = await usdcContract.balance({ address: aliceAddress });
@@ -915,11 +907,7 @@ describe("perpetual-engine", () => {
       vammContract.contractAddress,
       "buy"
     );
-    const tx = await sender.client.executeMultiple(
-      sender.address,
-      liquidateMsgs,
-      "auto"
-    );
+    const tx = await engineHandler.executeMultiple(liquidateMsgs);
     console.dir(tx, { depth: 4 });
     expect(tx.events[1].attributes[1].value).toContain("liquidate");
     balanceRes = await usdcContract.balance({ address: aliceAddress });
