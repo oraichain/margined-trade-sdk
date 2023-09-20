@@ -1,4 +1,4 @@
-import { SimulateCosmWasmClient } from "@oraichain/cw-simulate";
+import { GenericError, SimulateCosmWasmClient } from "@oraichain/cw-simulate";
 
 import {
   MarginedEngineClient,
@@ -7,7 +7,6 @@ import {
   MarginedPricefeedClient,
   MarginedInsuranceFundClient,
   MarginedFeePoolClient,
-  SigningCosmWasmClient,
 } from "@oraichain/oraimargin-contracts-sdk";
 import { OraiswapTokenClient } from "@oraichain/oraidex-contracts-sdk";
 import {
@@ -24,9 +23,15 @@ import {
   carolAddress,
 } from "./common";
 
-import { queryPositionsbyPrice, queryAllTicks, triggerTpSl, calculateSpreadValue, willTpSl, triggerLiquidate } from "../index";
+import {
+  queryPositionsbyPrice,
+  queryAllTicks,
+  triggerTpSl,
+  calculateSpreadValue,
+  willTpSl,
+  triggerLiquidate,
+} from "../index";
 import { UserWallet } from "@oraichain/oraimargin-common";
-import { waitForDebugger } from "inspector";
 
 const client = new SimulateCosmWasmClient({
   chainId: "Oraichain",
@@ -149,16 +154,8 @@ describe("perpetual-engine", () => {
     const slPrice = "10000000";
     const tpslSpread = "5000";
     const decimals = "1000000";
-    const tpSpread = calculateSpreadValue(
-      tpPrice,
-      tpslSpread,
-      decimals
-    );
-    const slSpread = calculateSpreadValue(
-      slPrice,
-      tpslSpread,
-      decimals
-    );
+    const tpSpread = calculateSpreadValue(tpPrice, tpslSpread, decimals);
+    const slSpread = calculateSpreadValue(slPrice, tpslSpread, decimals);
     expect(Number(tpSpread)).toEqual(100000);
     expect(Number(slSpread)).toEqual(50000);
   });
@@ -180,7 +177,7 @@ describe("perpetual-engine", () => {
     );
     expect(Number(tpSpread)).toEqual(100000);
     expect(Number(slSpread)).toEqual(50000);
-    
+
     // spot price = take profit price
     let spotPrice = tpPrice;
     let willTriggetTpSl = willTpSl(
@@ -192,7 +189,7 @@ describe("perpetual-engine", () => {
       "buy"
     );
     expect(willTriggetTpSl).toEqual(true);
-    
+
     // spot price > take profit price
     spotPrice = tpPrice + Number(tpSpread);
     expect(spotPrice).toEqual(20100000);
@@ -205,7 +202,7 @@ describe("perpetual-engine", () => {
       "buy"
     );
     expect(willTriggetTpSl).toEqual(true);
-    
+
     // spot price + tpSpread = take profit price
     spotPrice = tpPrice - Number(tpSpread);
     expect(spotPrice).toEqual(19900000);
@@ -445,6 +442,298 @@ describe("perpetual-engine", () => {
     expect(postions[0].stop_loss).toEqual("70000000000");
   });
 
+  it("test_slippage", async () => {
+    // OPEN POSITIONS TEST
+
+    // amount: margin * leverage
+    // direction: - long <-> add_to_amm
+    //            - short <-> remove_from_amm
+    let simulateInputAmt = await vammContract.inputAmount({
+      amount: toDecimals(25),
+      direction: "add_to_amm",
+    });
+    console.log({ simulateInputAmt });
+
+    engineContract.sender = aliceAddress;
+    // Open position successfully if baseAssetLimit = 0
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(5),
+      leverage: toDecimals(5),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(20),
+      stopLoss: toDecimals(10),
+    });
+    const alicePosition_1 = await engineContract.position({
+      positionId: 1,
+      vamm: vammContract.contractAddress,
+    });
+    expect(alicePosition_1.notional).toEqual(toDecimals(25));
+    expect(alicePosition_1.size).toEqual(simulateInputAmt);
+
+    simulateInputAmt = await vammContract.inputAmount({
+      amount: toDecimals(20),
+      direction: "add_to_amm",
+    });
+    console.log({ simulateInputAmt });
+    expect(simulateInputAmt).toEqual("1867195705");
+
+    // For long position: baseAssetLimit = 1900000000 > 1867195705 => cannot open position
+    await expect(
+      engineContract.openPosition({
+        vamm: vammContract.contractAddress,
+        side: "buy",
+        marginAmount: toDecimals(5),
+        leverage: toDecimals(4),
+        baseAssetLimit: "1900000000",
+        takeProfit: toDecimals(20),
+        stopLoss: toDecimals(10),
+      })
+    ).rejects.toThrow(new GenericError("open position failure - reply (id 1)"));
+
+    // For long position: baseAssetLimit = 1800000000 <= 1867195705 = simulateInputAmt => Open position successfully
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(5),
+      leverage: toDecimals(4),
+      baseAssetLimit: "1800000000",
+      takeProfit: toDecimals(20),
+      stopLoss: toDecimals(10),
+    });
+
+    const alicePosition_3 = await engineContract.position({
+      positionId: 3,
+      vamm: vammContract.contractAddress,
+    });
+    expect(alicePosition_3.notional).toEqual(toDecimals(20));
+    expect(alicePosition_3.size).toEqual(simulateInputAmt);
+
+    simulateInputAmt = await vammContract.inputAmount({
+      amount: toDecimals(10),
+      direction: "add_to_amm",
+    });
+    console.log({ simulateInputAmt });
+    expect(simulateInputAmt).toEqual("907050046");
+
+    // For long position: baseAssetLimit = 907050046 = 907050046 = simulateInputAmt => Open position successfully
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(5),
+      leverage: toDecimals(2),
+      baseAssetLimit: "907050046",
+      takeProfit: toDecimals(30),
+      stopLoss: toDecimals(10),
+    });
+
+    const alicePosition_4 = await engineContract.position({
+      positionId: 4,
+      vamm: vammContract.contractAddress,
+    });
+    expect(alicePosition_4.notional).toEqual(toDecimals(10));
+    expect(alicePosition_4.size).toEqual(simulateInputAmt);
+
+    // amount: margin * leverage
+    // direction: - long <-> add_to_amm
+    //            - short <-> remove_from_amm
+    simulateInputAmt = await vammContract.inputAmount({
+      amount: toDecimals(15),
+      direction: "remove_from_amm",
+    });
+    console.log({ simulateInputAmt });
+    expect(simulateInputAmt).toEqual("1367116297");
+
+    engineContract.sender = bobAddress;
+    // Open position successfully if baseAssetLimit = 0
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(3),
+      leverage: toDecimals(5),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(30),
+    });
+    const bobPosition_5 = await engineContract.position({
+      positionId: 5,
+      vamm: vammContract.contractAddress,
+    });
+    // // Because of this is short position. size is negative
+    expect(bobPosition_5.notional).toEqual(toDecimals(15));
+    expect(bobPosition_5.size).toEqual("-1367116297");
+
+    simulateInputAmt = await vammContract.inputAmount({
+      amount: toDecimals(10),
+      direction: "remove_from_amm",
+    });
+    console.log({ simulateInputAmt });
+    expect(simulateInputAmt).toEqual("933532487");
+
+    // For short position: baseAssetLimit = -900000000 > -933532487 (negative value) => cannot open position
+    await expect(
+      engineContract.openPosition({
+        vamm: vammContract.contractAddress,
+        side: "sell",
+        marginAmount: toDecimals(2),
+        leverage: toDecimals(5),
+        baseAssetLimit: "900000000",
+        takeProfit: toDecimals(5),
+        stopLoss: toDecimals(30),
+      })
+    ).rejects.toThrow(new GenericError("open position failure - reply (id 1)"));
+
+    // For short position: baseAssetLimit = -933532487 = -933532487 = simulateInputAmt (negative value) => Open position successfully
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(2),
+      leverage: toDecimals(5),
+      baseAssetLimit: "933532487",
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(30),
+    });
+
+    const bobPosition_7 = await engineContract.position({
+      positionId: 7,
+      vamm: vammContract.contractAddress,
+    });
+    expect(bobPosition_7.notional).toEqual(toDecimals(10));
+    expect(bobPosition_7.size).toEqual("-933532487");
+
+    simulateInputAmt = await vammContract.inputAmount({
+      amount: toDecimals(8),
+      direction: "remove_from_amm",
+    });
+    console.log({ simulateInputAmt });
+    expect(simulateInputAmt).toEqual("759979481");
+
+    // For short position: baseAssetLimit = -759979482 < -759979481 = simulateInputAmt (negative value) => Open position successfully
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(4),
+      leverage: toDecimals(2),
+      baseAssetLimit: "759979482",
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(30),
+    });
+
+    const bobPosition_8 = await engineContract.position({
+      positionId: 8,
+      vamm: vammContract.contractAddress,
+    });
+    expect(bobPosition_8.notional).toEqual(toDecimals(8));
+    expect(bobPosition_8.size).toEqual("-759979481");
+
+    // CLOSE POSITIONS TEST
+    // Close position successfully if quoteAssetLimit = 0
+    engineContract.sender = aliceAddress;
+    let tx = await engineContract.closePosition({
+      positionId: 1,
+      quoteAssetLimit: toDecimals(0),
+      vamm: vammContract.contractAddress,
+    });
+    expect(tx.events[1].attributes[1].value).toContain("close_position");
+    expect(tx.events[1].attributes[5].value).toContain("1");
+    await expect(
+      engineContract.position({
+        positionId: 1,
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow("margined_perp::margined_engine::Position not found");
+
+    // amount: position side
+    // direction: - long <-> add_to_amm
+    //            - short <-> remove_from_amm
+    console.log("alicePosition_4.size: ", alicePosition_4.size.toString());
+
+    let simulateOutAmt = await vammContract.outputAmount({
+      amount: alicePosition_4.size.toString(),
+      direction: "add_to_amm",
+    });
+    console.log({ simulateOutAmt });
+    expect(simulateOutAmt).toEqual("8937930143");
+
+    // For long position: quoteAssetLimit = 9000000000 > 8937930143 = simulateOutAmt => cannot close position
+    await expect(
+      engineContract.closePosition({
+        positionId: 4,
+        quoteAssetLimit: "9000000000",
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow(
+      new GenericError("close position failure - reply (id 2)")
+    );
+
+    // For long position: quoteAssetLimit = 8937930142 <= 8937930143 = simulateOutAmt => close position successfully
+    tx = await engineContract.closePosition({
+      positionId: 4,
+      quoteAssetLimit: "8937930142",
+      vamm: vammContract.contractAddress,
+    });
+    expect(tx.events[1].attributes[1].value).toContain("close_position");
+    expect(tx.events[3].attributes[7].value).toContain("4");
+    expect(tx.events[3].attributes[8].value).toContain(simulateOutAmt);
+    await expect(
+      engineContract.position({
+        positionId: 4,
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow("margined_perp::margined_engine::Position not found");
+
+    // Close position successfully if quoteAssetLimit = 0
+    engineContract.sender = bobAddress;
+    tx = await engineContract.closePosition({
+      positionId: 5,
+      quoteAssetLimit: toDecimals(0),
+      vamm: vammContract.contractAddress,
+    });
+    expect(tx.events[1].attributes[1].value).toContain("close_position");
+    expect(tx.events[1].attributes[5].value).toContain("5");
+    await expect(
+      engineContract.position({
+        positionId: 5,
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow("margined_perp::margined_engine::Position not found");
+
+    simulateOutAmt = await vammContract.outputAmount({
+      amount: Math.abs(Number(bobPosition_7.size)).toString(),
+      direction: "remove_from_amm",
+    });
+    console.log({ simulateOutAmt });
+    expect(simulateOutAmt).toEqual("9456268359");
+
+    // For short position: quoteAssetLimit = -9000000000 > -9456268359 = simulateOutAmt => cannot close position
+    await expect(
+      engineContract.closePosition({
+        positionId: 7,
+        quoteAssetLimit: "9000000000",
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow(
+      new GenericError("close position failure - reply (id 2)")
+    );
+
+    // For short position: quoteAssetLimit = -9456268360 <= -9456268359 = simulateOutAmt => cannot close position
+    tx = await engineContract.closePosition({
+      positionId: 7,
+      quoteAssetLimit: "9456268360",
+      vamm: vammContract.contractAddress,
+    });
+    expect(tx.events[1].attributes[1].value).toContain("close_position");
+    expect(tx.events[3].attributes[7].value).toContain("7");
+    expect(tx.events[3].attributes[8].value).toContain(simulateOutAmt);
+    await expect(
+      engineContract.position({
+        positionId: 7,
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow("margined_perp::margined_engine::Position not found");
+  });
+
   it("test_take_profit", async () => {
     let balanceRes = await usdcContract.balance({ address: aliceAddress });
     expect(balanceRes.balance).toBe("5000000000000");
@@ -516,7 +805,9 @@ describe("perpetual-engine", () => {
 
     balanceRes = await usdcContract.balance({ address: aliceAddress });
     expect(balanceRes.balance).toBe("4970963337545");
-    expect(longTx.events[1].attributes[1].value).toContain("trigger_take_profit");
+    expect(longTx.events[1].attributes[1].value).toContain(
+      "trigger_take_profit"
+    );
   });
 
   it("test_stop_loss", async () => {
@@ -592,10 +883,10 @@ describe("perpetual-engine", () => {
       longMsgs,
       "auto"
     );
-    console.dir(longTx, { depth: 4});
+    console.dir(longTx, { depth: 4 });
     expect(longTx.events[1].attributes[1].value).toContain("trigger_stop_loss");
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4998624802520")
+    expect(balanceRes.balance).toBe("4998624802520");
   });
 
   it("test_liquidate", async () => {
@@ -639,9 +930,9 @@ describe("perpetual-engine", () => {
       liquidateMsgs,
       "auto"
     );
-    console.dir(tx, { depth: 4});
+    console.dir(tx, { depth: 4 });
     expect(tx.events[1].attributes[1].value).toContain("liquidate");
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4975000000000")
+    expect(balanceRes.balance).toBe("4975000000000");
   });
 });
