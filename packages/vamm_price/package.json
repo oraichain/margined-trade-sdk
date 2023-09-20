@@ -12,14 +12,7 @@
     "build": "esbuild src/cli.ts  --bundle --minify --platform=node  --external:fsevents --log-level=error --outfile=dist/cli.js"
   },
   "devDependencies": {
-    "@types/dotenv": "^8.2.0",
-    "@types/node": "^20.5.7",
     "@types/ws": "^8.5.5",
-    "typescript": "^5.2.2",
-    "@oraichain/oraimargin-contracts-build": "^1.0.25",
-    "@oraichain/oraimargin-contracts-sdk": "^1.0.29",
-    "@oraichain/oraimargin-common": "^0.0.2",
-    "ws": "^8.13.0",
-    "dotenv": "^10.0.0"
+    "ws": "^8.13.0"
   }
 }

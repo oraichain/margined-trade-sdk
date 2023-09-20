@@ -1330,21 +1330,16 @@
     "@octokit/openapi-types" "^18.0.0"
 
 "@oraichain/common-contracts-build@^1.0.26":
-  version "1.0.27"
-  resolved "https://registry.yarnpkg.com/@oraichain/common-contracts-build/-/common-contracts-build-1.0.27.tgz#41c9b4ac00e689ee17bd14ea25f69c8b19af883a"
-  integrity sha512-/eUcGtI9SAwkQx+rC28zHHVw4UbAg50RPGstfiV1hmOwg0NZG/Xh0+yJkyIB8+dpTrD8uNc+noWaUoGtgOR51Q==
+  version "1.0.32"
+  resolved "https://registry.yarnpkg.com/@oraichain/common-contracts-build/-/common-contracts-build-1.0.32.tgz#6ba11a98eab1066ac42f290fbf7e877dc00b45a8"
+  integrity sha512-g9wk2oeTWPkOUDwvr19XkDDtH3OkXQGAQKEFlAVn8t4/8KvOC5Jo5XrQwqSd5O4tvfxW6vX+XVpbkhEDcsOkRw==
   dependencies:
-    "@oraichain/common-contracts-sdk" "1.0.28"
+    "@oraichain/common-contracts-sdk" "1.0.31"
 
-"@oraichain/common-contracts-sdk@1.0.28":
-  version "1.0.28"
-  resolved "https://registry.yarnpkg.com/@oraichain/common-contracts-sdk/-/common-contracts-sdk-1.0.28.tgz#a8d7a368d3503f1cbed9e7f93f5c088f5ceecbc7"
-  integrity sha512-zceqDRR14ZyrNEt4KuCcF14qE5pE++49oudjwlQkf1wF2bv32R8pKckAd4zZMcKEmkfQk6o7XEtDo3r4w/Gw3Q==
-
-"@oraichain/common-contracts-sdk@^1.0.24":
-  version "1.0.30"
-  resolved "https://registry.yarnpkg.com/@oraichain/common-contracts-sdk/-/common-contracts-sdk-1.0.30.tgz#c932d05179c4051dc0cece6d285af2f5da7604b2"
-  integrity sha512-NsEEo8tNqe/xYb0uIi9X58PTZ/Y/agJmfQtOt5WAJZWoFLynNL1ntEET+bj1NMUtk3uZaSNFiz4BZrChAy+NTg==
+"@oraichain/common-contracts-sdk@1.0.31", "@oraichain/common-contracts-sdk@^1.0.31":
+  version "1.0.31"
+  resolved "https://registry.yarnpkg.com/@oraichain/common-contracts-sdk/-/common-contracts-sdk-1.0.31.tgz#595f93b168438d69d64896909b37855c9afc92fb"
+  integrity sha512-s8H20RXy5gCnu3DnM7L5ClQyj2mdQpbSBpZrXCpIAX9qY0LKsDdZG3sYaDQ8+VN333jz9Pp/qGWdFSYD+6PBsg==
 
 "@oraichain/cosmwasm-vm-js@^0.2.76":
   version "0.2.76"
@@ -1360,10 +1355,10 @@
     elliptic "^6.5.4"
     secp256k1 "^4.0.3"
 
-"@oraichain/cw-simulate@^2.8.62":
-  version "2.8.62"
-  resolved "https://registry.yarnpkg.com/@oraichain/cw-simulate/-/cw-simulate-2.8.62.tgz#56f1bd3ca240b88b745c72d74b0e37ef52fc6a42"
-  integrity sha512-osQyKi0vJ/u4QhK3d3Kq5nRRby74cq8TDSBvHIIY5Ttic42b7VxLAW3vJ6lZbNH/h37o9IKp0OYe12AsdFAwbw==
+"@oraichain/cw-simulate@^2.8.63":
+  version "2.8.63"
+  resolved "https://registry.yarnpkg.com/@oraichain/cw-simulate/-/cw-simulate-2.8.63.tgz#1c65c2628bc7e1e6c1875ced376305470b635d6a"
+  integrity sha512-YzpveXVuMORD5YAa0nZS2cENzp95TChL/xq09+lPmc6sUbF85oztBfeyEsfftboNeCo7NYdoZHknSBvY+5Yw8g==
   dependencies:
     "@cosmjs/amino" "^0.31.0"
     "@cosmjs/cosmwasm-stargate" "^0.31.0"
@@ -1381,17 +1376,12 @@
   resolved "https://registry.yarnpkg.com/@oraichain/immutable/-/immutable-4.3.9.tgz#ff8d5a7b39b5b01f3f72a902cffbfea32ccb20c3"
   integrity sha512-INpHnhL970OCkR7I71Kssb2aLl2l4Y/x8W6FlyRO0KmC8GHjxc/hlNB1t44BiI7lkOYmcWMRQoC8dwParsp1RQ==
 
-"@oraichain/oraidex-contracts-build@^1.0.12", "@oraichain/oraidex-contracts-build@^1.0.14":
+"@oraichain/oraidex-contracts-build@^1.0.14":
   version "1.0.14"
   resolved "https://registry.yarnpkg.com/@oraichain/oraidex-contracts-build/-/oraidex-contracts-build-1.0.14.tgz#fde5358f39fdc2540217a6e2b55afc67ad150adb"
   integrity sha512-AGczrzeLWq3n1jdmD7pNJhRjTSInL6IwQd1/i48tlY9yJM1jflk3HqVtMjYRH7XNf4SCslMNCrL6oGTevIzrNA==
   dependencies:
     "@oraichain/oraidex-contracts-sdk" "^1.0.18"
-
-"@oraichain/oraidex-contracts-sdk@1.0.18":
-  version "1.0.18"
-  resolved "https://registry.yarnpkg.com/@oraichain/oraidex-contracts-sdk/-/oraidex-contracts-sdk-1.0.18.tgz#6dd983f4b13b6cbb83060ae3b0abc90ec4133624"
-  integrity sha512-f8huSEVdormJXzltBgD2jjvBmL6PfOzP+sz9IpZ2yV8zB4dzjRMgnT+39Vfp5CYARKQlbe5Hdk/0cD2kQLxKjA==
 
 "@oraichain/oraidex-contracts-sdk@^1.0.18", "@oraichain/oraidex-contracts-sdk@^1.0.22":
   version "1.0.22"
@@ -1642,7 +1632,7 @@
   resolved "https://registry.npmjs.org/@types/minimist/-/minimist-1.2.2.tgz"
   integrity sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==
 
-"@types/node@*", "@types/node@^20.5.7":
+"@types/node@*":
   version "20.5.7"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.5.7.tgz#4b8ecac87fbefbc92f431d09c30e176fc0a7c377"
   integrity sha512-dP7f3LdZIysZnmvP3ANJYTSwg+wLLl8p7RqniVlV7j+oXSXAbt9h0WIBFmJy5inWZoX9wZN6eXx+YXd9Rh3RBA==
@@ -7000,9 +6990,9 @@ typedarray@^0.0.6:
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
 typedoc@^0.24.7:
-  version "0.24.7"
-  resolved "https://registry.npmjs.org/typedoc/-/typedoc-0.24.7.tgz"
-  integrity sha512-zzfKDFIZADA+XRIp2rMzLe9xZ6pt12yQOhCr7cD7/PBTjhPmMyMvGrkZ2lPNJitg3Hj1SeiYFNzCsSDrlpxpKw==
+  version "0.24.8"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.24.8.tgz#cce9f47ba6a8d52389f5e583716a2b3b4335b63e"
+  integrity sha512-ahJ6Cpcvxwaxfu4KtjA8qZNqS43wYt6JL27wYiIgl1vd38WW/KWX11YuAeZhuz9v+ttrutSsgK+XO1CjL1kA3w==
   dependencies:
     lunr "^2.3.9"
     marked "^4.3.0"

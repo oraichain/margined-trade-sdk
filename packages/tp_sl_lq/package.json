@@ -10,15 +10,8 @@
   },
   "dependencies": {
     "@oraichain/common-contracts-build": "^1.0.26",
-    "@oraichain/common-contracts-sdk": "^1.0.24",
+    "@oraichain/common-contracts-sdk": "^1.0.31",
     "@oraichain/oraidex-contracts-build": "^1.0.14",
-    "@oraichain/oraimargin-contracts-build": "^1.0.24",
     "@oraichain/oraidex-contracts-sdk": "^1.0.22"
-  },
-  "devDependencies": {
-    "@types/dotenv": "^8.2.0",
-    "@oraichain/cw-simulate": "^2.8.62",
-    "discord.js": "^14.13.0",
-    "dotenv": "^10.0.0"
   }
 }
