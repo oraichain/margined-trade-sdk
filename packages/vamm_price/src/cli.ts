@@ -2,13 +2,19 @@ import dotenv from "dotenv";
 import { queryAllVammSpotPrice } from "./index";
 import { decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
 import WebSocket from "ws";
-import { WebhookClient, time, blockQuote, userMention } from "discord.js";
+import { WebhookClient, time } from "discord.js";
 
 dotenv.config();
 
-const wss = new WebSocket.Server({ port: 3001 });
+const wss = new WebSocket.Server({
+  port: process.env.WS_PORT ? Number(process.env.WS_PORT) : 3001,
+});
 
-const sendPrice = async (timeStamp: number, prices: string[], webhookClient: WebhookClient) => {
+const sendPrice = async (
+  timeStamp: number,
+  prices: string[],
+  webhookClient: WebhookClient
+) => {
   for (const spotPrice of prices) {
     wss.clients.forEach((ws) => {
       ws.send(
@@ -20,10 +26,7 @@ const sendPrice = async (timeStamp: number, prices: string[], webhookClient: Web
       );
     });
 
-    await webhookClient.send(
-      `💵 ${spotPrice} ` +
-      `at ${time(new Date())}`
-    );
+    await webhookClient.send(`💵 ${spotPrice} ` + `at ${time(new Date())}`);
   }
 };
 
