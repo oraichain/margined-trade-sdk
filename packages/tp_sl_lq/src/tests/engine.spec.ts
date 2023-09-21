@@ -33,7 +33,7 @@ const client = new SimulateCosmWasmClient({
   metering: process.env.METERING === "true",
 });
 
-describe("insurance_fund", () => {
+describe("engine", () => {
   let insuranceFundContract: MarginedInsuranceFundClient;
   let usdcContract: OraiswapTokenClient;
   let engineContract: MarginedEngineClient;
