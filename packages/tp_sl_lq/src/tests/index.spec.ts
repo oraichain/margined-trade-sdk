@@ -177,6 +177,41 @@ describe("perpetual-engine", () => {
     expect(engineHandler.calculateSpreadValue("1", "1", "0")).toEqual(0n);
   });
 
+  it.each<[number, number, number, string, string, boolean]>([
+    [2, 1, 0, "0", "0", true], // spot > profit
+    [1, 1, 0, "0", "0", true], // spot = profit
+    [1, 2, 0, "3", "0", true], // profit - spot <= tpSpread
+    [1, 2, 0, "1", "0", true], // profit - spot <= tpSpread
+    [1, 2, 2, "0", "0", true], // loss > spot
+    [1, 2, 1, "0", "0", true], // loss = spot
+    [2, 3, 1, "0", "2", true], // loss > 0 && spot - loss < slSpread
+    [2, 3, 1, "0", "1", true], // loss > 0 && spot - loss = slSpread
+    [10, 20, 0, "5", "1", false], // failed every case with stop loss = 0
+    [10, 20, 1, "5", "5", false], // failed every case with stop loss > 0 but spot - loss > slSpread
+    [20000000, 20000000, 10000000, "5000", "5000", true],
+  ])(
+    "test-willTpSl-buy spot %d profit %d stop loss %d tpSpread %d slSpread %d expected %s",
+    (
+      spotPrice,
+      takeProfitValue,
+      stopLossValue,
+      tpSpread,
+      slSpread,
+      expectedResult
+    ) => {
+      expect(
+        engineHandler.willTpSl(
+          BigInt(spotPrice),
+          BigInt(takeProfitValue),
+          BigInt(stopLossValue),
+          tpSpread,
+          slSpread,
+          "buy"
+        )
+      ).toEqual(expectedResult);
+    }
+  );
+
   it("test_willTpSl", async () => {
     const tpPrice = 20000000;
     const slPrice = 10000000;

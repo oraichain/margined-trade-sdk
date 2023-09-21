@@ -1,7 +1,7 @@
 module.exports = {
-  testEnvironment: 'node',
+  testEnvironment: "node",
   transform: {
-    '^.+\\.ts?$': ['esbuild-jest', { isolatedModules: true }]
+    "^.+\\.ts?$": ["esbuild-jest", { isolatedModules: true, target: "es2020" }],
   },
-  testPathIgnorePatterns: ['build/', 'node_modules/']
+  testPathIgnorePatterns: ["build/", "node_modules/"],
 };
