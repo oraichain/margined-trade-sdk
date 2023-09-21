@@ -41,10 +41,21 @@ describe("perpetual-engine", () => {
   let vammContract: MarginedVammClient;
   let sender: UserWallet;
   let engineHandler: EngineHandler;
+  const initialMarginRatio = toDecimals(0.05);
+  const maintenanceMarginRatio = toDecimals(0.05);
+  const tpslSpread = toDecimals(0.05);
+  const liquidationFee = toDecimals(0.05);
+  const initialOraiBalances = "5000000000";
+  const initialUsdcBalances = toDecimals(5000);
+  const usdcDecimals = 9;
+  const baseAssetReserve = toDecimals(100);
+  const quoteAssetReserve = toDecimals(1000);
+  const ethPrice = toDecimals(10);
+
   beforeEach(async () => {
     [senderAddress, bobAddress].forEach((address) =>
       client.app.bank.setBalance(address, [
-        { denom: "orai", amount: "5000000000" },
+        { denom: "orai", amount: initialOraiBalances },
       ])
     );
 
@@ -55,11 +66,11 @@ describe("perpetual-engine", () => {
       deployFeePool(client),
       deployToken(client, {
         symbol: "USDC",
-        decimals: 9,
+        decimals: usdcDecimals,
         name: "USDC token",
         initial_balances: [
-          { address: bobAddress, amount: toDecimals(5000) },
-          { address: aliceAddress, amount: toDecimals(5000) },
+          { address: bobAddress, amount: initialUsdcBalances },
+          { address: aliceAddress, amount: initialUsdcBalances },
         ],
       }),
     ]);
@@ -67,10 +78,10 @@ describe("perpetual-engine", () => {
     engineContract = await deployEngine(client, {
       token: usdcContract.contractAddress,
       fee_pool: feepoolContract.contractAddress,
-      initial_margin_ratio: toDecimals(0.05),
-      maintenance_margin_ratio: toDecimals(0.05),
-      tp_sl_spread: toDecimals(0.05),
-      liquidation_fee: toDecimals(0.05),
+      initial_margin_ratio: initialMarginRatio,
+      maintenance_margin_ratio: maintenanceMarginRatio,
+      tp_sl_spread: tpslSpread,
+      liquidation_fee: liquidationFee,
     });
     insuranceFundContract = await deployInsuranceFund(client, {
       engine: engineContract.contractAddress,
@@ -82,14 +93,14 @@ describe("perpetual-engine", () => {
     // mint insurance fund contract balance
     await usdcContract.mint({
       recipient: insuranceFundContract.contractAddress,
-      amount: toDecimals(5000),
+      amount: initialUsdcBalances,
     });
 
     vammContract = await deployVamm(client, {
       pricefeed: pricefeedContract.contractAddress,
       insurance_fund: insuranceFundContract.contractAddress,
-      base_asset_reserve: toDecimals(100),
-      quote_asset_reserve: toDecimals(1000),
+      base_asset_reserve: baseAssetReserve,
+      quote_asset_reserve: quoteAssetReserve,
       toll_ratio: "0",
       spread_ratio: "0",
       fluctuation_limit_ratio: "0",
@@ -109,7 +120,7 @@ describe("perpetual-engine", () => {
     // append a price to the pricefeed
     await pricefeedContract.appendPrice({
       key: "ETH",
-      price: toDecimals(10),
+      price: ethPrice,
       timestamp: 1e9,
     });
 
@@ -137,11 +148,11 @@ describe("perpetual-engine", () => {
         token: { contract_addr: usdcContract.contractAddress },
       },
       decimals: toDecimals(1),
-      initial_margin_ratio: "50000000",
-      maintenance_margin_ratio: "50000000",
+      initial_margin_ratio: initialMarginRatio,
+      maintenance_margin_ratio: maintenanceMarginRatio,
       partial_liquidation_ratio: "0",
-      tp_sl_spread: "50000000",
-      liquidation_fee: "50000000",
+      tp_sl_spread: tpslSpread,
+      liquidation_fee: liquidationFee,
     });
   });
 
@@ -162,6 +173,8 @@ describe("perpetual-engine", () => {
     );
     expect(Number(tpSpread)).toEqual(100000);
     expect(Number(slSpread)).toEqual(50000);
+
+    expect(engineHandler.calculateSpreadValue("1", "1", "0")).toEqual(0n);
   });
 
   it("test_willTpSl", async () => {

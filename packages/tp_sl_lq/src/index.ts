@@ -45,8 +45,9 @@ export class EngineHandler {
     spread: string,
     decimals: string
   ): bigint => {
+    if (decimals === "0") return 0n;
     return (BigInt(amount) * BigInt(spread)) / BigInt(decimals);
-  }
+  };
 
   willTpSl = (
     spotPrice: bigint,
@@ -75,7 +76,7 @@ export class EngineHandler {
       return true;
     }
     return false;
-  }
+  };
 
   async queryAllTicks(
     vamm: Addr,
