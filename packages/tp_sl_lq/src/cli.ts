@@ -54,6 +54,7 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
 
   while (true) {
     try {
+      date = new Date();
       const res = await executeEngine(sender, engine, insurance);
       if (res !== undefined) {
         console.log(
