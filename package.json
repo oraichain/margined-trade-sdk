@@ -17,13 +17,13 @@
   "dependencies": {
     "@cosmjs/amino": "^0.31",
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
-    "@oraichain/cw-simulate": "^2.8.63",
     "@oraichain/oraimargin-common": "^0.0.2",
     "@oraichain/oraimargin-contracts-build": "^1.0.25",
     "@oraichain/oraimargin-contracts-sdk": "^1.0.29",
     "discord.js": "^14.13.0"
   },
   "devDependencies": {
+    "@oraichain/cw-simulate": "^2.8.63",
     "@types/node": "^18.15.8",
     "lerna": "^7.2.0",
     "patch-package": "^7.0.0",
