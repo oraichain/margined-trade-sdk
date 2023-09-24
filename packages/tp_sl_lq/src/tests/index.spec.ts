@@ -180,8 +180,8 @@ describe("perpetual-engine", () => {
   it.each<[number, number, number, string, string, boolean]>([
     [2, 1, 0, "0", "0", true], // spot > profit
     [1, 1, 0, "0", "0", true], // spot = profit
-    [1, 2, 0, "3", "0", true], // profit - spot <= tpSpread
-    [1, 2, 0, "1", "0", true], // profit - spot <= tpSpread
+    [1, 2, 0, "3", "0", true], // profit - spot < tpSpread
+    [1, 2, 0, "1", "0", true], // profit - spot < tpSpread
     [1, 2, 2, "0", "0", true], // loss > spot
     [1, 2, 1, "0", "0", true], // loss = spot
     [2, 3, 1, "0", "2", true], // loss > 0 && spot - loss < slSpread
@@ -207,6 +207,39 @@ describe("perpetual-engine", () => {
           tpSpread,
           slSpread,
           "buy"
+        )
+      ).toEqual(expectedResult);
+    }
+  );
+
+  it.each<[number, number, number, string, string, boolean]>([
+    [1, 2, 0, "0", "0", true], // profit > spot
+    [1, 1, 0, "0", "0", true], // spot = profit
+    [2, 1, 0, "3", "0", true], // spot - profit < tpSpread
+    [2, 1, 0, "1", "0", true], // spot - profit = tpSpread
+    [2, 2, 1, "0", "0", true], // spot > loss
+    [1, 2, 1, "0", "0", true], // loss = spot
+    [1, 3, 2, "0", "2", true], // loss > 0 && loss - spot < slSpread
+    [1, 3, 2, "0", "1", true], // loss > 0 && loss - spot = slSpread
+    [20, 10, 30, "5", "1", false], // failed every case with stop loss > 0
+  ])(
+    "test-willTpSl-sell spot %d profit %d stop loss %d tpSpread %d slSpread %d expected %s",
+    (
+      spotPrice,
+      takeProfitValue,
+      stopLossValue,
+      tpSpread,
+      slSpread,
+      expectedResult
+    ) => {
+      expect(
+        engineHandler.willTpSl(
+          BigInt(spotPrice),
+          BigInt(takeProfitValue),
+          BigInt(stopLossValue),
+          tpSpread,
+          slSpread,
+          "sell"
         )
       ).toEqual(expectedResult);
     }
