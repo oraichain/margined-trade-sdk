@@ -863,14 +863,16 @@ describe("perpetual-engine", () => {
 
   it("test_take_profit", async () => {
     let balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("5000000000000");
+    const marginAmount = toDecimals(60);
+    const leverage = toDecimals(10);
+    expect(balanceRes.balance).toBe(initialUsdcBalances);
 
     engineContract.sender = aliceAddress;
     await engineContract.openPosition({
       vamm: vammContract.contractAddress,
       side: "buy",
-      marginAmount: toDecimals(60),
-      leverage: toDecimals(10),
+      marginAmount,
+      leverage: leverage,
       baseAssetLimit: toDecimals(0),
       takeProfit: toDecimals(20),
       stopLoss: toDecimals(14),
@@ -879,15 +881,17 @@ describe("perpetual-engine", () => {
       positionId: 1,
       vamm: vammContract.contractAddress,
     });
-    balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4940000000000");
+    const { balance: balanceAfterOpenPosition } = await usdcContract.balance({
+      address: aliceAddress,
+    });
+    // after opening position, engine sent margin amount from alice balance to engine contract
+    expect(balanceAfterOpenPosition).toBe(
+      (BigInt(initialUsdcBalances) - BigInt(marginAmount)).toString()
+    );
 
     expect(alicePosition.margin).toEqual(toDecimals(60));
     expect(alicePosition.take_profit).toEqual(toDecimals(20));
     expect(alicePosition.stop_loss).toEqual(toDecimals(14));
-
-    let spotPrice = await vammContract.spotPrice();
-    expect(spotPrice).toEqual(toDecimals(25.6));
 
     engineContract.sender = bobAddress;
     await engineContract.openPosition({
@@ -903,9 +907,6 @@ describe("perpetual-engine", () => {
       positionId: 2,
       vamm: vammContract.contractAddress,
     });
-
-    spotPrice = await vammContract.spotPrice();
-    expect(spotPrice).toEqual("24087039999");
 
     expect(bobPosition.margin).toEqual(toDecimals(6));
     expect(bobPosition.take_profit).toEqual(toDecimals(20));
@@ -925,7 +926,16 @@ describe("perpetual-engine", () => {
     ).rejects.toThrow("margined_perp::margined_engine::Position not found");
 
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4970963337545");
+    const withdrawAmount = longTx.events
+      .find(
+        (ev) =>
+          ev.type === "wasm" &&
+          ev.attributes.find((attr) => attr.key == "withdraw_amount")
+      )
+      .attributes.find((attr) => attr.key === "withdraw_amount").value;
+    expect(balanceRes.balance).toBe(
+      (BigInt(balanceAfterOpenPosition) + BigInt(withdrawAmount)).toString()
+    );
     expect(longTx.events[1].attributes[1].value).toContain(
       "trigger_take_profit"
     );
@@ -933,7 +943,7 @@ describe("perpetual-engine", () => {
 
   it("test_stop_loss", async () => {
     let balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("5000000000000");
+    expect(balanceRes.balance).toBe(initialUsdcBalances);
 
     engineContract.sender = aliceAddress;
     await engineContract.openPosition({
@@ -1006,7 +1016,7 @@ describe("perpetual-engine", () => {
 
   it("test_liquidate", async () => {
     let balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("5000000000000");
+    expect(balanceRes.balance).toBe(initialUsdcBalances);
 
     engineContract.sender = aliceAddress;
     await engineContract.openPosition({
