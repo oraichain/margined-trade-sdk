@@ -8,7 +8,10 @@ import {
   MarginedInsuranceFundClient,
   MarginedFeePoolClient,
 } from "@oraichain/oraimargin-contracts-sdk";
-import { OraiswapTokenClient } from "@oraichain/oraidex-contracts-sdk";
+import {
+  ExecuteResult,
+  OraiswapTokenClient,
+} from "@oraichain/oraidex-contracts-sdk";
 import {
   deployEngine,
   senderAddress,
@@ -25,6 +28,7 @@ import {
 
 import { EngineHandler } from "../index";
 import { UserWallet } from "@oraichain/oraimargin-common";
+import { Side } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 
 const client = new SimulateCosmWasmClient({
   chainId: "Oraichain",
@@ -45,8 +49,8 @@ describe("perpetual-engine", () => {
   const maintenanceMarginRatio = toDecimals(0.05);
   const tpslSpread = toDecimals(0.05);
   const liquidationFee = toDecimals(0.05);
-  const initialOraiBalances = "5000000000";
-  const initialUsdcBalances = toDecimals(5000);
+  const initialOraiBalances = "50000000000000000";
+  const initialUsdcBalances = toDecimals(5000000000);
   const usdcDecimals = 9;
   const baseAssetReserve = toDecimals(100);
   const quoteAssetReserve = toDecimals(1000);
@@ -129,7 +133,7 @@ describe("perpetual-engine", () => {
       [bobAddress, aliceAddress].map((addr) => {
         usdcContract.sender = addr;
         return usdcContract.increaseAllowance({
-          amount: toDecimals(2000),
+          amount: toDecimals(20000000000),
           spender: engineContract.contractAddress,
         });
       })
@@ -364,6 +368,52 @@ describe("perpetual-engine", () => {
       "buy"
     );
     expect(willTriggetTpSl).toEqual(false);
+  });
+
+  it.each<[Side, number, number]>([
+    ["buy", 1, 50],
+    ["buy", 50, 50],
+    ["sell", 1, 50],
+    ["sell", 50, 50],
+  ])("test_queryAllPositions-v2", async (side, limit, expectedLength) => {
+    engineContract.sender = aliceAddress;
+    let entryPrice = "0";
+    for (let i = 0; i < expectedLength; i++) {
+      // buy and sell at the same margin amount to keep the same entry price level
+      const result = await engineContract.openPosition({
+        vamm: vammContract.contractAddress,
+        side: "buy",
+        marginAmount: toDecimals(60),
+        leverage: toDecimals(10),
+        baseAssetLimit: toDecimals(0),
+        takeProfit: toDecimals(70),
+        stopLoss: toDecimals(14),
+      });
+      await engineContract.openPosition({
+        vamm: vammContract.contractAddress,
+        side: "sell",
+        marginAmount: toDecimals(60),
+        leverage: toDecimals(10),
+        baseAssetLimit: toDecimals(0),
+        takeProfit: toDecimals(10),
+        stopLoss: toDecimals(30),
+      });
+      entryPrice = result.events
+        .find(
+          (ev) =>
+            ev.type === "wasm" &&
+            ev.attributes.find((attr) => attr.key == "entry_price")
+        )
+        .attributes.find((attr) => attr.key === "entry_price").value;
+    }
+
+    const postions = await engineHandler.queryPositionsbyPrice(
+      vammContract.contractAddress,
+      side,
+      entryPrice,
+      limit
+    );
+    expect(postions.length).toEqual(expectedLength);
   });
 
   it("test_queryAllPositions", async () => {
