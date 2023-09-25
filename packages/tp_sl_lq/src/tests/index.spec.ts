@@ -880,8 +880,10 @@ describe("perpetual-engine", () => {
       positionId: 1,
       vamm: vammContract.contractAddress,
     });
-    balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe(
+    const { balance: balanceAfterOpenPosition } = await usdcContract.balance({
+      address: aliceAddress,
+    });
+    expect(balanceAfterOpenPosition).toBe(
       (Number(initialUsdcBalances) - Number(alicePosition.margin)).toString()
     );
 
@@ -928,7 +930,16 @@ describe("perpetual-engine", () => {
     ).rejects.toThrow("margined_perp::margined_engine::Position not found");
 
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4999999970963337545");
+    const withdrawAmount = longTx.events
+      .find(
+        (ev) =>
+          ev.type === "wasm" &&
+          ev.attributes.find((attr) => attr.key == "withdraw_amount")
+      )
+      .attributes.find((attr) => attr.key === "withdraw_amount").value;
+    expect(balanceRes.balance).toBe(
+      (BigInt(balanceAfterOpenPosition) + BigInt(withdrawAmount)).toString()
+    );
     expect(longTx.events[1].attributes[1].value).toContain(
       "trigger_take_profit"
     );
