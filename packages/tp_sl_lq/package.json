@@ -12,6 +12,7 @@
     "@oraichain/common-contracts-build": "^1.0.26",
     "@oraichain/common-contracts-sdk": "^1.0.31",
     "@oraichain/oraidex-contracts-build": "^1.0.14",
-    "@oraichain/oraidex-contracts-sdk": "^1.0.22"
+    "@oraichain/oraidex-contracts-sdk": "^1.0.22",
+    "@cosmjs/tendermint-rpc": "^0.31.0"
   }
 }

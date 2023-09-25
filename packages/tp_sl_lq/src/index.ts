@@ -1,5 +1,5 @@
 import { UserWallet, bigAbs } from "@oraichain/oraimargin-common";
-import { ExecuteInstruction } from "@cosmjs/cosmwasm-stargate";
+import { ExecuteInstruction, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 
 import {
   Addr,
@@ -131,7 +131,6 @@ export class EngineHandler {
   }
 
   async triggerTpSl(vamm: Addr, side: Side): Promise<ExecuteInstruction[]> {
-    console.log("trigger TpSl");
     const multipleMsg: ExecuteInstruction[] = [];
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
 
@@ -181,6 +180,8 @@ export class EngineHandler {
       }
     }
 
+    if (multipleMsg.length > 0)
+      console.log("trigger TpSl with length: ", multipleMsg.length);
     return multipleMsg;
   }
 
@@ -188,13 +189,11 @@ export class EngineHandler {
     vamm: Addr,
     side: Side
   ): Promise<ExecuteInstruction[]> {
-    console.log("trigger Liquidate");
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const multipleMsg: ExecuteInstruction[] = [];
     const engineConfig = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
-    console.log({ isOverSpreadLimit });
     for (const tick of ticks) {
       const positionbyPrice = await this.queryPositionsbyPrice(
         vamm,
@@ -209,8 +208,6 @@ export class EngineHandler {
             vamm,
           })
         );
-        console.log({ marginRatio });
-
         let liquidateFlag = false;
         if (isOverSpreadLimit) {
           const oracleMarginRatio = Number(
@@ -220,18 +217,10 @@ export class EngineHandler {
               calcOption: "oracle",
             })
           );
-          console.log({ oracleMarginRatio });
           if (oracleMarginRatio - marginRatio > 0) {
-            console.log("UPGRADE MARGIN RATIO value");
             marginRatio = oracleMarginRatio;
-            console.log({ marginRatio });
           }
         }
-        console.log(
-          "maintenance_margin_ratio:",
-          engineConfig.maintenance_margin_ratio
-        );
-
         if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
           liquidateFlag = true;
         }
@@ -252,26 +241,27 @@ export class EngineHandler {
         }
       }
     }
-
-    console.dir(multipleMsg, { depth: 4 });
+    if (multipleMsg.length > 0)
+      console.log(
+        "trigger Liquidate with total message length: ",
+        multipleMsg.length
+      );
     return multipleMsg;
   }
 
   async payFunding(vamm: Addr): Promise<ExecuteInstruction[]> {
-    console.log("pay Funding rate");
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const vammState = await vammClient.state();
     const nextFundingTime = Number(vammState.next_funding_time);
     let time = Math.floor(Date.now() / 1000);
 
-    console.log({ vammState });
-    console.log({ nextFundingTime });
     if (time >= nextFundingTime) {
       const payFunding: ExecuteMsg = {
         pay_funding: {
           vamm,
         },
       };
+      console.log("pay Funding rate");
       return [
         {
           contractAddress: this.engineAddress,
@@ -287,14 +277,13 @@ export async function executeEngine(
   sender: UserWallet,
   engine: Addr,
   insurance: Addr
-) {
+): Promise<ExecuteResult> | undefined {
   console.log(`Excecuting perpetual engine contract ${engine}`);
   const insuranceClient = new MarginedInsuranceFundQueryClient(
     sender.client,
     insurance
   );
   const { vamm_list: vammList } = await insuranceClient.getAllVamm({});
-  console.log({ vammList });
 
   const engineHandler = new EngineHandler(sender, engine);
   const executePromises = vammList
@@ -314,9 +303,8 @@ export async function executeEngine(
       instructions = instructions.concat(res.value);
     }
   }
-  if (instructions.length > 0) {
-    return await engineHandler.executeMultiple(instructions);
-  } else {
-    throw new Error("No execute instructions messages available");
-  }
+  console.log("instructions to execute: ");
+  console.dir(instructions, { depth: 4 });
+  if (instructions.length > 0)
+    return engineHandler.executeMultiple(instructions);
 }

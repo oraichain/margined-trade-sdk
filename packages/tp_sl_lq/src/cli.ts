@@ -1,14 +1,53 @@
 import dotenv from "dotenv";
 import { executeEngine } from "./index";
-import { decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
-import { WebhookClient, time, blockQuote, userMention } from "discord.js";
+import { UserWallet, decrypt, setupWallet } from "@oraichain/oraimargin-common";
+import { WebhookClient, time, userMention } from "discord.js";
+import { Tendermint37Client, WebsocketClient } from "@cosmjs/tendermint-rpc";
 
 dotenv.config();
 
 const minimumOraiBalance = 1000000; // 1 ORAI;
 
+async function handleExecuteEngine(
+  sender: UserWallet,
+  engineAddr?: string,
+  insuranceAddr?: string
+): Promise<string> {
+  const date = new Date();
+  try {
+    const res = await executeEngine(
+      sender,
+      engineAddr ?? process.env.ENGINE_CONTRACT,
+      insuranceAddr ?? process.env.INSURANCE_FUND_CONTRACT
+    );
+    if (res !== undefined) {
+      console.log(
+        "take profit | stop loss | liquidate | payfunding - txHash:",
+        res.transactionHash
+      );
+      return (
+        `:receipt: BOT: ${sender.address} - take profit | stop loss | liquidate | payfunding - txHash: ` +
+        `${res.transactionHash}`.toString() +
+        ` at ${time(date)}`
+      );
+    }
+    return "";
+  } catch (error) {
+    console.log(
+      "error in processing triggering TpSl, liquidate & pay funding: ",
+      { error }
+    );
+    return (
+      `:red_circle: BOT: ${sender.address} - err ` +
+      error.message +
+      ` at ${time(date)}`
+    );
+  }
+}
+
 (async () => {
   const webhookUrl = process.env.DISCORD_WEBHOOK ?? "";
+  const rpcUrl = process.env.RPC_URL ?? "https://rpc.orai.io";
   const discordUserIds: string[] =
     process.env.DISCORD_USERS_IDS?.split(",") || [];
   console.log({ webhookUrl, discordUserIds });
@@ -27,14 +66,13 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
     url: webhookUrl,
   });
 
-  const engine = process.env.ENGINE_CONTRACT;
-  const insurance = process.env.INSURANCE_FUND_CONTRACT;
   const sender = await setupWallet(
-    decrypt(process.env.MNEMONIC_PASS, process.env.MNEMONIC_ENCRYPTED),
+    process.env.MNEMONIC ??
+      decrypt(process.env.MNEMONIC_PASS, process.env.MNEMONIC_ENCRYPTED),
     {
-      hdPath: process.env.HD_PATH,
-      rpcUrl: process.env.RPC_URL,
-      prefix: process.env.PREFIX,
+      hdPath: process.env.HD_PATH ?? "m/44'/118'/0'/0/0",
+      rpcUrl,
+      prefix: process.env.PREFIX ?? "orai",
     }
   );
 
@@ -52,35 +90,29 @@ const minimumOraiBalance = 1000000; // 1 ORAI;
     );
   }
 
-  while (true) {
-    try {
-      date = new Date();
-      const res = await executeEngine(sender, engine, insurance);
-      if (res !== undefined) {
-        console.log(
-          "take profit | stop loss | liquidate | payfunding - txHash:",
-          res.transactionHash
-        );
-        await webhookClient.send(
-          `:receipt: BOT: ${sender.address} - take profit | stop loss | liquidate | payfunding - txHash: ` +
-            `https://scan.orai.io/txs/${res.transactionHash}`.toString() +
-            ` at ${time(date)}`
-        );
+  const websocket = new WebsocketClient(rpcUrl);
+  const client = await Tendermint37Client.create(websocket);
+  const stream = client.subscribeNewBlock();
+  stream.subscribe({
+    next: async (event) => {
+      console.log("height: ", event.header.height);
+      try {
+        const result = await handleExecuteEngine(sender);
+        if (result) {
+          if (result.includes("err"))
+            await webhookClient.send(result + mentionUserIds);
+          else await webhookClient.send(result);
+        }
+      } catch (error) {
+        await webhookClient.send(JSON.stringify({ error }));
       }
-    } catch (error) {
-      console.log(
-        "error in processing triggering TpSl, liquidate & pay funding: ",
-        { error }
-      );
-      await webhookClient.send(
-        `:red_circle: BOT: ${sender.address} - err ` +
-          error.message +
-          ` at ${time(date)}` +
-          mentionUserIds
-      );
-    }
-    await delay(
-      process.env.BOT_INTERVAL ? parseInt(process.env.BOT_INTERVAL) : 3000
-    );
-  }
+    },
+    error: async (error) => {
+      console.log("error in subscribing to the websocket: ", error);
+      await webhookClient.send(JSON.stringify({ error }));
+    },
+    complete: async () => {
+      await webhookClient.send("Block subscription completed. Exiting ...");
+    },
+  });
 })();
