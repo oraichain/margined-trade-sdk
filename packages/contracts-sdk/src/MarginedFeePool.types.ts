@@ -1,4 +1,4 @@
-import {Uint128, Addr} from "./types";
+import {Uint128, Addr, AssetInfo} from "./types";
 export interface InstantiateMsg {}
 export type ExecuteMsg = {
   update_owner: {
@@ -42,15 +42,6 @@ export interface OwnerResponse {
 export interface TokenLengthResponse {
   length: number;
 }
-export type AssetInfo = {
-  token: {
-    contract_addr: Addr;
-  };
-} | {
-  native_token: {
-    denom: string;
-  };
-};
 export interface AllTokenResponse {
   token_list: AssetInfo[];
 }

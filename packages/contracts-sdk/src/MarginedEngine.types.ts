@@ -1,4 +1,4 @@
-import {Uint128, Addr, Boolean} from "./types";
+import {Uint128, Direction, Addr, Integer, AssetInfo, Boolean} from "./types";
 export interface InstantiateMsg {
   eligible_collateral: string;
   fee_pool: string;
@@ -172,6 +172,11 @@ export type QueryMsg = {
     vamm: string;
   };
 } | {
+  position_is_tp_s_l: {
+    position_id: number;
+    vamm: string;
+  };
+} | {
   last_position_id: {};
 };
 export type PositionFilter = "none" | {
@@ -181,7 +186,6 @@ export type PositionFilter = "none" | {
 };
 export type PnlCalcOption = "spot_price" | "twap" | "oracle";
 export interface MigrateMsg {}
-export type Direction = "add_to_amm" | "remove_from_amm";
 export type ArrayOfPosition = Position[];
 export interface Position {
   block_time: number;
@@ -199,19 +203,6 @@ export interface Position {
   trader: Addr;
   vamm: Addr;
 }
-export interface Integer {
-  negative: boolean;
-  value: Uint128;
-}
-export type AssetInfo = {
-  token: {
-    contract_addr: Addr;
-  };
-} | {
-  native_token: {
-    denom: string;
-  };
-};
 export interface ConfigResponse {
   decimals: Uint128;
   eligible_collateral: AssetInfo;
@@ -232,6 +223,9 @@ export interface HooksResponse {
 }
 export interface LastPositionIdResponse {
   last_position_id: number;
+}
+export interface PositionTpSlResponse {
+  is_tpsl: boolean;
 }
 export interface StateResponse {
   bad_debt: Uint128;

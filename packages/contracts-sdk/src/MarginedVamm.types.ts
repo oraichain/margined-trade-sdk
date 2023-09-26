@@ -1,4 +1,4 @@
-import {Uint128, Addr, Boolean} from "./types";
+import {Uint128, Direction, Addr, Boolean, Integer} from "./types";
 export interface InstantiateMsg {
   base_asset: string;
   base_asset_reserve: Uint128;
@@ -51,7 +51,6 @@ export type ExecuteMsg = {
     open: boolean;
   };
 };
-export type Direction = "add_to_amm" | "remove_from_amm";
 export type QueryMsg = {
   config: {};
 } | {
@@ -142,8 +141,4 @@ export interface StateResponse {
   open: boolean;
   quote_asset_reserve: Uint128;
   total_position_size: Integer;
-}
-export interface Integer {
-  negative: boolean;
-  value: Uint128;
 }

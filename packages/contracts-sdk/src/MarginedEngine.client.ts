@@ -6,8 +6,8 @@
 
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
-import {Uint128, Addr, Boolean} from "./types";
-import {InstantiateMsg, ExecuteMsg, Side, QueryMsg, PositionFilter, PnlCalcOption, MigrateMsg, Direction, ArrayOfPosition, Position, Integer, AssetInfo, ConfigResponse, PauserResponse, HooksResponse, LastPositionIdResponse, StateResponse, TickResponse, TicksResponse, PositionUnrealizedPnlResponse} from "./MarginedEngine.types";
+import {Uint128, Direction, Addr, Integer, AssetInfo, Boolean} from "./types";
+import {InstantiateMsg, ExecuteMsg, Side, QueryMsg, PositionFilter, PnlCalcOption, MigrateMsg, ArrayOfPosition, Position, ConfigResponse, PauserResponse, HooksResponse, LastPositionIdResponse, PositionTpSlResponse, StateResponse, TickResponse, TicksResponse, PositionUnrealizedPnlResponse} from "./MarginedEngine.types";
 export interface MarginedEngineReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<ConfigResponse>;
@@ -123,6 +123,13 @@ export interface MarginedEngineReadOnlyInterface {
     positionId: number;
     vamm: string;
   }) => Promise<Position>;
+  positionIsTpSL: ({
+    positionId,
+    vamm
+  }: {
+    positionId: number;
+    vamm: string;
+  }) => Promise<PositionTpSlResponse>;
   lastPositionId: () => Promise<LastPositionIdResponse>;
 }
 export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterface {
@@ -149,6 +156,7 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     this.freeCollateral = this.freeCollateral.bind(this);
     this.balanceWithFundingPayment = this.balanceWithFundingPayment.bind(this);
     this.positionWithFundingPayment = this.positionWithFundingPayment.bind(this);
+    this.positionIsTpSL = this.positionIsTpSL.bind(this);
     this.lastPositionId = this.lastPositionId.bind(this);
   }
 
@@ -376,6 +384,20 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
   }): Promise<Position> => {
     return this.client.queryContractSmart(this.contractAddress, {
       position_with_funding_payment: {
+        position_id: positionId,
+        vamm
+      }
+    });
+  };
+  positionIsTpSL = async ({
+    positionId,
+    vamm
+  }: {
+    positionId: number;
+    vamm: string;
+  }): Promise<PositionTpSlResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      position_is_tp_s_l: {
         position_id: positionId,
         vamm
       }
