@@ -144,7 +144,7 @@ export class EngineHandler {
       for (const position of positionbyPrice) {
         const willTriggetTpSl = this.engineClient.positionIsTpSL({
           vamm,
-          positionId: position.position_id
+          positionId: position.position_id,
         });
 
         if (!willTriggetTpSl) continue;
