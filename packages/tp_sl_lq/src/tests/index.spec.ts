@@ -1018,6 +1018,182 @@ describe("perpetual-engine", () => {
     expect(balanceRes.balance).toBe("4999999998624802520");
   });
 
+  // When open position without stop loss price.
+  // User will can be lose a lot of tokens when open position (below is an example with long position)
+  it("test_without_stop_loss", async () => {
+    let spotPrice = "";
+    let alicePosition = null;
+    let balanceRes = await usdcContract.balance({ address: aliceAddress });
+
+    expect(balanceRes.balance).toBe(initialUsdcBalances);
+
+    engineContract.sender = aliceAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(1), // Open with 1_000_000_000
+      leverage: toDecimals(1),
+      takeProfit: toDecimals(20),
+      baseAssetLimit: toDecimals(0),
+    });
+
+    alicePosition = await engineContract.position({
+      positionId: 1,
+      vamm: vammContract.contractAddress,
+    });
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("4999999999000000000");
+
+    expect(alicePosition.margin).toEqual(toDecimals(1));
+    expect(alicePosition.take_profit).toEqual(toDecimals(20));
+    expect(alicePosition.stop_loss).toEqual(null);
+
+    spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("10020009999");
+
+    engineContract.sender = bobAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(30),
+      leverage: toDecimals(1),
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(40),
+      baseAssetLimit: toDecimals(0),
+    });
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(3),
+      leverage: toDecimals(10),
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(40),
+      baseAssetLimit: toDecimals(0),
+    });
+
+    const bobPosition = await engineContract.position({
+      positionId: 3,
+      vamm: vammContract.contractAddress,
+    });
+
+    spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("8854809999");
+
+    expect(bobPosition.margin).toEqual(toDecimals(3));
+    expect(bobPosition.take_profit).toEqual(toDecimals(5));
+    expect(bobPosition.stop_loss).toEqual(toDecimals(40));
+
+    const longMsgs = await engineHandler.triggerTpSl(
+      vammContract.contractAddress,
+      "buy"
+    );
+    const longTx = await engineHandler.executeMultiple(longMsgs);
+    expect(longTx.events[1].attributes[1].value).toContain("");
+
+    engineContract.sender = aliceAddress;
+    const tx = await engineContract.closePosition({
+      positionId: 1,
+      quoteAssetLimit: toDecimals(0),
+      vamm: vammContract.contractAddress,
+    });
+    expect(tx.events[1].attributes[1].value).toContain("close_position");
+    expect(tx.events[1].attributes[5].value).toContain("1");
+    await expect(
+      engineContract.position({
+        positionId: 1,
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow("margined_perp::margined_engine::Position not found");
+
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("4999999999883765602"); // Remain token. (Lost 116_234_240) when open with 1_000_000_000
+  });
+
+  // When open position without stop loss price.
+  // User will can be lose all token when open position (below is an example with long position)
+  // And maybe can't close position because "bad dept"
+  it("test_bad_dept_without_stop_loss", async () => {
+    let spotPrice = "";
+    let balanceRes = await usdcContract.balance({ address: aliceAddress });
+
+    expect(balanceRes.balance).toBe(initialUsdcBalances);
+
+    engineContract.sender = aliceAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(10), // lost all 10*10**9 tokens
+      leverage: toDecimals(20),
+      takeProfit: toDecimals(20),
+      baseAssetLimit: toDecimals(0),
+    });
+
+    const alicePosition = await engineContract.position({
+      positionId: 1,
+      vamm: vammContract.contractAddress,
+    });
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+    expect(balanceRes.balance).toBe("4999999990000000000");
+
+    expect(alicePosition.margin).toEqual(toDecimals(10));
+    expect(alicePosition.take_profit).toEqual(toDecimals(20));
+    expect(alicePosition.stop_loss).toEqual(null);
+
+    spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("14399999999");
+
+    engineContract.sender = bobAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(200),
+      leverage: toDecimals(1),
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(40),
+      baseAssetLimit: toDecimals(0),
+    });
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(100),
+      leverage: toDecimals(1),
+      takeProfit: toDecimals(5),
+      stopLoss: toDecimals(40),
+      baseAssetLimit: toDecimals(0),
+    });
+
+    const bobPosition = await engineContract.position({
+      positionId: 3,
+      vamm: vammContract.contractAddress,
+    });
+
+    spotPrice = await vammContract.spotPrice();
+    expect(spotPrice).toEqual("8099999999");
+
+    expect(bobPosition.margin).toEqual(toDecimals(100));
+    expect(bobPosition.take_profit).toEqual(toDecimals(5));
+    expect(bobPosition.stop_loss).toEqual(toDecimals(40));
+
+    const longMsgs = await engineHandler.triggerTpSl(
+      vammContract.contractAddress,
+      "buy"
+    );
+    const longTx = await engineHandler.executeMultiple(longMsgs);
+    expect(longTx.events[1].attributes[1].value).toContain("");
+
+    balanceRes = await usdcContract.balance({ address: aliceAddress });
+
+    engineContract.sender = aliceAddress;
+    await expect(
+      engineContract.closePosition({
+        positionId: 1,
+        quoteAssetLimit: "0",
+        vamm: vammContract.contractAddress,
+      })
+    ).rejects.toThrow("Generic error: Cannot close position - bad debt");
+    expect(balanceRes.balance).toBe("4999999990000000000"); // Remain token.
+  });
+
   it("test_liquidate", async () => {
     let balanceRes = await usdcContract.balance({ address: aliceAddress });
     expect(balanceRes.balance).toBe(initialUsdcBalances);
