@@ -18,8 +18,8 @@
     "@cosmjs/amino": "^0.31",
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
     "@oraichain/oraimargin-common": "^0.0.2",
-    "@oraichain/oraimargin-contracts-build": "^1.0.25",
-    "@oraichain/oraimargin-contracts-sdk": "^1.0.29",
+    "@oraichain/oraimargin-contracts-build": "^1.0.27",
+    "@oraichain/oraimargin-contracts-sdk": "^1.0.30",
     "discord.js": "^14.13.0"
   },
   "devDependencies": {

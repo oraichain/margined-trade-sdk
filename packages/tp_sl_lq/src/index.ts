@@ -156,14 +156,11 @@ export class EngineHandler {
           config.tp_sl_spread,
           config.decimals
         );
-        const willTriggetTpSl = this.willTpSl(
-          BigInt(spotPrice),
-          BigInt(position.take_profit),
-          BigInt(position.stop_loss ?? "0"),
-          tpSpread.toString(),
-          slSpread.toString(),
-          position.side
-        );
+
+        const willTriggetTpSl = this.engineClient.positionIsTpSL({
+          vamm,
+          positionId: position.position_id
+        });
 
         if (!willTriggetTpSl) continue;
         let trigger_tp_sl: ExecuteInstruction = {
