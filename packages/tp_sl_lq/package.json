@@ -1,5 +1,5 @@
 {
-  "name": "@oraichain/oraimargin-matching",
+  "name": "@oraichain/oraimargin-engine",
   "version": "0.0.1",
   "main": "build/cli.js",
   "bin": "build/cli.js",

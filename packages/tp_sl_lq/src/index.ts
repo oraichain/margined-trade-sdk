@@ -132,12 +132,8 @@ export class EngineHandler {
 
   async triggerTpSl(vamm: Addr, side: Side): Promise<ExecuteInstruction[]> {
     const multipleMsg: ExecuteInstruction[] = [];
-    const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
-
-    const config = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
 
-    const spotPrice = await vammClient.spotPrice();
     for (const tick of ticks) {
       const positionbyPrice = await this.queryPositionsbyPrice(
         vamm,
@@ -146,17 +142,6 @@ export class EngineHandler {
       );
 
       for (const position of positionbyPrice) {
-        const tpSpread = this.calculateSpreadValue(
-          position.take_profit,
-          config.tp_sl_spread,
-          config.decimals
-        );
-        const slSpread = this.calculateSpreadValue(
-          position.stop_loss ?? "0",
-          config.tp_sl_spread,
-          config.decimals
-        );
-
         const willTriggetTpSl = this.engineClient.positionIsTpSL({
           vamm,
           positionId: position.position_id
