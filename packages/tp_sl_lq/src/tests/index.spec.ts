@@ -8,10 +8,7 @@ import {
   MarginedInsuranceFundClient,
   MarginedFeePoolClient,
 } from "@oraichain/oraimargin-contracts-sdk";
-import {
-  ExecuteResult,
-  OraiswapTokenClient,
-} from "@oraichain/oraidex-contracts-sdk";
+import { OraiswapTokenClient } from "@oraichain/oraidex-contracts-sdk";
 import {
   deployEngine,
   senderAddress,
@@ -23,7 +20,6 @@ import {
   toDecimals,
   aliceAddress,
   bobAddress,
-  carolAddress,
 } from "./common";
 
 import { EngineHandler } from "../index";
@@ -407,13 +403,13 @@ describe("perpetual-engine", () => {
         .attributes.find((attr) => attr.key === "entry_price").value;
     }
 
-    const postions = await engineHandler.queryPositionsbyPrice(
+    const positions = await engineHandler.queryPositionsbyPrice(
       vammContract.contractAddress,
       side,
       entryPrice,
       limit
     );
-    expect(postions.length).toEqual(expectedLength);
+    expect(positions.length).toEqual(expectedLength);
   });
 
   it("test_queryAllPositions", async () => {
@@ -975,8 +971,18 @@ describe("perpetual-engine", () => {
       positionId: 1,
       vamm: vammContract.contractAddress,
     });
+    const aliceSecondPosition = await engineContract.position({
+      positionId: 2,
+      vamm: vammContract.contractAddress,
+    });
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4999999988000000000");
+    expect(balanceRes.balance).toBe(
+      (
+        Number(initialUsdcBalances) -
+        Number(alicePosition.margin) -
+        Number(aliceSecondPosition.margin)
+      ).toString()
+    );
 
     expect(alicePosition.margin).toEqual(toDecimals(6));
     expect(alicePosition.take_profit).toEqual(toDecimals(20));
@@ -995,7 +1001,7 @@ describe("perpetual-engine", () => {
       takeProfit: toDecimals(5),
       stopLoss: toDecimals(40),
     });
-    let bobPosition = await engineContract.position({
+    const bobPosition = await engineContract.position({
       positionId: 3,
       vamm: vammContract.contractAddress,
     });
@@ -1042,7 +1048,9 @@ describe("perpetual-engine", () => {
       vamm: vammContract.contractAddress,
     });
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4999999999000000000");
+    expect(balanceRes.balance).toBe(
+      (Number(initialUsdcBalances) - Number(alicePosition.margin)).toString()
+    );
 
     expect(alicePosition.margin).toEqual(toDecimals(1));
     expect(alicePosition.take_profit).toEqual(toDecimals(20));
@@ -1191,7 +1199,9 @@ describe("perpetual-engine", () => {
         vamm: vammContract.contractAddress,
       })
     ).rejects.toThrow("Generic error: Cannot close position - bad debt");
-    expect(balanceRes.balance).toBe("4999999990000000000"); // Remain token.
+    expect(balanceRes.balance).toBe(
+      (Number(initialUsdcBalances) - Number(alicePosition.margin)).toString()
+    ); // Remain token.
   });
 
   it("test_liquidate", async () => {
