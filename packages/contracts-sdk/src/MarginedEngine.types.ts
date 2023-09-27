@@ -172,7 +172,7 @@ export type QueryMsg = {
     vamm: string;
   };
 } | {
-  position_is_tp_s_l: {
+  position_is_tp_sl: {
     position_id: number;
     vamm: string;
   };
@@ -198,8 +198,10 @@ export interface Position {
   position_id: number;
   side: Side;
   size: Integer;
+  spread_fee: Uint128;
   stop_loss?: Uint128 | null;
   take_profit: Uint128;
+  toll_fee: Uint128;
   trader: Addr;
   vamm: Addr;
 }

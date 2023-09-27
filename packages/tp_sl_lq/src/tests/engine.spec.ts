@@ -616,9 +616,9 @@ describe("engine", () => {
       spreadRatio: toDecimals(0.05),
     });
 
-    // given 300 x 2 quote asset, get 37.5 base asset
+    // given 240 x 2 quote asset, get 17.5 base asset
     // fee is 300 x 2 x 10% = 60
-    // user needs to pay 300 + 60 = 360
+    // user needs to pay 300
 
     engineContract.sender = aliceAddress;
     await engineContract.openPosition({
@@ -626,7 +626,7 @@ describe("engine", () => {
       side: "buy",
       marginAmount: toDecimals(300),
       leverage: toDecimals(2),
-      baseAssetLimit: toDecimals(37.5),
+      baseAssetLimit: toDecimals(17.5),
       takeProfit: toDecimals(18),
       stopLoss: toDecimals(0),
     });
@@ -635,12 +635,12 @@ describe("engine", () => {
       positionId: 1,
       vamm: vammContract.contractAddress,
     });
-    expect(alicePosition.margin).toEqual(toDecimals(300));
+    expect(alicePosition.margin).toEqual(toDecimals(240));
 
     let engineBalance = await usdcContract.balance({
       address: engineContract.contractAddress,
     });
-    expect(engineBalance.balance).toEqual(toDecimals(300));
+    expect(engineBalance.balance).toEqual(toDecimals(240));
 
     // 10% fee pool balance
     let feepoolBalance = await usdcContract.balance({
@@ -687,7 +687,7 @@ describe("engine", () => {
     let aliceBalanceLost =
       Number(aliceBalance.balance) -
       Number((await usdcContract.balance({ address: aliceAddress })).balance);
-    expect(aliceBalanceLost.toString()).toEqual(toDecimals(60));
+    expect(aliceBalanceLost.toString()).toEqual(toDecimals(50));
   });
 
   it("test_open_and_close_position_fee_ten_percent", async () => {
@@ -705,7 +705,7 @@ describe("engine", () => {
       side: "buy",
       marginAmount: toDecimals(300),
       leverage: toDecimals(2),
-      baseAssetLimit: toDecimals(37.5),
+      baseAssetLimit: toDecimals(17.5),
       takeProfit: toDecimals(18),
       stopLoss: toDecimals(0),
     });
@@ -719,7 +719,7 @@ describe("engine", () => {
     let engineBalance = await usdcContract.balance({
       address: engineContract.contractAddress,
     });
-    expect(engineBalance.balance).toEqual("0");
+    expect(engineBalance.balance).toEqual("7");
 
     let feepoolBalance = await usdcContract.balance({
       address: feepoolContract.contractAddress,

@@ -123,7 +123,7 @@ export interface MarginedEngineReadOnlyInterface {
     positionId: number;
     vamm: string;
   }) => Promise<Position>;
-  positionIsTpSL: ({
+  positionIsTpSl: ({
     positionId,
     vamm
   }: {
@@ -156,7 +156,7 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     this.freeCollateral = this.freeCollateral.bind(this);
     this.balanceWithFundingPayment = this.balanceWithFundingPayment.bind(this);
     this.positionWithFundingPayment = this.positionWithFundingPayment.bind(this);
-    this.positionIsTpSL = this.positionIsTpSL.bind(this);
+    this.positionIsTpSl = this.positionIsTpSl.bind(this);
     this.lastPositionId = this.lastPositionId.bind(this);
   }
 
@@ -389,7 +389,7 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
       }
     });
   };
-  positionIsTpSL = async ({
+  positionIsTpSl = async ({
     positionId,
     vamm
   }: {
@@ -397,7 +397,7 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     vamm: string;
   }): Promise<PositionTpSlResponse> => {
     return this.client.queryContractSmart(this.contractAddress, {
-      position_is_tp_s_l: {
+      position_is_tp_sl: {
         position_id: positionId,
         vamm
       }

@@ -142,12 +142,13 @@ export class EngineHandler {
       );
 
       for (const position of positionbyPrice) {
-        const willTriggetTpSl = this.engineClient.positionIsTpSL({
+        const willTriggerTpSl = await this.engineClient.positionIsTpSl({
           vamm,
           positionId: position.position_id,
         });
-
-        if (!willTriggetTpSl) continue;
+        console.log({ willTriggerTpSl });
+        
+        if (!willTriggerTpSl.is_tpsl) continue;
         let trigger_tp_sl: ExecuteInstruction = {
           contractAddress: this.engineAddress,
           msg: {

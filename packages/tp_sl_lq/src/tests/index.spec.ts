@@ -1088,7 +1088,7 @@ describe("perpetual-engine", () => {
       "buy"
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
-    expect(longTx.events[1].attributes[1].value).toContain("");
+    expect(longTx.events).toEqual([]);
 
     engineContract.sender = aliceAddress;
     const tx = await engineContract.closePosition({
@@ -1179,7 +1179,7 @@ describe("perpetual-engine", () => {
       "buy"
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
-    expect(longTx.events[1].attributes[1].value).toContain("");
+    expect(longTx.events).toEqual([]);
 
     balanceRes = await usdcContract.balance({ address: aliceAddress });
 
