@@ -473,7 +473,6 @@ describe("perpetual-engine", () => {
       vammContract.contractAddress,
       "buy"
     );
-    console.log({ ticks });
 
     expect(ticks[0]).toEqual({
       entry_price: "52500000000",
@@ -1018,10 +1017,28 @@ describe("perpetual-engine", () => {
       "buy"
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
-    console.dir(longTx, { depth: 4 });
+
+    const pnlAmounts = longTx.events
+      .filter(
+        (ev) =>
+          ev.type === "wasm" &&
+          !!ev.attributes.find((attr) => attr.key == "withdraw_amount")
+      )
+      .map((event) =>
+        event.attributes.filter((attribute) => attribute.key === "pnl")
+      )
+      .flat();
+
+    const pnlAmountsConverted = pnlAmounts.reduce(
+      (prev, curr) => BigInt(prev) + BigInt(curr.value),
+      BigInt(0)
+    );
     expect(longTx.events[1].attributes[1].value).toContain("trigger_stop_loss");
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4999999998624802520");
+
+    expect(balanceRes.balance).toBe(
+      (BigInt(initialUsdcBalances) + pnlAmountsConverted).toString()
+    );
   });
 
   // When open position without stop loss price.
@@ -1037,7 +1054,7 @@ describe("perpetual-engine", () => {
     await engineContract.openPosition({
       vamm: vammContract.contractAddress,
       side: "buy",
-      marginAmount: toDecimals(1), // Open with 1_000_000_000
+      marginAmount: toDecimals(1),
       leverage: toDecimals(1),
       takeProfit: toDecimals(20),
       baseAssetLimit: toDecimals(0),
@@ -1104,6 +1121,10 @@ describe("perpetual-engine", () => {
       quoteAssetLimit: toDecimals(0),
       vamm: vammContract.contractAddress,
     });
+    const pnl = tx.events[5].attributes.find(
+      (attribute) => attribute.key === "pnl"
+    ).value;
+
     expect(tx.events[1].attributes[1].value).toContain("close_position");
     expect(tx.events[1].attributes[5].value).toContain("1");
     await expect(
@@ -1114,7 +1135,10 @@ describe("perpetual-engine", () => {
     ).rejects.toThrow("margined_perp::margined_engine::Position not found");
 
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4999999999883765602"); // Remain token. (Lost 116_234_240) when open with 1_000_000_000
+
+    expect(balanceRes.balance).toBe(
+      (BigInt(initialUsdcBalances) + BigInt(pnl)).toString()
+    );
   });
 
   // When open position without stop loss price.
@@ -1141,7 +1165,9 @@ describe("perpetual-engine", () => {
       vamm: vammContract.contractAddress,
     });
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4999999990000000000");
+    expect(balanceRes.balance).toBe(
+      (Number(initialUsdcBalances) - Number(alicePosition.margin)).toString()
+    );
 
     expect(alicePosition.margin).toEqual(toDecimals(10));
     expect(alicePosition.take_profit).toEqual(toDecimals(20));
@@ -1201,11 +1227,13 @@ describe("perpetual-engine", () => {
     ).rejects.toThrow("Generic error: Cannot close position - bad debt");
     expect(balanceRes.balance).toBe(
       (Number(initialUsdcBalances) - Number(alicePosition.margin)).toString()
-    ); // Remain token.
+    );
   });
 
   it("test_liquidate", async () => {
+    let spotPrice = "";
     let balanceRes = await usdcContract.balance({ address: aliceAddress });
+
     expect(balanceRes.balance).toBe(initialUsdcBalances);
 
     engineContract.sender = aliceAddress;
@@ -1219,7 +1247,12 @@ describe("perpetual-engine", () => {
       stopLoss: toDecimals(10),
     });
 
-    let spotPrice = await vammContract.spotPrice();
+    const alicePosition = await engineContract.position({
+      positionId: 1,
+      vamm: vammContract.contractAddress,
+    });
+
+    spotPrice = await vammContract.spotPrice();
     expect(spotPrice).toEqual("15625000000");
 
     engineContract.sender = bobAddress;
@@ -1239,9 +1272,11 @@ describe("perpetual-engine", () => {
       "buy"
     );
     const tx = await engineHandler.executeMultiple(liquidateMsgs);
-    console.dir(tx, { depth: 4 });
+
     expect(tx.events[1].attributes[1].value).toContain("liquidate");
     balanceRes = await usdcContract.balance({ address: aliceAddress });
-    expect(balanceRes.balance).toBe("4999999975000000000");
+    expect(balanceRes.balance).toBe(
+      (Number(initialUsdcBalances) - Number(alicePosition.margin)).toString()
+    );
   });
 });
