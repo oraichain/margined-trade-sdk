@@ -16,6 +16,11 @@
 <li><a href="../modules/MarginedEngine_client.html">MarginedEngine.client</a></li>
 <li><a href="MarginedEngine_client.MarginedEngineClient.html">MarginedEngineClient</a></li></ul>
 <h1>Class MarginedEngineClient</h1></div>
+<section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>The margin engine is responsible for managing user positions and collateral. Allows users to take positions in all registered vAMMs.</p>
+<pre><code class="language-ts"><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">client</span><span class="hl-1"> = </span><span class="hl-3">isSimulate</span><span class="hl-1"> </span><br/><span class="hl-1">? </span><span class="hl-0">new</span><span class="hl-1"> </span><span class="hl-4">SimulateCosmWasmClient</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">chainId:</span><span class="hl-1"> </span><span class="hl-5">&#39;Oraichain&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">bech32Prefix:</span><span class="hl-1"> </span><span class="hl-5">&#39;orai&#39;</span><br/><span class="hl-1">})</span><br/><span class="hl-1">: </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">SigningCosmWasmClient</span><span class="hl-1">.</span><span class="hl-4">connectWithSigner</span><span class="hl-1">(</span><span class="hl-5">&#39;https://rpc.orai.io&#39;</span><span class="hl-1">, </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">keplr</span><span class="hl-1">.</span><span class="hl-4">getOfflineSignerAuto</span><span class="hl-1">(</span><span class="hl-5">&#39;Oraichain&#39;</span><span class="hl-1">), {</span><br/><span class="hl-1">  </span><span class="hl-3">prefix:</span><span class="hl-1"> </span><span class="hl-5">&#39;orai&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">gasPrice:</span><span class="hl-1"> </span><span class="hl-3">GasPrice</span><span class="hl-1">.</span><span class="hl-4">fromString</span><span class="hl-1">(</span><span class="hl-5">`0.002orai`</span><span class="hl-1">)</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-0">const</span><span class="hl-1"> </span><span class="hl-2">engineClient</span><span class="hl-1"> = </span><span class="hl-0">new</span><span class="hl-1"> </span><span class="hl-4">MarginedEngineClient</span><span class="hl-1">(</span><span class="hl-3">client</span><span class="hl-1">);</span>
+</code><button>Copy</button></pre>
+</div></section>
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
@@ -27,7 +32,7 @@
 <ul class="tsd-hierarchy">
 <li><a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html" class="tsd-signature-type tsd-kind-interface">MarginedEngineInterface</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L511">packages/contracts-sdk/src/MarginedEngine.client.ts:511</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L566">packages/contracts-sdk/src/MarginedEngine.client.ts:566</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -96,7 +101,7 @@
 <h4 class="tsd-returns-title">Returns <a href="MarginedEngine_client.MarginedEngineClient.html" class="tsd-signature-type tsd-kind-class">MarginedEngineClient</a></h4><aside class="tsd-sources">
 <p>Overrides <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#constructor">constructor</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L516">packages/contracts-sdk/src/MarginedEngine.client.ts:516</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L571">packages/contracts-sdk/src/MarginedEngine.client.ts:571</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member"><a id="client" class="tsd-anchor"></a>
@@ -104,20 +109,20 @@
 <div class="tsd-signature"><span class="tsd-kind-property">client</span><span class="tsd-signature-symbol">:</span> <a href="index.SigningCosmWasmClient.html" class="tsd-signature-type tsd-kind-class">SigningCosmWasmClient</a></div><aside class="tsd-sources">
 <p>Overrides <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#client">client</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L512">packages/contracts-sdk/src/MarginedEngine.client.ts:512</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L567">packages/contracts-sdk/src/MarginedEngine.client.ts:567</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="contractAddress" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>contract<wbr/>Address</span><a href="#contractAddress" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">contract<wbr/>Address</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#contractAddress">contractAddress</a></p>
 <p>Overrides <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#contractAddress">contractAddress</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L514">packages/contracts-sdk/src/MarginedEngine.client.ts:514</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L569">packages/contracts-sdk/src/MarginedEngine.client.ts:569</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="sender" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>sender</span><a href="#sender" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">sender</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#sender">sender</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L513">packages/contracts-sdk/src/MarginedEngine.client.ts:513</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L568">packages/contracts-sdk/src/MarginedEngine.client.ts:568</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="addWhitelist" class="tsd-anchor"></a>
@@ -142,12 +147,14 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#addWhitelist">addWhitelist</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L579">packages/contracts-sdk/src/MarginedEngine.client.ts:579</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L642">packages/contracts-sdk/src/MarginedEngine.client.ts:642</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="allPositions" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>all<wbr/>Positions</span><a href="#allPositions" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="allPositions.allPositions-1"><span class="tsd-kind-call-signature">all<wbr/>Positions</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/MarginedEngine_types.ArrayOfPosition.html" class="tsd-signature-type tsd-kind-type-alias">ArrayOfPosition</a><span class="tsd-signature-symbol">&gt;</span><a href="#allPositions.allPositions-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns a user&#39;s positions for all vAMMs.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -166,12 +173,14 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#allPositions">allPositions</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#allPositions">allPositions</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L200">packages/contracts-sdk/src/MarginedEngine.client.ts:200</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L220">packages/contracts-sdk/src/MarginedEngine.client.ts:220</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="balanceWithFundingPayment" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>balance<wbr/>With<wbr/>Funding<wbr/>Payment</span><a href="#balanceWithFundingPayment" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="balanceWithFundingPayment.balanceWithFundingPayment-1"><span class="tsd-kind-call-signature">balance<wbr/>With<wbr/>Funding<wbr/>Payment</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><a href="#balanceWithFundingPayment.balanceWithFundingPayment-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns a user&#39;s margin balance across all vAMMs inclusive funding payments.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -184,12 +193,19 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#balanceWithFundingPayment">balanceWithFundingPayment</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#balanceWithFundingPayment">balanceWithFundingPayment</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L359">packages/contracts-sdk/src/MarginedEngine.client.ts:359</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L394">packages/contracts-sdk/src/MarginedEngine.client.ts:394</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="closePosition" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>close<wbr/>Position</span><a href="#closePosition" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="closePosition.closePosition-1"><span class="tsd-kind-call-signature">close<wbr/>Position</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#closePosition.closePosition-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Enables a user to close a position they have for a specific vAMM including slippage limits.</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/close-pos-partial.png" alt="Close Position"></p>
+<p>If <code>partial_liquidation_ratio == 1</code> then close the whole position</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/close-pos-whole.png" alt="Close Whole Position"></p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineClient</span><span class="hl-1">.</span><span class="hl-4">closePosition</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">vamm:</span><span class="hl-1"> </span><span class="hl-3">vammClient</span><span class="hl-1">.</span><span class="hl-3">contractAddress</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">quoteAssetLimit:</span><span class="hl-1"> </span><span class="hl-5">&#39;0&#39;</span><br/><span class="hl-1">});</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -211,22 +227,26 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#closePosition">closePosition</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L650">packages/contracts-sdk/src/MarginedEngine.client.ts:650</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L754">packages/contracts-sdk/src/MarginedEngine.client.ts:754</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="config" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>config</span><a href="#config" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
-<li class="tsd-signature tsd-anchor-link" id="config.config-1"><span class="tsd-kind-call-signature">config</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/types.ConfigResponse.html" class="tsd-signature-type tsd-kind-interface">ConfigResponse</a><span class="tsd-signature-symbol">&gt;</span><a href="#config.config-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="config.config-1"><span class="tsd-kind-call-signature">config</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.ConfigResponse.html" class="tsd-signature-type tsd-kind-interface">ConfigResponse</a><span class="tsd-signature-symbol">&gt;</span><a href="#config.config-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/types.ConfigResponse.html" class="tsd-signature-type tsd-kind-interface">ConfigResponse</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<div class="tsd-comment tsd-typography"><p>Returns the contracts configuration.</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.ConfigResponse.html" class="tsd-signature-type tsd-kind-interface">ConfigResponse</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#config">config</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#config">config</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L155">packages/contracts-sdk/src/MarginedEngine.client.ts:155</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L157">packages/contracts-sdk/src/MarginedEngine.client.ts:157</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="cumulativePremiumFraction" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>cumulative<wbr/>Premium<wbr/>Fraction</span><a href="#cumulativePremiumFraction" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="cumulativePremiumFraction.cumulativePremiumFraction-1"><span class="tsd-kind-call-signature">cumulative<wbr/>Premium<wbr/>Fraction</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/types.Integer.html" class="tsd-signature-type tsd-kind-interface">Integer</a><span class="tsd-signature-symbol">&gt;</span><a href="#cumulativePremiumFraction.cumulativePremiumFraction-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the cumulative premium fraction of a vAMM.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -239,12 +259,17 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#cumulativePremiumFraction">cumulativePremiumFraction</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#cumulativePremiumFraction">cumulativePremiumFraction</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L303">packages/contracts-sdk/src/MarginedEngine.client.ts:303</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L329">packages/contracts-sdk/src/MarginedEngine.client.ts:329</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="depositMargin" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>deposit<wbr/>Margin</span><a href="#depositMargin" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="depositMargin.depositMargin-1"><span class="tsd-kind-call-signature">deposit<wbr/>Margin</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#depositMargin.depositMargin-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Users can deposit additional margin to their positions to prevent them from becoming under-collateralised.</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/add-margin.png" alt="Deposit Margin"></p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineClient</span><span class="hl-1">.</span><span class="hl-4">depositMargin</span><span class="hl-1">({ </span><br/><span class="hl-1">  </span><span class="hl-3">amount:</span><span class="hl-1"> </span><span class="hl-5">&#39;500000000&#39;</span><span class="hl-1">, </span><br/><span class="hl-1">  </span><span class="hl-3">vamm:</span><span class="hl-1"> </span><span class="hl-3">vammClient</span><span class="hl-1">.</span><span class="hl-3">contractAddress</span><span class="hl-1"> </span><br/><span class="hl-1">});</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -266,12 +291,14 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#depositMargin">depositMargin</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L712">packages/contracts-sdk/src/MarginedEngine.client.ts:712</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L858">packages/contracts-sdk/src/MarginedEngine.client.ts:858</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="freeCollateral" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>free<wbr/>Collateral</span><a href="#freeCollateral" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="freeCollateral.freeCollateral-1"><span class="tsd-kind-call-signature">free<wbr/>Collateral</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/types.Integer.html" class="tsd-signature-type tsd-kind-interface">Integer</a><span class="tsd-signature-symbol">&gt;</span><a href="#freeCollateral.freeCollateral-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the excess collateral a user has for a vAMM.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -286,32 +313,38 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#freeCollateral">freeCollateral</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#freeCollateral">freeCollateral</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L345">packages/contracts-sdk/src/MarginedEngine.client.ts:345</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L377">packages/contracts-sdk/src/MarginedEngine.client.ts:377</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="getPauser" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Pauser</span><a href="#getPauser" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="getPauser.getPauser-1"><span class="tsd-kind-call-signature">get<wbr/>Pauser</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.PauserResponse.html" class="tsd-signature-type tsd-kind-interface">PauserResponse</a><span class="tsd-signature-symbol">&gt;</span><a href="#getPauser.getPauser-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the pauser of the contract.</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.PauserResponse.html" class="tsd-signature-type tsd-kind-interface">PauserResponse</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#getPauser">getPauser</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#getPauser">getPauser</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L165">packages/contracts-sdk/src/MarginedEngine.client.ts:165</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L173">packages/contracts-sdk/src/MarginedEngine.client.ts:173</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="getWhitelist" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Whitelist</span><a href="#getWhitelist" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="getWhitelist.getWhitelist-1"><span class="tsd-kind-call-signature">get<wbr/>Whitelist</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.HooksResponse.html" class="tsd-signature-type tsd-kind-interface">HooksResponse</a><span class="tsd-signature-symbol">&gt;</span><a href="#getWhitelist.getWhitelist-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns whitelist that can by pass some trader&#39;s restrictions.</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.HooksResponse.html" class="tsd-signature-type tsd-kind-interface">HooksResponse</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#getWhitelist">getWhitelist</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#getWhitelist">getWhitelist</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L181">packages/contracts-sdk/src/MarginedEngine.client.ts:181</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L195">packages/contracts-sdk/src/MarginedEngine.client.ts:195</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="isWhitelisted" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Whitelisted</span><a href="#isWhitelisted" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="isWhitelisted.isWhitelisted-1"><span class="tsd-kind-call-signature">is<wbr/>Whitelisted</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span><a href="#isWhitelisted.isWhitelisted-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Check a trader is in whitelist.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -324,7 +357,7 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#isWhitelisted">isWhitelisted</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#isWhitelisted">isWhitelisted</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L170">packages/contracts-sdk/src/MarginedEngine.client.ts:170</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L181">packages/contracts-sdk/src/MarginedEngine.client.ts:181</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="lastPositionId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>last<wbr/>Position<wbr/>Id</span><a href="#lastPositionId" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -334,12 +367,19 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#lastPositionId">lastPositionId</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#lastPositionId">lastPositionId</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L384">packages/contracts-sdk/src/MarginedEngine.client.ts:384</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L422">packages/contracts-sdk/src/MarginedEngine.client.ts:422</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="liquidate" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>liquidate</span><a href="#liquidate" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="liquidate.liquidate-1"><span class="tsd-kind-call-signature">liquidate</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#liquidate.liquidate-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Allows third parties to liquidate users positions when they are no longer sufficiently collateralised.</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/liq-pos-partial.png" alt="Liquidate Position"></p>
+<p>If <code>partial_liquidation_ratio == 0</code> then liquidate the whole position.</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/liq-pos-whole.png" alt="Liquidate Whole Position"></p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineClient</span><span class="hl-1">.</span><span class="hl-4">liquidate</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">vamm:</span><span class="hl-1"> </span><span class="hl-3">vammClient</span><span class="hl-1">.</span><span class="hl-3">contractAddress</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">trader:</span><span class="hl-1"> </span><span class="hl-5">&quot;orai...&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">quoteAssetLimit:</span><span class="hl-1"> </span><span class="hl-5">&#39;0&#39;</span><br/><span class="hl-1">});</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -361,12 +401,14 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#liquidate">liquidate</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L684">packages/contracts-sdk/src/MarginedEngine.client.ts:684</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L805">packages/contracts-sdk/src/MarginedEngine.client.ts:805</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="marginRatio" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>margin<wbr/>Ratio</span><a href="#marginRatio" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="marginRatio.marginRatio-1"><span class="tsd-kind-call-signature">margin<wbr/>Ratio</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/types.Integer.html" class="tsd-signature-type tsd-kind-interface">Integer</a><span class="tsd-signature-symbol">&gt;</span><a href="#marginRatio.marginRatio-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the margin ratio of a user for a vAMM.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -381,7 +423,7 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#marginRatio">marginRatio</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#marginRatio">marginRatio</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L314">packages/contracts-sdk/src/MarginedEngine.client.ts:314</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L343">packages/contracts-sdk/src/MarginedEngine.client.ts:343</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="marginRatioByCalcOption" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>margin<wbr/>Ratio<wbr/>By<wbr/>Calc<wbr/>Option</span><a href="#marginRatioByCalcOption" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -403,12 +445,22 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#marginRatioByCalcOption">marginRatioByCalcOption</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#marginRatioByCalcOption">marginRatioByCalcOption</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L328">packages/contracts-sdk/src/MarginedEngine.client.ts:328</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L357">packages/contracts-sdk/src/MarginedEngine.client.ts:357</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="openPosition" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>open<wbr/>Position</span><a href="#openPosition" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="openPosition.openPosition-1"><span class="tsd-kind-call-signature">open<wbr/>Position</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#openPosition.openPosition-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Enables a user to open a position for a specific vAMM with leverage. Also allows order to be placed with slippage limits.</p>
+<p>If side is buy (direction is &#39;add_to_amm&#39;) then open position (increase)</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-increase.png" alt="Open Position Increase"></p>
+<p>If old position is larger then reduce position (decrease)</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-decrease.png" alt="Open Position Decrease"></p>
+<p>Otherwise close position then swap out the entire position (reverse)</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/open-pos-reverse.png" alt="Open Position Reverse"></p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineClient</span><span class="hl-1">.</span><span class="hl-4">openPosition</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">vamm:</span><span class="hl-1"> </span><span class="hl-3">vammClient</span><span class="hl-1">.</span><span class="hl-3">contractAddress</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">side:</span><span class="hl-1"> </span><span class="hl-5">&#39;buy&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">marginAmount:</span><span class="hl-1"> </span><span class="hl-5">&#39;10000000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">leverage:</span><span class="hl-1"> </span><span class="hl-5">&#39;8000000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">baseAssetLimit:</span><span class="hl-1"> </span><span class="hl-5">&#39;4000000&#39;</span><br/><span class="hl-1">})</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -438,12 +490,18 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#openPosition">openPosition</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L601">packages/contracts-sdk/src/MarginedEngine.client.ts:601</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L689">packages/contracts-sdk/src/MarginedEngine.client.ts:689</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="payFunding" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>pay<wbr/>Funding</span><a href="#payFunding" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="payFunding.payFunding-1"><span class="tsd-kind-call-signature">pay<wbr/>Funding</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#payFunding.payFunding-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Allows third parties to trigger funding payments to be processed for a specific vAMM.</p>
+<p>The funding rate helps keep the perp price in line with the underlying asset&#39;s spot price. When the perp trades at a premium, longs pay shorts. Conversely, at a discount, shorts pay longs. Although the funding rate can take place at any cadence, it is generally set to one hour. If a perp trades at a 0.1% discount for 24 hours, purchasers of that perp will receive 0.1% as the summation of the 24 funding period.</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/pay-funding.png" alt="Pay Funding"></p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineContract</span><span class="hl-1">.</span><span class="hl-4">payFunding</span><span class="hl-1">({ </span><br/><span class="hl-1">  </span><span class="hl-3">vamm:</span><span class="hl-1"> </span><span class="hl-3">vammContract</span><span class="hl-1">.</span><span class="hl-3">contractAddress</span><span class="hl-1"> </span><br/><span class="hl-1">});</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -461,12 +519,14 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#payFunding">payFunding</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L701">packages/contracts-sdk/src/MarginedEngine.client.ts:701</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L835">packages/contracts-sdk/src/MarginedEngine.client.ts:835</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="position" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>position</span><a href="#position" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="position.position-1"><span class="tsd-kind-call-signature">position</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.Position.html" class="tsd-signature-type tsd-kind-interface">Position</a><span class="tsd-signature-symbol">&gt;</span><a href="#position.position-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns a user&#39;s position for a specific vAMM.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -481,12 +541,14 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#position">position</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#position">position</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L186">packages/contracts-sdk/src/MarginedEngine.client.ts:186</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L203">packages/contracts-sdk/src/MarginedEngine.client.ts:203</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="positionWithFundingPayment" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>position<wbr/>With<wbr/>Funding<wbr/>Payment</span><a href="#positionWithFundingPayment" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="positionWithFundingPayment.positionWithFundingPayment-1"><span class="tsd-kind-call-signature">position<wbr/>With<wbr/>Funding<wbr/>Payment</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.Position.html" class="tsd-signature-type tsd-kind-interface">Position</a><span class="tsd-signature-symbol">&gt;</span><a href="#positionWithFundingPayment.positionWithFundingPayment-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns a user&#39;s margin balance inclusive funding payments for a specific vAMM.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -501,7 +563,7 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#positionWithFundingPayment">positionWithFundingPayment</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#positionWithFundingPayment">positionWithFundingPayment</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L370">packages/contracts-sdk/src/MarginedEngine.client.ts:370</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L408">packages/contracts-sdk/src/MarginedEngine.client.ts:408</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="positions" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>positions</span><a href="#positions" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -529,7 +591,7 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#positions">positions</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#positions">positions</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L220">packages/contracts-sdk/src/MarginedEngine.client.ts:220</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L240">packages/contracts-sdk/src/MarginedEngine.client.ts:240</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="removeWhitelist" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>remove<wbr/>Whitelist</span><a href="#removeWhitelist" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -552,12 +614,16 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#removeWhitelist">removeWhitelist</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L590">packages/contracts-sdk/src/MarginedEngine.client.ts:590</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L653">packages/contracts-sdk/src/MarginedEngine.client.ts:653</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="setPause" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Pause</span><a href="#setPause" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="setPause.setPause-1"><span class="tsd-kind-call-signature">set<wbr/>Pause</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#setPause.setPause-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Enables owner to pause contracts in emergency situations   </p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineClient</span><span class="hl-1">.</span><span class="hl-4">setPause</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">pause:</span><span class="hl-1"> </span><span class="hl-0">true</span><br/><span class="hl-1">}); </span><br/><span class="hl-5">``</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -575,17 +641,19 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#setPause">setPause</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L746">packages/contracts-sdk/src/MarginedEngine.client.ts:746</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L913">packages/contracts-sdk/src/MarginedEngine.client.ts:913</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="state" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>state</span><a href="#state" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="state.state-1"><span class="tsd-kind-call-signature">state</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.StateResponse.html" class="tsd-signature-type tsd-kind-interface">StateResponse</a><span class="tsd-signature-symbol">&gt;</span><a href="#state.state-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the state variables of the contract.</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.StateResponse.html" class="tsd-signature-type tsd-kind-interface">StateResponse</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#state">state</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#state">state</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L160">packages/contracts-sdk/src/MarginedEngine.client.ts:160</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L165">packages/contracts-sdk/src/MarginedEngine.client.ts:165</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="tick" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>tick</span><a href="#tick" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -607,7 +675,7 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#tick">tick</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#tick">tick</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L246">packages/contracts-sdk/src/MarginedEngine.client.ts:246</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L266">packages/contracts-sdk/src/MarginedEngine.client.ts:266</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="ticks" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>ticks</span><a href="#ticks" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
@@ -633,7 +701,7 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#ticks">ticks</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#ticks">ticks</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L263">packages/contracts-sdk/src/MarginedEngine.client.ts:263</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L283">packages/contracts-sdk/src/MarginedEngine.client.ts:283</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="triggerTpSl" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>trigger<wbr/>Tp<wbr/>Sl</span><a href="#triggerTpSl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -660,12 +728,14 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#triggerTpSl">triggerTpSl</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L667">packages/contracts-sdk/src/MarginedEngine.client.ts:667</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L771">packages/contracts-sdk/src/MarginedEngine.client.ts:771</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="unrealizedPnl" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>unrealized<wbr/>Pnl</span><a href="#unrealizedPnl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited">
 <li class="tsd-signature tsd-anchor-link" id="unrealizedPnl.unrealizedPnl-1"><span class="tsd-kind-call-signature">unrealized<wbr/>Pnl</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/MarginedEngine_types.PositionUnrealizedPnlResponse.html" class="tsd-signature-type tsd-kind-interface">PositionUnrealizedPnlResponse</a><span class="tsd-signature-symbol">&gt;</span><a href="#unrealizedPnl.unrealizedPnl-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Returns the unrealized PnL (profit and loss) of a user for a specific vAMM using a specific calculation method.</p>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -682,12 +752,16 @@
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#unrealizedPnl">unrealizedPnl</a></p>
 <p>Inherited from <a href="MarginedEngine_client.MarginedEngineQueryClient.html">MarginedEngineQueryClient</a>.<a href="MarginedEngine_client.MarginedEngineQueryClient.html#unrealizedPnl">unrealizedPnl</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L286">packages/contracts-sdk/src/MarginedEngine.client.ts:286</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L309">packages/contracts-sdk/src/MarginedEngine.client.ts:309</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="updateConfig" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>update<wbr/>Config</span><a href="#updateConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="updateConfig.updateConfig-1"><span class="tsd-kind-call-signature">update<wbr/>Config</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#updateConfig.updateConfig-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Enables owner to update key contract parameters.</p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineClient</span><span class="hl-1">.</span><span class="hl-4">updateConfig</span><span class="hl-1">({ </span><br/><span class="hl-1">  </span><span class="hl-3">tollRatio:</span><span class="hl-1"> </span><span class="hl-5">&#39;5000&#39;</span><span class="hl-1">, </span><br/><span class="hl-1">  </span><span class="hl-3">spreadRatio:</span><span class="hl-1"> </span><span class="hl-5">&#39;5000&#39;</span><span class="hl-1"> </span><br/><span class="hl-1">})</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -719,7 +793,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#updateConfig">updateConfig</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L536">packages/contracts-sdk/src/MarginedEngine.client.ts:536</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L599">packages/contracts-sdk/src/MarginedEngine.client.ts:599</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="updatePauser" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>update<wbr/>Pauser</span><a href="#updatePauser" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -742,7 +816,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#updatePauser">updatePauser</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L568">packages/contracts-sdk/src/MarginedEngine.client.ts:568</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L631">packages/contracts-sdk/src/MarginedEngine.client.ts:631</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="updateTpSl" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>update<wbr/>Tp<wbr/>Sl</span><a href="#updateTpSl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -771,12 +845,17 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#updateTpSl">updateTpSl</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L630">packages/contracts-sdk/src/MarginedEngine.client.ts:630</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L718">packages/contracts-sdk/src/MarginedEngine.client.ts:718</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="withdrawMargin" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>withdraw<wbr/>Margin</span><a href="#withdrawMargin" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="withdrawMargin.withdrawMargin-1"><span class="tsd-kind-call-signature">withdraw<wbr/>Margin</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">__namedParameters</span>, <span class="tsd-kind-parameter">_fee</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_memo</span><span class="tsd-signature-symbol">?</span>, <span class="tsd-kind-parameter">_funds</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#withdrawMargin.withdrawMargin-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Users can withdraw excess collateral from their positions if they are over-collateralised</p>
+<p><img src="https://github.com/oraichain/perpetuals/raw/main/doc/diagrams/remove-margin.png" alt="Withdraw Margin"></p>
+<pre><code class="language-ts"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-3">engineClient</span><span class="hl-1">.</span><span class="hl-4">withdrawMargin</span><span class="hl-1">({ </span><br/><span class="hl-1">  </span><span class="hl-3">amount:</span><span class="hl-1"> </span><span class="hl-5">&#39;500000000&#39;</span><span class="hl-1">, </span><br/><span class="hl-1">  </span><span class="hl-3">vamm:</span><span class="hl-1"> </span><span class="hl-3">vammClient</span><span class="hl-1">.</span><span class="hl-3">contractAddress</span><span class="hl-1"> </span><br/><span class="hl-1">});</span>
+</code><button>Copy</button></pre>
+</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
@@ -798,7 +877,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/index.ExecuteResult.html" class="tsd-signature-type tsd-kind-interface">ExecuteResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html">MarginedEngineInterface</a>.<a href="../interfaces/MarginedEngine_client.MarginedEngineInterface.html#withdrawMargin">withdrawMargin</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/ca3ae43/packages/contracts-sdk/src/MarginedEngine.client.ts#L729">packages/contracts-sdk/src/MarginedEngine.client.ts:729</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/oraichain/margined-trade-sdk/blob/764980a/packages/contracts-sdk/src/MarginedEngine.client.ts#L887">packages/contracts-sdk/src/MarginedEngine.client.ts:887</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -868,6 +947,7 @@
 <details class="tsd-index-accordion" data-key="MarginedEngine.types"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg><a href="../modules/MarginedEngine_types.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4-path"></use><use href="#icon-4-text"></use></svg><span>Margined<wbr/>Engine.types</span></a></summary>
 <div class="tsd-accordion-details">
 <ul class="tsd-nested-navigation">
+<li><a href="../interfaces/MarginedEngine_types.ConfigResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Config<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedEngine_types.HooksResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Hooks<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedEngine_types.InstantiateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Instantiate<wbr/>Msg</span></a></li>
 <li><a href="../interfaces/MarginedEngine_types.LastPositionIdResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Last<wbr/>Position<wbr/>Id<wbr/>Response</span></a></li>
@@ -897,8 +977,10 @@
 <div class="tsd-accordion-details">
 <ul class="tsd-nested-navigation">
 <li><a href="../interfaces/MarginedFeePool_types.AllTokenResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>All<wbr/>Token<wbr/>Response</span></a></li>
+<li><a href="../interfaces/MarginedFeePool_types.ConfigResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Config<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedFeePool_types.InstantiateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Instantiate<wbr/>Msg</span></a></li>
 <li><a href="../interfaces/MarginedFeePool_types.MigrateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Migrate<wbr/>Msg</span></a></li>
+<li><a href="../interfaces/MarginedFeePool_types.OwnerResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Owner<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedFeePool_types.TokenLengthResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Token<wbr/>Length<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedFeePool_types.TokenResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Token<wbr/>Response</span></a></li>
 <li><a href="../types/MarginedFeePool_types.ExecuteMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Execute<wbr/>Msg</span></a></li>
@@ -917,8 +999,10 @@
 <ul class="tsd-nested-navigation">
 <li><a href="../interfaces/MarginedInsuranceFund_types.AllVammResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>All<wbr/>Vamm<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedInsuranceFund_types.AllVammStatusResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>All<wbr/>Vamm<wbr/>Status<wbr/>Response</span></a></li>
+<li><a href="../interfaces/MarginedInsuranceFund_types.ConfigResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Config<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedInsuranceFund_types.InstantiateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Instantiate<wbr/>Msg</span></a></li>
 <li><a href="../interfaces/MarginedInsuranceFund_types.MigrateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Migrate<wbr/>Msg</span></a></li>
+<li><a href="../interfaces/MarginedInsuranceFund_types.OwnerResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Owner<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedInsuranceFund_types.VammResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Vamm<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedInsuranceFund_types.VammStatusResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Vamm<wbr/>Status<wbr/>Response</span></a></li>
 <li><a href="../types/MarginedInsuranceFund_types.ExecuteMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Execute<wbr/>Msg</span></a></li>
@@ -935,8 +1019,10 @@
 <details class="tsd-index-accordion" data-key="MarginedPricefeed.types"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg><a href="../modules/MarginedPricefeed_types.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4-path"></use><use href="#icon-4-text"></use></svg><span>Margined<wbr/>Pricefeed.types</span></a></summary>
 <div class="tsd-accordion-details">
 <ul class="tsd-nested-navigation">
+<li><a href="../interfaces/MarginedPricefeed_types.ConfigResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Config<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedPricefeed_types.InstantiateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Instantiate<wbr/>Msg</span></a></li>
 <li><a href="../interfaces/MarginedPricefeed_types.MigrateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Migrate<wbr/>Msg</span></a></li>
+<li><a href="../interfaces/MarginedPricefeed_types.OwnerResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Owner<wbr/>Response</span></a></li>
 <li><a href="../types/MarginedPricefeed_types.ExecuteMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Execute<wbr/>Msg</span></a></li>
 <li><a href="../types/MarginedPricefeed_types.QueryMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Query<wbr/>Msg</span></a></li></ul></div></details></li>
 <li>
@@ -952,8 +1038,10 @@
 <div class="tsd-accordion-details">
 <ul class="tsd-nested-navigation">
 <li><a href="../interfaces/MarginedVamm_types.CalcFeeResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Calc<wbr/>Fee<wbr/>Response</span></a></li>
+<li><a href="../interfaces/MarginedVamm_types.ConfigResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Config<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedVamm_types.InstantiateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Instantiate<wbr/>Msg</span></a></li>
 <li><a href="../interfaces/MarginedVamm_types.MigrateMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Migrate<wbr/>Msg</span></a></li>
+<li><a href="../interfaces/MarginedVamm_types.OwnerResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Owner<wbr/>Response</span></a></li>
 <li><a href="../interfaces/MarginedVamm_types.StateResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>State<wbr/>Response</span></a></li>
 <li><a href="../types/MarginedVamm_types.ExecuteMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Execute<wbr/>Msg</span></a></li>
 <li><a href="../types/MarginedVamm_types.QueryMsg.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Query<wbr/>Msg</span></a></li></ul></div></details></li>
@@ -964,7 +1052,6 @@
 <li><a href="../modules/index.html#Addr"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF4D82" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-8388608-path"></rect><path d="M10.354 17V8.24H13.066C13.586 8.24 14.042 8.348 14.434 8.564C14.826 8.772 15.13 9.064 15.346 9.44C15.562 9.816 15.67 10.256 15.67 10.76C15.67 11.352 15.514 11.86 15.202 12.284C14.898 12.708 14.482 13 13.954 13.16L15.79 17H14.518L12.838 13.28H11.434V17H10.354ZM11.434 12.308H13.066C13.514 12.308 13.874 12.168 14.146 11.888C14.418 11.6 14.554 11.224 14.554 10.76C14.554 10.288 14.418 9.912 14.146 9.632C13.874 9.352 13.514 9.212 13.066 9.212H11.434V12.308Z" fill="var(--color-text)" id="icon-8388608-text"></path></svg><span>Addr</span></a></li>
 <li><a href="../modules/index.html#AssetInfo"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Asset<wbr/>Info</span></a></li>
 <li><a href="../modules/index.html#Boolean"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Boolean</span></a></li>
-<li><a href="../modules/index.html#ConfigResponse"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Config<wbr/>Response</span></a></li>
 <li><a href="../modules/index.html#Direction"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Direction</span></a></li>
 <li><a href="../modules/index.html#Integer"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Integer</span></a></li>
 <li><a href="../modules/index.html#MarginedEngineClient"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Margined<wbr/>Engine<wbr/>Client</span></a></li>
@@ -992,7 +1079,6 @@
 <li><a href="../modules/index.html#MarginedVammQueryClient"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Margined<wbr/>Vamm<wbr/>Query<wbr/>Client</span></a></li>
 <li><a href="../modules/index.html#MarginedVammReadOnlyInterface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Margined<wbr/>Vamm<wbr/>Read<wbr/>Only<wbr/>Interface</span></a></li>
 <li><a href="../modules/index.html#MarginedVammTypes"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Margined<wbr/>Vamm<wbr/>Types</span></a></li>
-<li><a href="../modules/index.html#OwnerResponse"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Owner<wbr/>Response</span></a></li>
 <li><a href="../modules/index.html#Uint128"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Uint128</span></a></li>
 <li><a href="index.CosmWasmClient.html" class="tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Cosm<wbr/>Wasm<wbr/>Client</span></a></li>
 <li><a href="index.SigningCosmWasmClient.html" class="tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg><span>Signing<wbr/>Cosm<wbr/>Wasm<wbr/>Client</span></a></li>
@@ -1004,9 +1090,7 @@
 <li><a href="../modules/types.html#CosmWasmClient"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Cosm<wbr/>Wasm<wbr/>Client</span></a></li>
 <li><a href="../modules/types.html#ExecuteResult"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Execute<wbr/>Result</span></a></li>
 <li><a href="../modules/types.html#SigningCosmWasmClient"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg><span>Signing<wbr/>Cosm<wbr/>Wasm<wbr/>Client</span></a></li>
-<li><a href="../interfaces/types.ConfigResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Config<wbr/>Response</span></a></li>
 <li><a href="../interfaces/types.Integer.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Integer</span></a></li>
-<li><a href="../interfaces/types.OwnerResponse.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg><span>Owner<wbr/>Response</span></a></li>
 <li><a href="../types/types.Addr.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Addr</span></a></li>
 <li><a href="../types/types.AssetInfo.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Asset<wbr/>Info</span></a></li>
 <li><a href="../types/types.Boolean.html"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg><span>Boolean</span></a></li>

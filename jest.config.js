@@ -1,7 +1,7 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  transform: {
-    "^.+\\.ts?$": ["esbuild-jest"],
-  },
   testEnvironment: "node",
+  transform: {
+    "^.+\\.ts?$": ["esbuild-jest", { isolatedModules: true, target: "es2020" }],
+  },
+  testPathIgnorePatterns: ["build/", "node_modules/"],
 };

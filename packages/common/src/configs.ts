@@ -1,10 +1,4 @@
-import {
-  MarginedInsuranceFundTypes,
-  MarginedEngineTypes,
-  MarginedVammTypes,
-  MarginedPricefeedTypes,
-  MarginedFeePoolTypes
-} from '@oraichain/oraimargin-contracts-sdk';
+import { MarginedInsuranceFundTypes, MarginedEngineTypes, MarginedVammTypes, MarginedPricefeedTypes, MarginedFeePoolTypes } from '@oraichain/oraimargin-contracts-sdk';
 
 interface Config {
   insuranceFundInitMsg: MarginedInsuranceFundTypes.InstantiateMsg;

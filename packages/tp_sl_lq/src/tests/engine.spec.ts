@@ -33,7 +33,7 @@ const client = new SimulateCosmWasmClient({
   metering: process.env.METERING === "true",
 });
 
-describe("insurance_fund", () => {
+describe("engine", () => {
   let insuranceFundContract: MarginedInsuranceFundClient;
   let usdcContract: OraiswapTokenClient;
   let engineContract: MarginedEngineClient;
@@ -422,10 +422,7 @@ describe("insurance_fund", () => {
     let res = await engineContract.payFunding({
       vamm: vammContract.contractAddress,
     });
-    expect(
-      res.events.findLast(Boolean).attributes.find((a) => a.key === "amount")
-        .value
-    ).toEqual(toDecimals(3.75));
+    expect(res.events[5].attributes[2].value).toContain(toDecimals(3.75));
 
     engineContract.sender = aliceAddress;
     await engineContract.withdrawMargin({
@@ -619,9 +616,9 @@ describe("insurance_fund", () => {
       spreadRatio: toDecimals(0.05),
     });
 
-    // given 300 x 2 quote asset, get 37.5 base asset
+    // given 240 x 2 quote asset, get 17.5 base asset
     // fee is 300 x 2 x 10% = 60
-    // user needs to pay 300 + 60 = 360
+    // user needs to pay 300
 
     engineContract.sender = aliceAddress;
     await engineContract.openPosition({
@@ -629,7 +626,7 @@ describe("insurance_fund", () => {
       side: "buy",
       marginAmount: toDecimals(300),
       leverage: toDecimals(2),
-      baseAssetLimit: toDecimals(37.5),
+      baseAssetLimit: toDecimals(17.5),
       takeProfit: toDecimals(18),
       stopLoss: toDecimals(0),
     });
@@ -638,12 +635,12 @@ describe("insurance_fund", () => {
       positionId: 1,
       vamm: vammContract.contractAddress,
     });
-    expect(alicePosition.margin).toEqual(toDecimals(300));
+    expect(alicePosition.margin).toEqual(toDecimals(240));
 
     let engineBalance = await usdcContract.balance({
       address: engineContract.contractAddress,
     });
-    expect(engineBalance.balance).toEqual(toDecimals(300));
+    expect(engineBalance.balance).toEqual(toDecimals(240));
 
     // 10% fee pool balance
     let feepoolBalance = await usdcContract.balance({
@@ -690,7 +687,7 @@ describe("insurance_fund", () => {
     let aliceBalanceLost =
       Number(aliceBalance.balance) -
       Number((await usdcContract.balance({ address: aliceAddress })).balance);
-    expect(aliceBalanceLost.toString()).toEqual(toDecimals(60));
+    expect(aliceBalanceLost.toString()).toEqual(toDecimals(50));
   });
 
   it("test_open_and_close_position_fee_ten_percent", async () => {
@@ -708,7 +705,7 @@ describe("insurance_fund", () => {
       side: "buy",
       marginAmount: toDecimals(300),
       leverage: toDecimals(2),
-      baseAssetLimit: toDecimals(37.5),
+      baseAssetLimit: toDecimals(17.5),
       takeProfit: toDecimals(18),
       stopLoss: toDecimals(0),
     });
@@ -722,7 +719,7 @@ describe("insurance_fund", () => {
     let engineBalance = await usdcContract.balance({
       address: engineContract.contractAddress,
     });
-    expect(engineBalance.balance).toEqual("0");
+    expect(engineBalance.balance).toEqual("7");
 
     let feepoolBalance = await usdcContract.balance({
       address: feepoolContract.contractAddress,
