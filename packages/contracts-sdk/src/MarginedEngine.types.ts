@@ -172,6 +172,11 @@ export type QueryMsg = {
     vamm: string;
   };
 } | {
+  position_is_tp_sl: {
+    position_id: number;
+    vamm: string;
+  };
+} | {
   last_position_id: {};
 };
 export type PositionFilter = "none" | {
@@ -193,8 +198,10 @@ export interface Position {
   position_id: number;
   side: Side;
   size: Integer;
+  spread_fee: Uint128;
   stop_loss?: Uint128 | null;
   take_profit: Uint128;
+  toll_fee: Uint128;
   trader: Addr;
   vamm: Addr;
 }
@@ -217,7 +224,10 @@ export interface HooksResponse {
   hooks: string[];
 }
 export interface LastPositionIdResponse {
-  last_order_id: number;
+  last_position_id: number;
+}
+export interface PositionTpSlResponse {
+  is_tpsl: boolean;
 }
 export interface StateResponse {
   bad_debt: Uint128;

@@ -148,19 +148,3 @@ export const deployVamm = async (
     }).then((res) => res.contractAddress)
   );
 };
-
-// export const printOrders = (title: string, orders: OraiswapLimitOrderTypes.OrderResponse[]) => {
-//   console.log(title);
-//   console.table(
-//     orders.reduce((map, { order_id, status, direction, bidder_addr, filled_ask_amount, filled_offer_amount }) => {
-//       map[order_id] = {
-//         status,
-//         direction,
-//         bidder_addr,
-//         filled_ask_amount,
-//         filled_offer_amount
-//       };
-//       return map;
-//     }, {})
-//   );
-// };
