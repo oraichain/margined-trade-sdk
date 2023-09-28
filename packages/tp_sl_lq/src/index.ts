@@ -130,38 +130,28 @@ export class EngineHandler {
     return totalPositions;
   }
 
-  async triggerTpSl(vamm: Addr, side: Side): Promise<ExecuteInstruction[]> {
+  async triggerTpSl(vamm: Addr, side: Side, takeProfit: boolean): Promise<ExecuteInstruction[]> {
     const multipleMsg: ExecuteInstruction[] = [];
-    const ticks = await this.queryAllTicks(vamm, side);
-
-    for (const tick of ticks) {
-      const positionbyPrice = await this.queryPositionsbyPrice(
-        vamm,
-        side,
-        tick.entry_price
-      );
-
-      for (const position of positionbyPrice) {
-        const willTriggerTpSl = await this.engineClient.positionIsTpSl({
+    const willTriggerTpSl = await this.engineClient.positionIsTpSl({
+      vamm,
+      side,
+      takeProfit: takeProfit,
+      limit: 10
+    });
+    console.log({ willTriggerTpSl });
+    if (!willTriggerTpSl.is_tpsl) return [];
+    let trigger_tp_sl: ExecuteInstruction = {
+      contractAddress: this.engineAddress,
+      msg: {
+        trigger_tp_sl: {
           vamm,
-          positionId: position.position_id,
-        });
-        console.log({ willTriggerTpSl });
-        
-        if (!willTriggerTpSl.is_tpsl) continue;
-        let trigger_tp_sl: ExecuteInstruction = {
-          contractAddress: this.engineAddress,
-          msg: {
-            trigger_tp_sl: {
-              position_id: position.position_id,
-              quote_asset_limit: "0",
-              vamm,
-            },
-          },
-        };
-        multipleMsg.push(trigger_tp_sl);
-      }
-    }
+          side,
+          take_profit: takeProfit,
+          limit: 10
+        },
+      },
+    };
+    multipleMsg.push(trigger_tp_sl);
 
     if (multipleMsg.length > 0)
       console.log("trigger TpSl with length: ", multipleMsg.length);
@@ -271,8 +261,10 @@ export async function executeEngine(
   const engineHandler = new EngineHandler(sender, engine);
   const executePromises = vammList
     .map((item) => [
-      engineHandler.triggerTpSl(item, "buy"),
-      engineHandler.triggerTpSl(item, "sell"),
+      engineHandler.triggerTpSl(item, "buy", true),
+      engineHandler.triggerTpSl(item, "buy", false),
+      engineHandler.triggerTpSl(item, "sell", true),
+      engineHandler.triggerTpSl(item, "sell", false),
       engineHandler.triggerLiquidate(item, "buy"),
       engineHandler.triggerLiquidate(item, "sell"),
       engineHandler.payFunding(item),

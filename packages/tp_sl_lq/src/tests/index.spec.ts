@@ -8,7 +8,10 @@ import {
   MarginedInsuranceFundClient,
   MarginedFeePoolClient,
 } from "@oraichain/oraimargin-contracts-sdk";
-import { OraiswapTokenClient } from "@oraichain/oraidex-contracts-sdk";
+import {
+  ExecuteResult,
+  OraiswapTokenClient,
+} from "@oraichain/oraidex-contracts-sdk";
 import {
   deployEngine,
   senderAddress,
@@ -20,6 +23,7 @@ import {
   toDecimals,
   aliceAddress,
   bobAddress,
+  carolAddress,
 } from "./common";
 
 import { EngineHandler } from "../index";
@@ -913,7 +917,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      true
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
     console.dir(longTx.events, { depth: 4 });
@@ -1014,7 +1019,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      false
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
 
@@ -1110,7 +1116,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      true
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
     expect(longTx.events).toEqual([]);
@@ -1210,7 +1217,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      true
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
     expect(longTx.events).toEqual([]);
