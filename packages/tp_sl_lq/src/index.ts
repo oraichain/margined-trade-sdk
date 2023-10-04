@@ -138,7 +138,7 @@ export class EngineHandler {
       takeProfit: takeProfit,
       limit: 10
     });
-    console.log({ willTriggerTpSl });
+    console.log({ side, takeProfit, willTriggerTpSl });
     if (!willTriggerTpSl.is_tpsl) return [];
     let trigger_tp_sl: ExecuteInstruction = {
       contractAddress: this.engineAddress,
@@ -167,6 +167,7 @@ export class EngineHandler {
     const engineConfig = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
+    console.log({ isOverSpreadLimit });
     for (const tick of ticks) {
       const positionbyPrice = await this.queryPositionsbyPrice(
         vamm,
@@ -181,6 +182,8 @@ export class EngineHandler {
             vamm,
           })
         );
+        console.log({ position });
+        console.log({ marginRatio });
         let liquidateFlag = false;
         if (isOverSpreadLimit) {
           const oracleMarginRatio = Number(
@@ -190,11 +193,15 @@ export class EngineHandler {
               calcOption: "oracle",
             })
           );
+          console.log({ oracleMarginRatio, marginRatio });
           if (oracleMarginRatio - marginRatio > 0) {
             marginRatio = oracleMarginRatio;
+            console.log("new marginRatio: " + marginRatio);
           }
         }
+        console.log("engineConfig.maintenance_margin_ratio: " + engineConfig.maintenance_margin_ratio);
         if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
+          console.log("LIQUIDATE - POSITION: ", position.position_id);
           liquidateFlag = true;
         }
 
@@ -204,7 +211,7 @@ export class EngineHandler {
             msg: {
               liquidate: {
                 position_id: position.position_id,
-                quote_asset_limit: "0", // why limit 0?
+                quote_asset_limit: "0",
                 vamm,
               },
             },

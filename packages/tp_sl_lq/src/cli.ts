@@ -27,7 +27,7 @@ async function handleExecuteEngine(
       );
       return (
         `:receipt: BOT: ${sender.address} - take profit | stop loss | liquidate | payfunding - txHash: ` +
-        `${res.transactionHash}`.toString() +
+        `https://scan.orai.io/txs/${res.transactionHash}`.toString() +
         ` at ${time(date)}`
       );
     }
@@ -37,6 +37,7 @@ async function handleExecuteEngine(
       "error in processing triggering TpSl, liquidate & pay funding: ",
       { error }
     );
+    console.log("Send discord noti: ", error.message);
     return (
       `:red_circle: BOT: ${sender.address} - err ` +
       error.message +
