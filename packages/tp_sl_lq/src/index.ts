@@ -130,13 +130,18 @@ export class EngineHandler {
     return totalPositions;
   }
 
-  async triggerTpSl(vamm: Addr, side: Side, takeProfit: boolean): Promise<ExecuteInstruction[]> {
+  async triggerTpSl(
+    vamm: Addr,
+    side: Side,
+    takeProfit: boolean
+  ): Promise<ExecuteInstruction[]> {
+    console.log("trigger take profit | stop loss");
     const multipleMsg: ExecuteInstruction[] = [];
     const willTriggerTpSl = await this.engineClient.positionIsTpSl({
       vamm,
       side,
       takeProfit: takeProfit,
-      limit: 10
+      limit: 10,
     });
     console.log({ side, takeProfit, willTriggerTpSl });
     if (!willTriggerTpSl.is_tpsl) return [];
@@ -147,7 +152,7 @@ export class EngineHandler {
           vamm,
           side,
           take_profit: takeProfit,
-          limit: 10
+          limit: 10,
         },
       },
     };
@@ -167,7 +172,8 @@ export class EngineHandler {
     const engineConfig = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
-    console.log({ isOverSpreadLimit });
+    console.log("trigger liquidate");
+    console.log({ side, isOverSpreadLimit });
     for (const tick of ticks) {
       const positionbyPrice = await this.queryPositionsbyPrice(
         vamm,
@@ -182,8 +188,11 @@ export class EngineHandler {
             vamm,
           })
         );
-        console.log({ position });
-        console.log({ marginRatio });
+        console.log({
+          position_id: position.position_id,
+          marginRatio,
+          maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
+        });
         let liquidateFlag = false;
         if (isOverSpreadLimit) {
           const oracleMarginRatio = Number(
@@ -193,15 +202,14 @@ export class EngineHandler {
               calcOption: "oracle",
             })
           );
-          console.log({ oracleMarginRatio, marginRatio });
+          console.log({ oracleMarginRatio });
           if (oracleMarginRatio - marginRatio > 0) {
             marginRatio = oracleMarginRatio;
-            console.log("new marginRatio: " + marginRatio);
+            console.log({ new_marginRatio: marginRatio });
           }
         }
-        console.log("engineConfig.maintenance_margin_ratio: " + engineConfig.maintenance_margin_ratio);
         if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
-          console.log("LIQUIDATE - POSITION: ", position.position_id);
+          console.log("LIQUIDATE - POSITION:", position.position_id);
           liquidateFlag = true;
         }
 
