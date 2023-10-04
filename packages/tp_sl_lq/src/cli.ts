@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { executeEngine } from "./index";
-import { UserWallet, decrypt, setupWallet } from "@oraichain/oraimargin-common";
+import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
 import { WebhookClient, time, userMention } from "discord.js";
 // import { Tendermint37Client, WebsocketClient } from "@cosmjs/tendermint-rpc";
 
@@ -115,6 +115,7 @@ async function handleExecuteEngine(
     } catch (error) {
       await webhookClient.send(JSON.stringify({ error }));
     }
+    await delay(3000);
   }
   // const websocket = new WebsocketClient(rpcUrl);
   // const client = await Tendermint37Client.create(websocket);
