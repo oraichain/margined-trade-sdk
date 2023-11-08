@@ -1,9 +1,7 @@
 import dotenv from "dotenv";
-import { executeEngine } from "./index";
+import { executeEngine, fetchSchedule } from "./index";
 import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
 import { WebhookClient, time, userMention } from "discord.js";
-// import { Tendermint37Client, WebsocketClient } from "@cosmjs/tendermint-rpc";
-
 dotenv.config();
 
 const minimumOraiBalance = 1000000; // 1 ORAI;
@@ -17,6 +15,7 @@ async function getSender(rpcUrl: string): Promise<UserWallet | string> {
         hdPath: process.env.HD_PATH ?? "m/44'/118'/0'/0/0",
         rpcUrl,
         prefix: "orai",
+        gasPrices: "0.001"
       }
     );
     return sender;
@@ -39,6 +38,7 @@ async function handleExecuteEngine(
       insuranceAddr ?? process.env.INSURANCE_FUND_CONTRACT
     );
     if (res !== undefined) {
+      console.dir(res, {depth: null});
       console.log(
         "take profit | stop loss | liquidate | payfunding - txHash:",
         res.transactionHash
@@ -69,7 +69,6 @@ async function handleExecuteEngine(
   const rpcUrl = process.env.RPC_URL ?? "https://rpc.orai.io";
   const discordUserIds: string[] =
     process.env.DISCORD_USERS_IDS?.split(",") || [];
-  console.log({ webhookUrl, discordUserIds });
 
   let mentionUserIds: string = "";
   for (const userId of discordUserIds) {
@@ -84,6 +83,9 @@ async function handleExecuteEngine(
   const webhookClient = new WebhookClient({
     url: webhookUrl,
   });
+
+  const scheduleTask = new fetchSchedule();
+  scheduleTask.executeJob();
 
   const sender = await getSender(rpcUrl);
   if (typeof sender === "string") {
@@ -113,33 +115,8 @@ async function handleExecuteEngine(
         else await webhookClient.send(result);
       }
     } catch (error) {
-      await webhookClient.send(JSON.stringify({ error }));
+      console.log({ error });
     }
     await delay(3000);
   }
-  // const websocket = new WebsocketClient(rpcUrl);
-  // const client = await Tendermint37Client.create(websocket);
-  // const stream = client.subscribeNewBlock();
-  // stream.subscribe({
-  //   next: async (event) => {
-  //     console.log("height: ", event.header.height);
-  //     try {
-  //       const result = await handleExecuteEngine(sender);
-  //       if (result) {
-  //         if (result.includes("err"))
-  //           await webhookClient.send(result + mentionUserIds);
-  //         else await webhookClient.send(result);
-  //       }
-  //     } catch (error) {
-  //       await webhookClient.send(JSON.stringify({ error }));
-  //     }
-  //   },
-  //   error: async (error) => {
-  //     console.log("error in subscribing to the websocket: ", error);
-  //     await webhookClient.send(JSON.stringify({ error }));
-  //   },
-  //   complete: async () => {
-  //     await webhookClient.send("Block subscription completed. Exiting ...");
-  //   },
-  // });
 })();

@@ -15,6 +15,22 @@ import {
   ExecuteMsg,
 } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 
+import { IScheduler, Scheduler } from "./scheduler";
+
+export class fetchSchedule extends Scheduler {
+  // execute job every 5 minutes
+  constructor() {
+    super("*/5 * * * *");
+  }
+
+  executeJob(): Promise<IScheduler> {
+    return new Promise(async (resolve, reject) => {
+      await fetch("https://bot-test.orai.io/bot-futures/");
+      console.log(`Fetch server at ` + new Date());
+    });
+  }
+}
+
 export class EngineHandler {
   public engineClient: MarginedEngineQueryClient;
   constructor(public sender: UserWallet, private engineAddress: string) {
@@ -135,16 +151,16 @@ export class EngineHandler {
     side: Side,
     takeProfit: boolean
   ): Promise<ExecuteInstruction[]> {
-    console.log("trigger take profit | stop loss");
     const multipleMsg: ExecuteInstruction[] = [];
     const willTriggerTpSl = await this.engineClient.positionIsTpSl({
       vamm,
       side,
-      takeProfit: takeProfit,
+      takeProfit,
       limit: 10,
     });
-    console.log({ side, takeProfit, willTriggerTpSl });
+    // console.log({ side, takeProfit, willTriggerTpSl });
     if (!willTriggerTpSl.is_tpsl) return [];
+    console.log(`TP | SL - POSITION: ${side} - takeProfit: ${takeProfit}`);
     let trigger_tp_sl: ExecuteInstruction = {
       contractAddress: this.engineAddress,
       msg: {
@@ -157,9 +173,6 @@ export class EngineHandler {
       },
     };
     multipleMsg.push(trigger_tp_sl);
-
-    if (multipleMsg.length > 0)
-      console.log("trigger TpSl with length: ", multipleMsg.length);
     return multipleMsg;
   }
 
@@ -172,8 +185,8 @@ export class EngineHandler {
     const engineConfig = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
-    console.log("trigger liquidate");
-    console.log({ side, isOverSpreadLimit });
+    // console.log("trigger liquidate");
+    // console.log({ side, isOverSpreadLimit });
     for (const tick of ticks) {
       const positionbyPrice = await this.queryPositionsbyPrice(
         vamm,
@@ -188,11 +201,11 @@ export class EngineHandler {
             vamm,
           })
         );
-        console.log({
-          position_id: position.position_id,
-          marginRatio,
-          maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
-        });
+        // console.log({
+        //   position_id: position.position_id,
+        //   marginRatio,
+        //   maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
+        // });
         let liquidateFlag = false;
         if (isOverSpreadLimit) {
           const oracleMarginRatio = Number(
@@ -202,7 +215,7 @@ export class EngineHandler {
               calcOption: "oracle",
             })
           );
-          console.log({ oracleMarginRatio });
+          // console.log({ oracleMarginRatio });
           if (oracleMarginRatio - marginRatio > 0) {
             marginRatio = oracleMarginRatio;
             console.log({ new_marginRatio: marginRatio });
@@ -229,11 +242,6 @@ export class EngineHandler {
         }
       }
     }
-    if (multipleMsg.length > 0)
-      console.log(
-        "trigger Liquidate with total message length: ",
-        multipleMsg.length
-      );
     return multipleMsg;
   }
 
@@ -266,7 +274,6 @@ export async function executeEngine(
   engine: Addr,
   insurance: Addr
 ): Promise<ExecuteResult> | undefined {
-  console.log(`Excecuting perpetual engine contract ${engine}`);
   const insuranceClient = new MarginedInsuranceFundQueryClient(
     sender.client,
     insurance
@@ -293,8 +300,9 @@ export async function executeEngine(
       instructions = instructions.concat(res.value);
     }
   }
-  console.log("instructions to execute: ");
-  console.dir(instructions, { depth: 4 });
-  if (instructions.length > 0)
+  if (instructions.length > 0) {
+    console.log("instructions to execute: ");
+    console.dir(instructions, { depth: 4 });
     return engineHandler.executeMultiple(instructions);
+  }
 }
