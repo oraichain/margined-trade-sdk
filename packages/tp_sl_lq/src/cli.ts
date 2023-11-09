@@ -2,9 +2,20 @@ import dotenv from "dotenv";
 import { executeEngine, fetchSchedule } from "./index";
 import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
 import { WebhookClient, time, userMention } from "discord.js";
+import cors from 'cors';
+import express, { Request } from 'express';
 dotenv.config();
 
 const minimumOraiBalance = 1000000; // 1 ORAI;
+const app = express();
+app.use(cors());
+
+const port = process.env.PORT || 30000;
+
+app.listen(port, async () => {
+  console.log(`[bot]: Perp bot is running at http://localhost:${port}`);
+});
+
 
 async function getSender(rpcUrl: string): Promise<UserWallet | string> {
   try {
@@ -38,7 +49,6 @@ async function handleExecuteEngine(
       insuranceAddr ?? process.env.INSURANCE_FUND_CONTRACT
     );
     if (res !== undefined) {
-      console.dir(res, {depth: null});
       console.log(
         "take profit | stop loss | liquidate | payfunding - txHash:",
         res.transactionHash

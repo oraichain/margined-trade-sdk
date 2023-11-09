@@ -158,7 +158,6 @@ export class EngineHandler {
       takeProfit,
       limit: 10,
     });
-    // console.log({ side, takeProfit, willTriggerTpSl });
     if (!willTriggerTpSl.is_tpsl) return [];
     console.log(`TP | SL - POSITION: ${side} - takeProfit: ${takeProfit}`);
     let trigger_tp_sl: ExecuteInstruction = {
@@ -185,8 +184,7 @@ export class EngineHandler {
     const engineConfig = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
-    // console.log("trigger liquidate");
-    // console.log({ side, isOverSpreadLimit });
+    console.log({ side, isOverSpreadLimit });
     for (const tick of ticks) {
       const positionbyPrice = await this.queryPositionsbyPrice(
         vamm,
