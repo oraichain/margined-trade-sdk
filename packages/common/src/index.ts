@@ -8,6 +8,28 @@ export type UserWallet = { address: string; client: SigningCosmWasmClient };
 const truncDecimals = 6;
 export const atomic = 10 ** truncDecimals;
 
+export type RetryOptions = {
+  retry?: number;
+  timeout?: number;
+  callback?: (retry: number) => void;
+};
+
+const fetchRetry = async (url: RequestInfo | URL, opts: RequestInit & RetryOptions = {}) => {
+  let { retry = 3, callback, timeout = 30000, ...init } = opts;
+  init.signal = AbortSignal.timeout(timeout);
+  while (retry > 0) {
+    try {
+      return await fetch(url, init);
+    } catch (e) {
+      callback?.(retry);
+      retry--;
+      if (retry === 0) {
+        throw e;
+      }
+    }
+  }
+};
+
 export const delay = (milliseconds: number) => {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
@@ -32,9 +54,16 @@ export const getRandomRange = (min: number, max: number): number => {
   return ((Math.random() * (max - min + 1)) << 0) + min;
 };
 
-export const getOraclePrice = async (token: string): Promise<number> => {
-  const res = await fetch(`https://api.orchai.io/lending/mainnet/token/${token}`).then((res) => res.json());
-  return res.current_price;
+export const getOraclePrice = async (token: string, url?: string): Promise<number> => {
+  const response = await fetchRetry(url ?? `https://api.orchai.io/lending/mainnet/token/${token}`);
+  const result = await response.json();
+  return result.current_price;
+};
+
+export const getCoingeckoPrice = async (token: "oraichain-token" | "airight", url?: string): Promise<number> => {
+  const response = await fetchRetry(url ?? `https://price.market.orai.io/simple/price?ids=${token}&vs_currencies=usd`);
+  const result = await response.json();
+  return result[token].usd;
 };
 
 export const validateNumber = (amount: number | string): number => {
@@ -78,8 +107,27 @@ export async function setupWallet(
   const client =
     cosmwasmClient ??
     (await SigningCosmWasmClient.connectWithSigner(config.rpcUrl || 'https://rpc.orai.io', wallet, {
-      gasPrice: GasPrice.fromString(`${config.gasPrices ?? '0.005'}orai`)
+      gasPrice: GasPrice.fromString(`${config.gasPrices ?? '0.001'}orai`)
     }));
 
   return { address, client };
 }
+
+export function getDifferencePercentage(a: number, b: number) {
+  return Math.abs((100 * (a - b)) / b);
+}
+
+export const toDisplay = (amount: string | bigint, sourceDecimals = 6, desDecimals = 6): number => {
+  if (!amount) return 0;
+  if (typeof amount === "string" && amount.indexOf(".") !== -1) amount = amount.split(".")[0];
+  try {
+    // guarding conditions to prevent crashing
+    const validatedAmount = typeof amount === "string" ? BigInt(amount || "0") : amount;
+    const displayDecimals = Math.min(truncDecimals, desDecimals);
+    const returnAmount = validatedAmount / BigInt(10 ** (sourceDecimals - displayDecimals));
+    // save calculation by using cached atomic
+    return Number(returnAmount) / (displayDecimals === truncDecimals ? atomic : 10 ** displayDecimals);
+  } catch {
+    return 0;
+  }
+};
