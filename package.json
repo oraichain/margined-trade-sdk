@@ -5,7 +5,7 @@
     "postinstall": "patch-package",
     "build": "tsc -p",
     "test": "jest",
-    "deploy": "yarn publish --access public --patch",
+    "deploy": "yarn publish --access public",
     "docs": "typedoc --entryPointStrategy expand --name 'Orai Margin Trade SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json packages/contracts-sdk/src"
   },
   "workspaces": [
@@ -17,7 +17,7 @@
   "dependencies": {
     "@cosmjs/amino": "^0.31",
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
-    "@oraichain/oraimargin-common": "^0.0.3",
+    "@oraichain/oraitrading-common": "^0.0.2",
     "@oraichain/oraimargin-contracts-build": "^1.0.30",
     "@oraichain/oraimargin-contracts-sdk": "^1.0.32",
     "@types/node-cron": "^3.0.10",
