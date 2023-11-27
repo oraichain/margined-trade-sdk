@@ -27,7 +27,7 @@ import {
 } from "./common";
 
 import { EngineHandler } from "../index";
-import { UserWallet } from "@oraichain/oraimargin-common";
+import { UserWallet } from "@oraichain/oraitrading-common";
 import { Side } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 
 const client = new SimulateCosmWasmClient({

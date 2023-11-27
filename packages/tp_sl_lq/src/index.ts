@@ -1,4 +1,4 @@
-import { UserWallet, bigAbs } from "@oraichain/oraimargin-common";
+import { UserWallet, bigAbs } from "@oraichain/oraitrading-common";
 import { ExecuteInstruction, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 
 import {
@@ -16,6 +16,7 @@ import {
 } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 
 import { IScheduler, Scheduler } from "./scheduler";
+import { AllVammResponse } from "@oraichain/oraimargin-contracts-sdk/build/MarginedInsuranceFund.types";
 
 export class fetchSchedule extends Scheduler {
   // execute job every 5 minutes
@@ -33,10 +34,15 @@ export class fetchSchedule extends Scheduler {
 
 export class EngineHandler {
   public engineClient: MarginedEngineQueryClient;
-  constructor(public sender: UserWallet, private engineAddress: string) {
+  public insuranceClient: MarginedInsuranceFundQueryClient;
+  constructor(public sender: UserWallet, private engine: string, private insurance: string,) {
     this.engineClient = new MarginedEngineQueryClient(
       sender.client,
-      engineAddress
+      engine
+    );
+    this.insuranceClient = new MarginedInsuranceFundQueryClient(
+      sender.client,
+      engine
     );
   }
 
@@ -93,6 +99,10 @@ export class EngineHandler {
     }
     return false;
   };
+
+  async getAllVamm(): Promise<Addr[]> {
+    return (await this.insuranceClient.getAllVamm({})).vamm_list;
+  }
 
   async queryAllTicks(
     vamm: Addr,
@@ -158,10 +168,12 @@ export class EngineHandler {
       takeProfit,
       limit: 10,
     });
+    console.log(
+      `TP | SL - POSITION: ${side} - takeProfit: ${takeProfit} - is_tpsl: ${willTriggerTpSl.is_tpsl}`
+    );
     if (!willTriggerTpSl.is_tpsl) return [];
-    console.log(`TP | SL - POSITION: ${side} - takeProfit: ${takeProfit}`);
     let trigger_tp_sl: ExecuteInstruction = {
-      contractAddress: this.engineAddress,
+      contractAddress: this.engine,
       msg: {
         trigger_tp_sl: {
           vamm,
@@ -199,11 +211,11 @@ export class EngineHandler {
             vamm,
           })
         );
-        // console.log({
-        //   position_id: position.position_id,
-        //   marginRatio,
-        //   maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
-        // });
+        console.log({
+          position_id: position.position_id,
+          marginRatio,
+          maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
+        });
         let liquidateFlag = false;
         if (isOverSpreadLimit) {
           const oracleMarginRatio = Number(
@@ -213,7 +225,7 @@ export class EngineHandler {
               calcOption: "oracle",
             })
           );
-          // console.log({ oracleMarginRatio });
+          console.log({ oracleMarginRatio });
           if (oracleMarginRatio - marginRatio > 0) {
             marginRatio = oracleMarginRatio;
             console.log({ new_marginRatio: marginRatio });
@@ -226,7 +238,7 @@ export class EngineHandler {
 
         if (liquidateFlag) {
           let liquidate: ExecuteInstruction = {
-            contractAddress: this.engineAddress,
+            contractAddress: this.engine,
             msg: {
               liquidate: {
                 position_id: position.position_id,
@@ -258,7 +270,7 @@ export class EngineHandler {
       console.log("pay Funding rate");
       return [
         {
-          contractAddress: this.engineAddress,
+          contractAddress: this.engine,
           msg: payFunding,
         },
       ];
@@ -268,39 +280,51 @@ export class EngineHandler {
 }
 
 export async function executeEngine(
-  sender: UserWallet,
-  engine: Addr,
-  insurance: Addr
-): Promise<ExecuteResult> | undefined {
-  const insuranceClient = new MarginedInsuranceFundQueryClient(
-    sender.client,
-    insurance
-  );
-  const { vamm_list: vammList } = await insuranceClient.getAllVamm({});
-
-  const engineHandler = new EngineHandler(sender, engine);
-  const executePromises = vammList
+  engineHandler: EngineHandler
+): Promise<[ExecuteInstruction[], ExecuteInstruction[], ExecuteInstruction[]]> {
+  const vammList: Addr[] = await engineHandler.getAllVamm();
+  const executeTPSLPromises = vammList
     .map((item) => [
       engineHandler.triggerTpSl(item, "buy", true),
       engineHandler.triggerTpSl(item, "buy", false),
       engineHandler.triggerTpSl(item, "sell", true),
-      engineHandler.triggerTpSl(item, "sell", false),
-      engineHandler.triggerLiquidate(item, "buy"),
-      engineHandler.triggerLiquidate(item, "sell"),
-      engineHandler.payFunding(item),
+      engineHandler.triggerTpSl(item, "sell", false)
     ])
     .flat();
 
-  let instructions: ExecuteInstruction[] = [];
-  const results = await Promise.allSettled(executePromises);
-  for (let res of results) {
+  const executeLiquidatePromises = vammList
+    .map((item) => [
+      engineHandler.triggerLiquidate(item, "buy"),
+      engineHandler.triggerLiquidate(item, "sell"),
+    ])
+    .flat();
+
+  const executePayFundingPromises = vammList
+    .map((item) => [engineHandler.payFunding(item)])
+    .flat();
+
+  let tpslMsg: ExecuteInstruction[] = [];
+  let liquidateMsg: ExecuteInstruction[] = [];
+  let payFundingMsg: ExecuteInstruction[] = [];
+  const tpslResults = await Promise.allSettled(executeTPSLPromises);
+  for (let res of tpslResults) {
     if (res.status === "fulfilled") {
-      instructions = instructions.concat(res.value);
+      tpslMsg = tpslMsg.concat(res.value);
     }
   }
-  if (instructions.length > 0) {
-    console.log("instructions to execute: ");
-    console.dir(instructions, { depth: 4 });
-    return engineHandler.executeMultiple(instructions);
+
+  const liquidateResults = await Promise.allSettled(executeLiquidatePromises);
+  for (let res of liquidateResults) {
+    if (res.status === "fulfilled") {
+      liquidateMsg = liquidateMsg.concat(res.value);
+    }
   }
+
+  const payFundingResults = await Promise.allSettled(executePayFundingPromises);
+  for (let res of payFundingResults) {
+    if (res.status === "fulfilled") {
+      payFundingMsg = payFundingMsg.concat(res.value);
+    }
+  }
+   return [tpslMsg, liquidateMsg, payFundingMsg]
 }

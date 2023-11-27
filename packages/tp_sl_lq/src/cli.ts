@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { executeEngine, fetchSchedule } from "./index";
-import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
+import { EngineHandler, executeEngine, fetchSchedule } from "./index";
+import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraitrading-common";
 import { WebhookClient, time, userMention } from "discord.js";
 import cors from 'cors';
 import express, { Request } from 'express';
@@ -42,27 +42,49 @@ async function handleExecuteEngine(
   insuranceAddr?: string
 ): Promise<string> {
   const date = new Date();
-  try {
-    const res = await executeEngine(
-      sender,
-      engineAddr ?? process.env.ENGINE_CONTRACT,
-      insuranceAddr ?? process.env.INSURANCE_FUND_CONTRACT
-    );
-    if (res !== undefined) {
-      console.log(
-        "take profit | stop loss | liquidate | payfunding - txHash:",
-        res.transactionHash
-      );
-      return (
-        `:receipt: BOT: ${sender.address} - take profit | stop loss | liquidate | payfunding - txHash: ` +
-        `https://scan.orai.io/txs/${res.transactionHash}`.toString() +
-        ` at ${time(date)}`
-      );
+  let result = "";
+  const engineHandler = new EngineHandler(sender, engineAddr, insuranceAddr); 
+  try {  
+    const [tpslMsg, liquidateMsg, payFundingMsg] = await executeEngine(engineHandler);
+    if (tpslMsg.length > 0) {
+      console.dir(tpslMsg, { depth: 4 });
+      const res = await engineHandler.executeMultiple(tpslMsg);
+      if (res !== undefined) {
+        console.log(
+          "take profit | stop loss - txHash:",
+          res.transactionHash
+        );
+        result = result + `:receipt: BOT: ${sender.address} - take profit | stop loss - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
+      }
     }
-    return "";
+
+    if (liquidateMsg.length > 0) {
+      console.dir(liquidateMsg, { depth: 4 });
+      const res = await engineHandler.executeMultiple(liquidateMsg);
+      if (res !== undefined) {
+        console.log(
+          "liquidate - txHash:",
+          res.transactionHash
+        );
+        result = result + `:receipt: BOT: ${sender.address} - liquidate - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
+      }
+    }
+
+    if (payFundingMsg.length > 0) {
+      console.dir(payFundingMsg, { depth: 4 });
+      const res = await engineHandler.executeMultiple(payFundingMsg);
+      if (res !== undefined) {
+        console.log(
+          "payfunding - txHash:",
+          res.transactionHash
+        );
+        result = result + `:receipt: BOT: ${sender.address} - payfunding - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
+      }
+    }
+    return result;
   } catch (error) {
     console.log(
-      "error in processing triggering TpSl, liquidate & pay funding: ",
+      "error in processing triggering TpSl: ",
       { error }
     );
     console.log("Send discord noti: ", error.message);
