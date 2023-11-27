@@ -139,7 +139,7 @@ describe("perpetual-engine", () => {
       })
     );
 
-    engineHandler = new EngineHandler(sender, engineContract.contractAddress);
+    engineHandler = new EngineHandler(sender, engineContract.contractAddress, insuranceFundContract.contractAddress);
   });
 
   it("test_instantiation", async () => {

@@ -17,9 +17,9 @@ import {
 import { IScheduler, Scheduler } from "./scheduler";
 
 export class fetchSchedule extends Scheduler {
-  // execute job every 5 minutes
+  // execute job every 3 minutes
   constructor() {
-    super("*/5 * * * *");
+    super("*/3 * * * *");
   }
 
   executeJob(): Promise<IScheduler> {
@@ -165,7 +165,7 @@ export class EngineHandler {
       vamm,
       side,
       takeProfit,
-      limit: 10,
+      limit: 5,
     });
     console.log(
       `TP | SL - POSITION: ${side} - takeProfit: ${takeProfit} - is_tpsl: ${willTriggerTpSl.is_tpsl}`
@@ -178,7 +178,7 @@ export class EngineHandler {
           vamm,
           side,
           take_profit: takeProfit,
-          limit: 10,
+          limit: 5,
         },
       },
     };
