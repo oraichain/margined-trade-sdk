@@ -255,8 +255,6 @@ export class EngineHandler {
   }
 
   async payFunding(vamm: Addr): Promise<ExecuteInstruction[]> {
-    console.log(" payFunding ");
-    
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const vammState = await vammClient.state();
     const nextFundingTime = Number(vammState.next_funding_time);
