@@ -14,9 +14,7 @@ import {
   TickResponse,
   ExecuteMsg,
 } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
-
 import { IScheduler, Scheduler } from "./scheduler";
-import { AllVammResponse } from "@oraichain/oraimargin-contracts-sdk/build/MarginedInsuranceFund.types";
 
 export class fetchSchedule extends Scheduler {
   // execute job every 5 minutes
@@ -35,14 +33,15 @@ export class fetchSchedule extends Scheduler {
 export class EngineHandler {
   public engineClient: MarginedEngineQueryClient;
   public insuranceClient: MarginedInsuranceFundQueryClient;
-  constructor(public sender: UserWallet, private engine: string, private insurance: string,) {
-    this.engineClient = new MarginedEngineQueryClient(
-      sender.client,
-      engine
-    );
+  constructor(
+    public sender: UserWallet,
+    private engine: string,
+    private insurance: string
+  ) {
+    this.engineClient = new MarginedEngineQueryClient(sender.client, engine);
     this.insuranceClient = new MarginedInsuranceFundQueryClient(
       sender.client,
-      engine
+      insurance
     );
   }
 
@@ -211,11 +210,11 @@ export class EngineHandler {
             vamm,
           })
         );
-        console.log({
-          position_id: position.position_id,
-          marginRatio,
-          maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
-        });
+        // console.log({
+        //   position_id: position.position_id,
+        //   marginRatio,
+        //   maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
+        // });
         let liquidateFlag = false;
         if (isOverSpreadLimit) {
           const oracleMarginRatio = Number(
@@ -256,10 +255,14 @@ export class EngineHandler {
   }
 
   async payFunding(vamm: Addr): Promise<ExecuteInstruction[]> {
+    console.log(" payFunding ");
+    
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const vammState = await vammClient.state();
     const nextFundingTime = Number(vammState.next_funding_time);
     let time = Math.floor(Date.now() / 1000);
+    console.log({ time, nextFundingTime });
+    
 
     if (time >= nextFundingTime) {
       const payFunding: ExecuteMsg = {
@@ -288,7 +291,7 @@ export async function executeEngine(
       engineHandler.triggerTpSl(item, "buy", true),
       engineHandler.triggerTpSl(item, "buy", false),
       engineHandler.triggerTpSl(item, "sell", true),
-      engineHandler.triggerTpSl(item, "sell", false)
+      engineHandler.triggerTpSl(item, "sell", false),
     ])
     .flat();
 
@@ -326,5 +329,5 @@ export async function executeEngine(
       payFundingMsg = payFundingMsg.concat(res.value);
     }
   }
-   return [tpslMsg, liquidateMsg, payFundingMsg]
+  return [tpslMsg, liquidateMsg, payFundingMsg];
 }

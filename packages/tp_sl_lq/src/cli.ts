@@ -3,7 +3,8 @@ import { EngineHandler, executeEngine, fetchSchedule } from "./index";
 import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraitrading-common";
 import { WebhookClient, time, userMention } from "discord.js";
 import cors from 'cors';
-import express, { Request } from 'express';
+import express from 'express';
+
 dotenv.config();
 
 const minimumOraiBalance = 1000000; // 1 ORAI;
@@ -15,7 +16,6 @@ const port = process.env.PORT || 30000;
 app.listen(port, async () => {
   console.log(`[bot]: Perp bot is running at http://localhost:${port}`);
 });
-
 
 async function getSender(rpcUrl: string): Promise<UserWallet | string> {
   try {
@@ -38,12 +38,12 @@ async function getSender(rpcUrl: string): Promise<UserWallet | string> {
 
 async function handleExecuteEngine(
   sender: UserWallet,
-  engineAddr?: string,
-  insuranceAddr?: string
+  engine: string,
+  insuranceFund: string
 ): Promise<string> {
   const date = new Date();
   let result = "";
-  const engineHandler = new EngineHandler(sender, engineAddr, insuranceAddr); 
+  const engineHandler = new EngineHandler(sender, engine, insuranceFund); 
   try {  
     const [tpslMsg, liquidateMsg, payFundingMsg] = await executeEngine(engineHandler);
     if (tpslMsg.length > 0) {
@@ -137,10 +137,12 @@ async function handleExecuteEngine(
       `Balance(${amount}) of ${sender.address} must be greater than 1 ORAI`
     );
   }
+  const engineContract = process.env.ENGINE_CONTRACT;
+  const insuranceFundContract = process.env.INSURANCE_FUND_CONTRACT;
 
   while (true) {
     try {
-      const result = await handleExecuteEngine(sender);
+      const result = await handleExecuteEngine(sender, engineContract, insuranceFundContract);
       if (result) {
         if (result.includes("err"))
           await webhookClient.send(result + mentionUserIds);
