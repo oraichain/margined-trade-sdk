@@ -69,11 +69,11 @@ export const getCoingeckoPrice = async (token: "oraichain-token" | "airight", ur
 export const getPriceFeed = async (token: string, url?: string): Promise<number> => {
   console.log("getPriceFeed url", url);
   const response = await fetchRetry(url);
-  const result = await response.json();
-  console.log({ result });
+  const priceData = await response.json();
+  console.log({ priceData });
 
-  if (result.token === token) {
-    return Number(result.price.toFixed(6));
+  if (priceData.token.toLowerCase() === token.toLowerCase()) {
+    return Number(priceData.price.toFixed(6));
   }
   return 0;
 };
