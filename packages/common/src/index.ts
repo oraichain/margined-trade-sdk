@@ -66,6 +66,18 @@ export const getCoingeckoPrice = async (token: "oraichain-token" | "airight", ur
   return result[token].usd;
 };
 
+export const getPriceFeed = async (token: string, url?: string): Promise<number> => {
+  console.log("getPriceFeed url", url);
+  const response = await fetchRetry(url);
+  const result = await response.json();
+  console.log({ result });
+
+  if (result.token === token) {
+    return Number(result.price.toFixed(6));
+  }
+  return 0;
+};
+
 export const validateNumber = (amount: number | string): number => {
   if (typeof amount === 'string') return validateNumber(Number(amount));
   if (Number.isNaN(amount) || !Number.isFinite(amount)) return 0;
