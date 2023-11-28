@@ -1,4 +1,4 @@
-import { UserWallet, bigAbs } from "@oraichain/oraimargin-common";
+import { UserWallet, bigAbs } from "@oraichain/oraitrading-common";
 import { ExecuteInstruction, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 
 import {
@@ -14,13 +14,34 @@ import {
   TickResponse,
   ExecuteMsg,
 } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
+import { IScheduler, Scheduler } from "./scheduler";
+
+export class fetchSchedule extends Scheduler {
+  // execute job every 3 minutes
+  constructor() {
+    super("*/3 * * * *");
+  }
+
+  executeJob(): Promise<IScheduler> {
+    return new Promise(async (resolve, reject) => {
+      await fetch("https://bot-test.orai.io/bot-futures/");
+      console.log(`Fetch server at ` + new Date());
+    });
+  }
+}
 
 export class EngineHandler {
   public engineClient: MarginedEngineQueryClient;
-  constructor(public sender: UserWallet, private engineAddress: string) {
-    this.engineClient = new MarginedEngineQueryClient(
+  public insuranceClient: MarginedInsuranceFundQueryClient;
+  constructor(
+    public sender: UserWallet,
+    private engine: string,
+    private insurance: string
+  ) {
+    this.engineClient = new MarginedEngineQueryClient(sender.client, engine);
+    this.insuranceClient = new MarginedInsuranceFundQueryClient(
       sender.client,
-      engineAddress
+      insurance
     );
   }
 
@@ -78,6 +99,10 @@ export class EngineHandler {
     return false;
   };
 
+  async getAllVamm(): Promise<Addr[]> {
+    return (await this.insuranceClient.getAllVamm({})).vamm_list;
+  }
+
   async queryAllTicks(
     vamm: Addr,
     side: Side,
@@ -130,41 +155,34 @@ export class EngineHandler {
     return totalPositions;
   }
 
-  async triggerTpSl(vamm: Addr, side: Side): Promise<ExecuteInstruction[]> {
+  async triggerTpSl(
+    vamm: Addr,
+    side: Side,
+    takeProfit: boolean
+  ): Promise<ExecuteInstruction[]> {
     const multipleMsg: ExecuteInstruction[] = [];
-    const ticks = await this.queryAllTicks(vamm, side);
-
-    for (const tick of ticks) {
-      const positionbyPrice = await this.queryPositionsbyPrice(
-        vamm,
-        side,
-        tick.entry_price
-      );
-
-      for (const position of positionbyPrice) {
-        const willTriggerTpSl = await this.engineClient.positionIsTpSl({
+    const willTriggerTpSl = await this.engineClient.positionIsTpSl({
+      vamm,
+      side,
+      takeProfit,
+      limit: 5,
+    });
+    console.log(
+      `TP | SL - POSITION: ${side} - takeProfit: ${takeProfit} - is_tpsl: ${willTriggerTpSl.is_tpsl}`
+    );
+    if (!willTriggerTpSl.is_tpsl) return [];
+    let trigger_tp_sl: ExecuteInstruction = {
+      contractAddress: this.engine,
+      msg: {
+        trigger_tp_sl: {
           vamm,
-          positionId: position.position_id,
-        });
-        console.log({ willTriggerTpSl });
-        
-        if (!willTriggerTpSl.is_tpsl) continue;
-        let trigger_tp_sl: ExecuteInstruction = {
-          contractAddress: this.engineAddress,
-          msg: {
-            trigger_tp_sl: {
-              position_id: position.position_id,
-              quote_asset_limit: "0",
-              vamm,
-            },
-          },
-        };
-        multipleMsg.push(trigger_tp_sl);
-      }
-    }
-
-    if (multipleMsg.length > 0)
-      console.log("trigger TpSl with length: ", multipleMsg.length);
+          side,
+          take_profit: takeProfit,
+          limit: 5,
+        },
+      },
+    };
+    multipleMsg.push(trigger_tp_sl);
     return multipleMsg;
   }
 
@@ -177,6 +195,7 @@ export class EngineHandler {
     const engineConfig = await this.engineClient.config();
     const ticks = await this.queryAllTicks(vamm, side);
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
+    console.log({ side, isOverSpreadLimit });
     for (const tick of ticks) {
       const positionbyPrice = await this.queryPositionsbyPrice(
         vamm,
@@ -191,6 +210,11 @@ export class EngineHandler {
             vamm,
           })
         );
+        // console.log({
+        //   position_id: position.position_id,
+        //   marginRatio,
+        //   maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
+        // });
         let liquidateFlag = false;
         if (isOverSpreadLimit) {
           const oracleMarginRatio = Number(
@@ -200,21 +224,24 @@ export class EngineHandler {
               calcOption: "oracle",
             })
           );
+          console.log({ oracleMarginRatio });
           if (oracleMarginRatio - marginRatio > 0) {
             marginRatio = oracleMarginRatio;
+            console.log({ new_marginRatio: marginRatio });
           }
         }
         if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
+          console.log("LIQUIDATE - POSITION:", position.position_id);
           liquidateFlag = true;
         }
 
         if (liquidateFlag) {
           let liquidate: ExecuteInstruction = {
-            contractAddress: this.engineAddress,
+            contractAddress: this.engine,
             msg: {
               liquidate: {
                 position_id: position.position_id,
-                quote_asset_limit: "0", // why limit 0?
+                quote_asset_limit: "0",
                 vamm,
               },
             },
@@ -224,11 +251,6 @@ export class EngineHandler {
         }
       }
     }
-    if (multipleMsg.length > 0)
-      console.log(
-        "trigger Liquidate with total message length: ",
-        multipleMsg.length
-      );
     return multipleMsg;
   }
 
@@ -237,6 +259,8 @@ export class EngineHandler {
     const vammState = await vammClient.state();
     const nextFundingTime = Number(vammState.next_funding_time);
     let time = Math.floor(Date.now() / 1000);
+    console.log({ time, nextFundingTime });
+    
 
     if (time >= nextFundingTime) {
       const payFunding: ExecuteMsg = {
@@ -247,7 +271,7 @@ export class EngineHandler {
       console.log("pay Funding rate");
       return [
         {
-          contractAddress: this.engineAddress,
+          contractAddress: this.engine,
           msg: payFunding,
         },
       ];
@@ -257,37 +281,51 @@ export class EngineHandler {
 }
 
 export async function executeEngine(
-  sender: UserWallet,
-  engine: Addr,
-  insurance: Addr
-): Promise<ExecuteResult> | undefined {
-  console.log(`Excecuting perpetual engine contract ${engine}`);
-  const insuranceClient = new MarginedInsuranceFundQueryClient(
-    sender.client,
-    insurance
-  );
-  const { vamm_list: vammList } = await insuranceClient.getAllVamm({});
-
-  const engineHandler = new EngineHandler(sender, engine);
-  const executePromises = vammList
+  engineHandler: EngineHandler
+): Promise<[ExecuteInstruction[], ExecuteInstruction[], ExecuteInstruction[]]> {
+  const vammList: Addr[] = await engineHandler.getAllVamm();
+  const executeTPSLPromises = vammList
     .map((item) => [
-      engineHandler.triggerTpSl(item, "buy"),
-      engineHandler.triggerTpSl(item, "sell"),
-      engineHandler.triggerLiquidate(item, "buy"),
-      engineHandler.triggerLiquidate(item, "sell"),
-      engineHandler.payFunding(item),
+      engineHandler.triggerTpSl(item, "buy", true),
+      engineHandler.triggerTpSl(item, "buy", false),
+      engineHandler.triggerTpSl(item, "sell", true),
+      engineHandler.triggerTpSl(item, "sell", false),
     ])
     .flat();
 
-  let instructions: ExecuteInstruction[] = [];
-  const results = await Promise.allSettled(executePromises);
-  for (let res of results) {
+  const executeLiquidatePromises = vammList
+    .map((item) => [
+      engineHandler.triggerLiquidate(item, "buy"),
+      engineHandler.triggerLiquidate(item, "sell"),
+    ])
+    .flat();
+
+  const executePayFundingPromises = vammList
+    .map((item) => [engineHandler.payFunding(item)])
+    .flat();
+
+  let tpslMsg: ExecuteInstruction[] = [];
+  let liquidateMsg: ExecuteInstruction[] = [];
+  let payFundingMsg: ExecuteInstruction[] = [];
+  const tpslResults = await Promise.allSettled(executeTPSLPromises);
+  for (let res of tpslResults) {
     if (res.status === "fulfilled") {
-      instructions = instructions.concat(res.value);
+      tpslMsg = tpslMsg.concat(res.value);
     }
   }
-  console.log("instructions to execute: ");
-  console.dir(instructions, { depth: 4 });
-  if (instructions.length > 0)
-    return engineHandler.executeMultiple(instructions);
+
+  const liquidateResults = await Promise.allSettled(executeLiquidatePromises);
+  for (let res of liquidateResults) {
+    if (res.status === "fulfilled") {
+      liquidateMsg = liquidateMsg.concat(res.value);
+    }
+  }
+
+  const payFundingResults = await Promise.allSettled(executePayFundingPromises);
+  for (let res of payFundingResults) {
+    if (res.status === "fulfilled") {
+      payFundingMsg = payFundingMsg.concat(res.value);
+    }
+  }
+  return [tpslMsg, liquidateMsg, payFundingMsg];
 }

@@ -8,7 +8,10 @@ import {
   MarginedInsuranceFundClient,
   MarginedFeePoolClient,
 } from "@oraichain/oraimargin-contracts-sdk";
-import { OraiswapTokenClient } from "@oraichain/oraidex-contracts-sdk";
+import {
+  ExecuteResult,
+  OraiswapTokenClient,
+} from "@oraichain/oraidex-contracts-sdk";
 import {
   deployEngine,
   senderAddress,
@@ -20,10 +23,11 @@ import {
   toDecimals,
   aliceAddress,
   bobAddress,
+  carolAddress,
 } from "./common";
 
 import { EngineHandler } from "../index";
-import { UserWallet } from "@oraichain/oraimargin-common";
+import { UserWallet } from "@oraichain/oraitrading-common";
 import { Side } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 
 const client = new SimulateCosmWasmClient({
@@ -135,7 +139,7 @@ describe("perpetual-engine", () => {
       })
     );
 
-    engineHandler = new EngineHandler(sender, engineContract.contractAddress);
+    engineHandler = new EngineHandler(sender, engineContract.contractAddress, insuranceFundContract.contractAddress);
   });
 
   it("test_instantiation", async () => {
@@ -913,7 +917,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      true
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
     console.dir(longTx.events, { depth: 4 });
@@ -1014,7 +1019,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      false
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
 
@@ -1110,7 +1116,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      true
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
     expect(longTx.events).toEqual([]);
@@ -1210,7 +1217,8 @@ describe("perpetual-engine", () => {
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
-      "buy"
+      "buy",
+      true
     );
     const longTx = await engineHandler.executeMultiple(longMsgs);
     expect(longTx.events).toEqual([]);

@@ -1,6 +1,6 @@
 {
-  "name": "@oraichain/oraimargin-common",
-  "version": "0.0.3",
+  "name": "@oraichain/oraitrading-common",
+  "version": "0.0.4",
   "main": "build/index.js",
   "license": "MIT"
 }

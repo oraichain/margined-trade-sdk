@@ -1,8 +1,9 @@
 import dotenv from "dotenv";
 import { queryAllVammSpotPrice } from "./index";
-import { decrypt, delay, setupWallet } from "@oraichain/oraimargin-common";
+import { delay } from "@oraichain/oraitrading-common";
 import WebSocket from "ws";
 import { WebhookClient, time } from "discord.js";
+import {CosmWasmClient} from "@cosmjs/cosmwasm-stargate";
 
 dotenv.config();
 
@@ -45,14 +46,7 @@ const sendPrice = async (
   const insurance = process.env.INSURANCE_FUND_CONTRACT;
   const sendTime = process.env.SEND_TIME ? Number(process.env.SEND_TIME) : 3600;
   console.log({ sendTime });
-  const sender = await setupWallet(
-    decrypt(process.env.MNEMONIC_PASS, process.env.MNEMONIC_ENCRYPTED),
-    {
-      hdPath: process.env.HD_PATH,
-      rpcUrl: process.env.RPC_URL,
-      prefix: process.env.PREFIX,
-    }
-  );
+  const client = await CosmWasmClient.connect(process.env.RPC_URL ?? "https://rpc.orai.io/");
 
   let prevPrices: string[] = [];
   let preTime: number = 0;
@@ -66,7 +60,7 @@ const sendPrice = async (
   while (true) {
     try {
       let curTime = Math.floor(Date.now() / 1000);
-      const alLPrices = await queryAllVammSpotPrice(sender, insurance);
+      const alLPrices = await queryAllVammSpotPrice(client, insurance);
       console.log({ alLPrices });
 
       const differencePrices =

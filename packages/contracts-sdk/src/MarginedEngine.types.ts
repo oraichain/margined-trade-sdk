@@ -57,8 +57,9 @@ export type ExecuteMsg = {
   };
 } | {
   trigger_tp_sl: {
-    position_id: number;
-    quote_asset_limit: Uint128;
+    limit: number;
+    side: Side;
+    take_profit: boolean;
     vamm: string;
   };
 } | {
@@ -173,7 +174,9 @@ export type QueryMsg = {
   };
 } | {
   position_is_tp_sl: {
-    position_id: number;
+    limit: number;
+    side: Side;
+    take_profit: boolean;
     vamm: string;
   };
 } | {

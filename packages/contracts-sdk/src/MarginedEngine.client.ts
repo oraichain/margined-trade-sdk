@@ -124,10 +124,14 @@ export interface MarginedEngineReadOnlyInterface {
     vamm: string;
   }) => Promise<Position>;
   positionIsTpSl: ({
-    positionId,
+    limit,
+    side,
+    takeProfit,
     vamm
   }: {
-    positionId: number;
+    limit: number;
+    side: Side;
+    takeProfit: boolean;
     vamm: string;
   }) => Promise<PositionTpSlResponse>;
   lastPositionId: () => Promise<LastPositionIdResponse>;
@@ -390,15 +394,21 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     });
   };
   positionIsTpSl = async ({
-    positionId,
+    limit,
+    side,
+    takeProfit,
     vamm
   }: {
-    positionId: number;
+    limit: number;
+    side: Side;
+    takeProfit: boolean;
     vamm: string;
   }): Promise<PositionTpSlResponse> => {
     return this.client.queryContractSmart(this.contractAddress, {
       position_is_tp_sl: {
-        position_id: positionId,
+        limit,
+        side,
+        take_profit: takeProfit,
         vamm
       }
     });
@@ -484,12 +494,14 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
     vamm: string;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   triggerTpSl: ({
-    positionId,
-    quoteAssetLimit,
+    limit,
+    side,
+    takeProfit,
     vamm
   }: {
-    positionId: number;
-    quoteAssetLimit: Uint128;
+    limit: number;
+    side: Side;
+    takeProfit: boolean;
     vamm: string;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   liquidate: ({
@@ -687,18 +699,21 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     }, _fee, _memo, _funds);
   };
   triggerTpSl = async ({
-    positionId,
-    quoteAssetLimit,
+    limit,
+    side,
+    takeProfit,
     vamm
   }: {
-    positionId: number;
-    quoteAssetLimit: Uint128;
+    limit: number;
+    side: Side;
+    takeProfit: boolean;
     vamm: string;
   }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
       trigger_tp_sl: {
-        position_id: positionId,
-        quote_asset_limit: quoteAssetLimit,
+        limit,
+        side,
+        take_profit: takeProfit,
         vamm
       }
     }, _fee, _memo, _funds);
