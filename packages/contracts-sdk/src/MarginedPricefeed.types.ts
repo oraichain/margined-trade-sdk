@@ -37,9 +37,14 @@ export type QueryMsg = {
     interval: number;
     key: string;
   };
+} | {
+  get_last_round_id: {
+    key: string;
+  };
 };
 export interface MigrateMsg {}
 export interface ConfigResponse {}
+export type Uint64 = number;
 export interface OwnerResponse {
   owner: Addr;
 }
