@@ -67,7 +67,6 @@ export const getCoingeckoPrice = async (token: "oraichain-token" | "airight", ur
 };
 
 export const getPriceFeed = async (token: string, url?: string): Promise<number> => {
-  console.log("getPriceFeed url", url);
   const response = await fetchRetry(url);
   const priceData = await response.json();
   console.log({ priceData });

@@ -6,6 +6,7 @@ import {
   MarginedEngineQueryClient,
   MarginedVammQueryClient,
   MarginedInsuranceFundQueryClient,
+  Direction,
 } from "@oraichain/oraimargin-contracts-sdk";
 
 import {
@@ -13,9 +14,12 @@ import {
   Position,
   TickResponse,
   ExecuteMsg,
+  PositionFilter,
 } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 import { IScheduler, Scheduler } from "./scheduler";
 
+import { time } from "discord.js";
+import { BigNumber } from "bignumber.js";
 export class fetchSchedule extends Scheduler {
   // execute job every 3 minutes
   constructor() {
@@ -61,6 +65,11 @@ export class EngineHandler {
     );
   }
 
+  async decimals() {
+    const engineConfig = await this.engineClient.config();
+    return engineConfig.decimals;
+  }
+
   calculateSpreadValue = (
     amount: string,
     spread: string,
@@ -71,21 +80,21 @@ export class EngineHandler {
   };
 
   willTpSl = (
-    spotPrice: bigint,
+    closePrice: bigint,
     takeProfitValue: bigint,
     stopLossValue: bigint,
     tpSpread: string,
     slSpread: string,
     side: Side
   ): boolean => {
-    let a = spotPrice;
+    let a = closePrice;
     let b = takeProfitValue;
     let c = stopLossValue;
-    let d = spotPrice;
+    let d = closePrice;
     if (side === "sell") {
       a = takeProfitValue;
-      b = spotPrice;
-      c = spotPrice;
+      b = closePrice;
+      c = closePrice;
       d = stopLossValue;
     }
     if (
@@ -109,20 +118,17 @@ export class EngineHandler {
     limit?: number
   ): Promise<TickResponse[]> {
     let totalTicks: TickResponse[] = [];
-    let tickQuery = {
+    let queryMsg = {
       limit: limit ?? 100,
       orderBy: side === "buy" ? 2 : 1,
       side,
       vamm,
     };
-    let ticks = (await this.engineClient.ticks(tickQuery)).ticks;
-    let length = ticks.length;
-    while (length > 0) {
-      totalTicks = totalTicks.concat(ticks);
-      const lastTick = ticks.slice(-1)[0].entry_price;
-      tickQuery["startAfter"] = lastTick;
-      ticks = (await this.engineClient.ticks(tickQuery)).ticks;
-      length = ticks.length;
+    let ticks = await this.engineClient.ticks(queryMsg);
+    while (ticks.ticks.length > 0) {
+      totalTicks.push(...ticks.ticks);
+      queryMsg["startAfter"] = ticks.ticks.pop().entry_price;
+      ticks = await this.engineClient.ticks(queryMsg);
     }
     return totalTicks;
   }
@@ -134,7 +140,7 @@ export class EngineHandler {
     limit?: number
   ): Promise<Position[]> {
     let totalPositions: Position[] = [];
-    let positionQuery = {
+    let queryMsg = {
       limit: limit ?? 100,
       orderBy: 1,
       side,
@@ -143,16 +149,110 @@ export class EngineHandler {
         price: entryPrice,
       },
     };
-    let positionsbyPrice = await this.engineClient.positions(positionQuery);
-    let length = positionsbyPrice.length;
-    while (length > 0) {
-      totalPositions = totalPositions.concat(positionsbyPrice);
-      const lastPositionId = positionsbyPrice.slice(-1)[0].position_id;
-      positionQuery["startAfter"] = lastPositionId;
-      positionsbyPrice = await this.engineClient.positions(positionQuery);
-      length = positionsbyPrice.length;
+    let positions = await this.engineClient.positions(queryMsg);
+    while (positions.length > 0) {
+      totalPositions.push(...positions);
+      queryMsg["startAfter"] = positions.pop().position_id;
+      positions = await this.engineClient.positions(queryMsg);
     }
     return totalPositions;
+  }
+
+  async queryPostions(vamm: Addr, side: Side): Promise<Position[]> {
+    let totalPositions: Position[] = [];
+    let positionQuery = {
+      orderBy: 1,
+      vamm,
+      side,
+      filter: "none" as PositionFilter,
+    };
+    let positions = await this.engineClient.positions(positionQuery);
+    while (positions.length > 0) {
+      totalPositions.push(...positions);
+      positionQuery["startAfter"] = positions.pop().position_id;
+      positions = await this.engineClient.positions(positionQuery);
+    }
+    return totalPositions;
+  }
+
+  async simulateClosePrice(baseAssetAmount: number, direction: Direction, vamm: Addr): Promise<BigNumber> {
+    const decimals = new BigNumber(await this.decimals());
+    const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
+    const state = await vammClient.state();
+    // let quoteAssetReserve = new BigNumber(state.quote_asset_reserve);
+    // let baseAssetReserve = new BigNumber(state.base_asset_reserve);
+    const quoteAssetAmount = new BigNumber(
+      await vammClient.outputAmount({
+        amount: baseAssetAmount.toString(),
+        direction
+      })
+    );
+    // const update_direction = direction === "add_to_amm" ? "remove_from_amm" : "add_to_amm";
+    // if (update_direction === "add_to_amm") {
+    //   quoteAssetReserve = quoteAssetReserve.plus(quoteAssetAmount);
+    //   baseAssetReserve = baseAssetReserve.minus(baseAssetAmount);
+    // } else {
+    //   quoteAssetReserve = quoteAssetReserve.minus(quoteAssetAmount);
+    //   baseAssetReserve = baseAssetReserve.plus(baseAssetAmount);
+    // }
+    return quoteAssetAmount.multipliedBy(decimals).dividedBy(baseAssetAmount);
+  }
+
+  async triggerNewTpSl(
+    vamm: Addr,
+    side: Side,
+    takeProfit: boolean
+  ): Promise<ExecuteInstruction[]> {
+    const date = new Date();
+    let result = "";
+    let takeProfitMsg = "";
+
+    const multipleMsg: ExecuteInstruction[] = [];
+    const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
+    const config = await this.engineClient.config();
+    const ticks = await this.queryAllTicks(vamm, side);
+    const spotPrice = await vammClient.spotPrice();
+    for (const tick of ticks) {
+      const positionbyPrice = await this.queryPositionsbyPrice(
+        vamm,
+        side,
+        tick.entry_price
+      );
+      for (const position of positionbyPrice) {
+        const tpSpread = this.calculateSpreadValue(
+          position.take_profit,
+          config.tp_sl_spread,
+          config.decimals
+        );
+        const slSpread = this.calculateSpreadValue(
+          position.stop_loss ?? "0",
+          config.tp_sl_spread,
+          config.decimals
+        );
+        const willTriggetTpSl = this.willTpSl(
+          BigInt(spotPrice),
+          BigInt(position.take_profit),
+          BigInt(position.stop_loss ?? "0"),
+          tpSpread.toString(),
+          slSpread.toString(),
+          position.side
+        );
+
+        if (!willTriggetTpSl) continue;
+        let trigger_tp_sl: ExecuteInstruction = {
+          contractAddress: this.engineClient.contractAddress,
+          msg: {
+            trigger_tp_sl: {
+              position_id: position.position_id,
+              quote_asset_limit: "0",
+              vamm,
+            },
+          },
+        };
+        multipleMsg.push(trigger_tp_sl);
+      }
+    }
+    return multipleMsg;
   }
 
   async triggerTpSl(
@@ -160,6 +260,10 @@ export class EngineHandler {
     side: Side,
     takeProfit: boolean
   ): Promise<ExecuteInstruction[]> {
+    const date = new Date();
+    let result = "";
+    let takeProfitMsg = "";
+
     const multipleMsg: ExecuteInstruction[] = [];
     const willTriggerTpSl = await this.engineClient.positionIsTpSl({
       vamm,
@@ -184,6 +288,18 @@ export class EngineHandler {
     };
     multipleMsg.push(trigger_tp_sl);
     return multipleMsg;
+    // if (multipleMsg.length > 0) {
+    //   console.dir(multipleMsg, { depth: 4 });
+    //   const res = await this.executeMultiple(multipleMsg);
+    //   if (res !== undefined) {
+    //     console.log(
+    //       "take profit | stop loss - txHash:",
+    //       res.transactionHash
+    //     );
+    //     result = result + `:receipt: BOT: ${this.sender.address} - take profit | stop loss - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
+    //   }
+    // }
+    // return result;
   }
 
   async triggerLiquidate(
@@ -257,11 +373,9 @@ export class EngineHandler {
   async payFunding(vamm: Addr): Promise<ExecuteInstruction[]> {
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const vammState = await vammClient.state();
-    const nextFundingTime = Number(vammState.next_funding_time);
+    const nextFundingTime = Number(vammState.next_funding_time) + 6;
     let time = Math.floor(Date.now() / 1000);
     console.log({ time, nextFundingTime });
-    
-
     if (time >= nextFundingTime) {
       const payFunding: ExecuteMsg = {
         pay_funding: {

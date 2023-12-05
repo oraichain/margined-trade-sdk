@@ -29,6 +29,7 @@ import {
 import { EngineHandler } from "../index";
 import { UserWallet } from "@oraichain/oraitrading-common";
 import { Side } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
+import { log } from "console";
 
 const client = new SimulateCosmWasmClient({
   chainId: "Oraichain",
@@ -139,7 +140,11 @@ describe("perpetual-engine", () => {
       })
     );
 
-    engineHandler = new EngineHandler(sender, engineContract.contractAddress, insuranceFundContract.contractAddress);
+    engineHandler = new EngineHandler(
+      sender,
+      engineContract.contractAddress,
+      insuranceFundContract.contractAddress
+    );
   });
 
   it("test_instantiation", async () => {
@@ -416,7 +421,7 @@ describe("perpetual-engine", () => {
     expect(positions.length).toEqual(expectedLength);
   });
 
-  it("test_queryAllPositions", async () => {
+  it("test_queryPositionsByPrice", async () => {
     engineContract.sender = aliceAddress;
     await engineContract.openPosition({
       vamm: vammContract.contractAddress,
@@ -566,6 +571,76 @@ describe("perpetual-engine", () => {
     expect(postions[0].margin).toEqual("30000000000");
     expect(postions[0].take_profit).toEqual("30000000000");
     expect(postions[0].stop_loss).toEqual("70000000000");
+  });
+
+  it("test_queryAllPositions", async () => {
+    engineContract.sender = aliceAddress;
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(60),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(20),
+      stopLoss: toDecimals(14),
+    });
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(50),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(50),
+      stopLoss: toDecimals(14),
+    });
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(40),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(60),
+      stopLoss: toDecimals(14),
+    });
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(30),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(30),
+      stopLoss: toDecimals(70),
+    });
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "sell",
+      marginAmount: toDecimals(20),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(20),
+      stopLoss: toDecimals(70),
+    });
+    await engineContract.openPosition({
+      vamm: vammContract.contractAddress,
+      side: "buy",
+      marginAmount: toDecimals(10),
+      leverage: toDecimals(10),
+      baseAssetLimit: toDecimals(0),
+      takeProfit: toDecimals(50),
+      stopLoss: toDecimals(14),
+    });
+
+    const longPostions = await engineHandler.queryPostions(
+      vammContract.contractAddress,
+      'buy'
+    );
+    console.log({ longPostions });
+
+    const shortPostions = await engineHandler.queryPostions(
+      vammContract.contractAddress,
+      'sell'
+    );
+    console.log({ shortPostions });
   });
 
   it("test_slippage", async () => {
