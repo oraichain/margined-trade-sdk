@@ -13,7 +13,7 @@ on:
 jobs:
   # This workflow contains 1 jobs called"build"
   build:
-    runs-on: orai-swarm
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [">=16.0.0"]
@@ -47,14 +47,14 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Install latest version
         id: install
-        if: steps.publish.outcome != 'failure' 
+        if: steps.publish.outcome != 'failure'
         continue-on-error: true
-        uses: appleboy/ssh-action@master
+        uses: peter-evans/repository-dispatch@v2
         with:
-          host: ${{ secrets.DOCKER_SWARM_MANAGER_ONE }}
-          username: root
-          key: ${{ secrets.DOCKER_SWARM_MANAGER_ONE_KEY }}
-          script: docker exec ${{ secrets.DOCKER_SWARM_MANAGER_ONE_NODE_18_ID}} sh -c 'yarn global add @oraichain/oraidex-future-vamm-price@latest --ignore-scripts'
+          token: ${{ secrets.GIT_PAT }}
+          repository: oraichain/infra
+          event-type: install-package
+          client-payload: '{"libname": "oraidex-future-vamm-price", "node_version": "18"}'
 
       - name: send result via discord
         uses: appleboy/discord-action@master
@@ -63,4 +63,4 @@ jobs:
           webhook_token: ${{ secrets.WEBHOOK_TOKEN }}
           username: "GitBot"
           message: "Deployed ${{ github.event.repository.name }}. result: ${{ steps.publish.outcome }}"
-          # message: "Deployed ${{ github.event.repository.name }}. result: ${{ steps.publish.outcome }}. install result: ${{ steps.install.outcome }}"
+          # message: "Deployed ${{ github.event.repository.name }}. result: ${{ steps.publish.outcome }}."
