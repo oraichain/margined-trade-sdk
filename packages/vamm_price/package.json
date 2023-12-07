@@ -1,6 +1,6 @@
 {
   "name": "@oraichain/oraidex-future-vamm-price",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "main": "build/cli.js",
   "bin": "build/cli.js",
   "license": "MIT",
