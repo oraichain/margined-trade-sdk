@@ -1,9 +1,15 @@
 import dotenv from "dotenv";
 import { EngineHandler, executeEngine, fetchSchedule } from "./index";
-import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraitrading-common";
+import {
+  UserWallet,
+  decrypt,
+  delay,
+  setupWallet,
+} from "@oraichain/oraitrading-common";
 import { WebhookClient, time, userMention } from "discord.js";
-import cors from 'cors';
-import express from 'express';
+import cors from "cors";
+import express from "express";
+import { ExecuteInstruction } from "@cosmjs/cosmwasm-stargate";
 
 dotenv.config();
 
@@ -26,72 +32,105 @@ async function getSender(rpcUrl: string): Promise<UserWallet | string> {
         hdPath: process.env.HD_PATH ?? "m/44'/118'/0'/0/0",
         rpcUrl,
         prefix: "orai",
-        gasPrices: "0.001"
+        gasPrices: "0.001",
       }
     );
     return sender;
   } catch (error: any) {
-    console.log({ error: error.message});
+    console.log({ error: error.message });
     return "Error: " + error.message;
+  }
+}
+
+async function handleExecuteEngineCase(
+  sender: UserWallet,
+  engineHandler,
+  executeInstruction: ExecuteInstruction[],
+  webhookClient,
+  mentionUserIds,
+  event: "PayFunding" | "Liquidate" | "Take profit | Stop loss"
+) {
+  const date = new Date();
+
+  if (executeInstruction.length > 0) {
+    console.dir(executeInstruction, { depth: 4 });
+    try {
+      const res = await engineHandler.executeMultiple(executeInstruction);
+      if (res) {
+        console.log(`${event} - txHash:`, res.transactionHash);
+        await webhookClient.send(
+          `:receipt: BOT: ${sender.address} - ${event} - txHash: ${
+            res.transactionHash
+          } at ${time(date)}`
+        );
+      }
+    } catch (error) {
+      console.log(`error in processing triggering ${event}: `, { error });
+      console.log("Send discord noti: ", error.message);
+      await webhookClient.send(
+        `:red_circle: BOT: ${sender.address} - err ${
+          error.message
+        } [${event}] at ${time(date)} ${mentionUserIds}`
+      );
+    }
   }
 }
 
 async function handleExecuteEngine(
   sender: UserWallet,
   engine: string,
-  insuranceFund: string
-): Promise<string> {
+  insuranceFund: string,
+  webhookClient
+) {
+  const discordUserIds: string[] =
+    process.env.DISCORD_USERS_IDS?.split(",") || [];
+
   const date = new Date();
-  let result = "";
-  const engineHandler = new EngineHandler(sender, engine, insuranceFund); 
-  try {  
-    const [tpslMsg, liquidateMsg, payFundingMsg] = await executeEngine(engineHandler);
-    if (tpslMsg.length > 0) {
-      console.dir(tpslMsg, { depth: 4 });
-      const res = await engineHandler.executeMultiple(tpslMsg);
-      if (res !== undefined) {
-        console.log(
-          "take profit | stop loss - txHash:",
-          res.transactionHash
-        );
-        result = result + `:receipt: BOT: ${sender.address} - take profit | stop loss - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
-      }
-    }
+  let mentionUserIds: string = "";
+  for (const userId of discordUserIds) {
+    mentionUserIds =
+      " " + mentionUserIds + userMention(userId.replace(/[']/g, "")) + " ";
+  }
 
-    if (liquidateMsg.length > 0) {
-      console.dir(liquidateMsg, { depth: 4 });
-      const res = await engineHandler.executeMultiple(liquidateMsg);
-      if (res !== undefined) {
-        console.log(
-          "liquidate - txHash:",
-          res.transactionHash
-        );
-        result = result + `:receipt: BOT: ${sender.address} - liquidate - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
-      }
-    }
-
-    if (payFundingMsg.length > 0) {
-      console.dir(payFundingMsg, { depth: 4 });
-      const res = await engineHandler.executeMultiple(payFundingMsg);
-      if (res !== undefined) {
-        console.log(
-          "payfunding - txHash:",
-          res.transactionHash
-        );
-        result = result + `:receipt: BOT: ${sender.address} - payfunding - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
-      }
-    }
-    return result;
-  } catch (error) {
-    console.log(
-      "error in processing triggering TpSl: ",
-      { error }
+  const engineHandler = new EngineHandler(sender, engine, insuranceFund);
+  try {
+    const [tpslMsg, liquidateMsg, payFundingMsg] = await executeEngine(
+      engineHandler
     );
+
+    handleExecuteEngineCase(
+      sender,
+      engineHandler,
+      tpslMsg,
+      webhookClient,
+      mentionUserIds,
+      "Take profit | Stop loss"
+    );
+
+    handleExecuteEngineCase(
+      sender,
+      engineHandler,
+      liquidateMsg,
+      webhookClient,
+      mentionUserIds,
+      "Liquidate"
+    );
+
+    handleExecuteEngineCase(
+      sender,
+      engineHandler,
+      payFundingMsg,
+      webhookClient,
+      mentionUserIds,
+      "PayFunding"
+    );
+  } catch (error) {
+    console.log("error in processing triggering TpSl: ", { error });
     console.log("Send discord noti: ", error.message);
-    return (
-      `:red_circle: BOT: ${sender.address} - err ` +
-      error.message +
-      ` at ${time(date)}`
+    await webhookClient.send(
+      `:red_circle: BOT: ${sender.address} - err ${error.message} at ${time(
+        date
+      )} ${mentionUserIds}`
     );
   }
 }
@@ -99,14 +138,6 @@ async function handleExecuteEngine(
 (async () => {
   const webhookUrl = process.env.DISCORD_WEBHOOK ?? "";
   const rpcUrl = process.env.RPC_URL ?? "https://rpc.orai.io";
-  const discordUserIds: string[] =
-    process.env.DISCORD_USERS_IDS?.split(",") || [];
-
-  let mentionUserIds: string = "";
-  for (const userId of discordUserIds) {
-    mentionUserIds =
-      " " + mentionUserIds + userMention(userId.replace(/[']/g, "")) + " ";
-  }
 
   if (webhookUrl === "") {
     console.log("Discord webhook is not set!");
@@ -142,12 +173,12 @@ async function handleExecuteEngine(
 
   while (true) {
     try {
-      const result = await handleExecuteEngine(sender, engineContract, insuranceFundContract);
-      if (result) {
-        if (result.includes("err"))
-          await webhookClient.send(result + mentionUserIds);
-        else await webhookClient.send(result);
-      }
+      await handleExecuteEngine(
+        sender,
+        engineContract,
+        insuranceFundContract,
+        webhookClient
+      );
     } catch (error) {
       console.log({ error });
     }
