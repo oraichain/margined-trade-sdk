@@ -7,7 +7,7 @@
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
 import {Uint128, Addr} from "./types";
-import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, OwnerResponse} from "./MarginedPricefeed.types";
+import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, Uint64, OwnerResponse} from "./MarginedPricefeed.types";
 export interface MarginedPricefeedReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<ConfigResponse>;
@@ -31,6 +31,11 @@ export interface MarginedPricefeedReadOnlyInterface {
     interval: number;
     key: string;
   }) => Promise<Uint128>;
+  getLastRoundId: ({
+    key
+  }: {
+    key: string;
+  }) => Promise<Uint64>;
 }
 export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyInterface {
   client: CosmWasmClient;
@@ -44,6 +49,7 @@ export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyIn
     this.getPrice = this.getPrice.bind(this);
     this.getPreviousPrice = this.getPreviousPrice.bind(this);
     this.getTwapPrice = this.getTwapPrice.bind(this);
+    this.getLastRoundId = this.getLastRoundId.bind(this);
   }
 
   config = async (): Promise<ConfigResponse> => {
@@ -91,6 +97,17 @@ export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyIn
     return this.client.queryContractSmart(this.contractAddress, {
       get_twap_price: {
         interval,
+        key
+      }
+    });
+  };
+  getLastRoundId = async ({
+    key
+  }: {
+    key: string;
+  }): Promise<Uint64> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      get_last_round_id: {
         key
       }
     });
