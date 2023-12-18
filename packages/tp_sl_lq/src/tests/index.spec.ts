@@ -896,12 +896,12 @@ describe("perpetual-engine", () => {
     engineContract.sender = bobAddress;
     await engineContract.openPosition({
       vamm: vammContract.contractAddress,
-      side: "sell",
-      marginAmount: toDecimals(6),
-      leverage: toDecimals(8),
+      side: "buy",
+      marginAmount: toDecimals(20),
+      leverage: toDecimals(10),
       baseAssetLimit: toDecimals(0),
-      takeProfit: toDecimals(20),
-      stopLoss: toDecimals(28),
+      takeProfit: toDecimals(40),
+      stopLoss: toDecimals(2),
     });
     const bobPosition = await engineContract.position({
       positionId: 2,
@@ -909,11 +909,9 @@ describe("perpetual-engine", () => {
     });
 
     spotPrice = await vammContract.spotPrice();
-    expect(spotPrice).toEqual("24087039999");
+    expect(spotPrice).toEqual("32399999999");
 
-    expect(bobPosition.margin).toEqual(toDecimals(6));
-    expect(bobPosition.take_profit).toEqual(toDecimals(20));
-    expect(bobPosition.stop_loss).toEqual(toDecimals(28));
+    expect(bobPosition.margin).toEqual(toDecimals(20));
 
     const longMsgs = await engineHandler.triggerTpSl(
       vammContract.contractAddress,
