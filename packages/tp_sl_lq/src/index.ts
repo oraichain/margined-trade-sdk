@@ -174,13 +174,13 @@ export class EngineHandler {
     let trigger_tp_sl: ExecuteInstruction = {
       contractAddress: this.engine,
       msg: {
-        trigger_tp_sl: {
+        trigger_multiple_tp_sl: {
           vamm,
           side,
           take_profit: takeProfit,
           limit: 5,
         },
-      },
+      } as ExecuteMsg,
     };
     multipleMsg.push(trigger_tp_sl);
     return multipleMsg;
