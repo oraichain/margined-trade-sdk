@@ -125,7 +125,7 @@ async function handleExecuteEngine(
       "PayFunding"
     );
   } catch (error) {
-    console.log("error in processing triggering TpSl: ", { error });
+    console.log("error in processing triggering engine: ", { error });
     console.log("Send discord noti: ", error.message);
     await webhookClient.send(
       `:red_circle: BOT: ${sender.address} - err ${error.message} at ${time(
