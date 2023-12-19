@@ -1285,10 +1285,10 @@
   resolved "https://registry.npmjs.org/@oraichain/common-contracts-sdk/-/common-contracts-sdk-1.0.31.tgz"
   integrity sha512-s8H20RXy5gCnu3DnM7L5ClQyj2mdQpbSBpZrXCpIAX9qY0LKsDdZG3sYaDQ8+VN333jz9Pp/qGWdFSYD+6PBsg==
 
-"@oraichain/cosmwasm-vm-js@^0.2.76":
-  version "0.2.76"
-  resolved "https://registry.npmjs.org/@oraichain/cosmwasm-vm-js/-/cosmwasm-vm-js-0.2.76.tgz"
-  integrity sha512-dJjFnH9pwI8ruuW3xR70eRdFY9aaJUMU6QPstox5M9O9XKmjHzKmQW9l+IIwKWb81rG1Z1C+RDdzD5bird9aCA==
+"@oraichain/cosmwasm-vm-js@^0.2.79":
+  version "0.2.79"
+  resolved "https://registry.yarnpkg.com/@oraichain/cosmwasm-vm-js/-/cosmwasm-vm-js-0.2.79.tgz#a622447112afa0fc0ed2248f368f96d18f595199"
+  integrity sha512-GlXOg9qRRlxk+1IZKtj1w5t6DIRBOFl9+IH1/ofyTKCQaca2/yOAP1N1uzMlXxQsMBOvVKNNVfd/lQuUzjJ2gQ==
   dependencies:
     "@cosmjs/amino" "^0.31.0"
     "@cosmjs/crypto" "^0.31.0"
@@ -1299,17 +1299,17 @@
     elliptic "^6.5.4"
     secp256k1 "^4.0.3"
 
-"@oraichain/cw-simulate@^2.8.63":
-  version "2.8.63"
-  resolved "https://registry.npmjs.org/@oraichain/cw-simulate/-/cw-simulate-2.8.63.tgz"
-  integrity sha512-YzpveXVuMORD5YAa0nZS2cENzp95TChL/xq09+lPmc6sUbF85oztBfeyEsfftboNeCo7NYdoZHknSBvY+5Yw8g==
+"@oraichain/cw-simulate@^2.8.74":
+  version "2.8.74"
+  resolved "https://registry.yarnpkg.com/@oraichain/cw-simulate/-/cw-simulate-2.8.74.tgz#19cdf82df44c197130a66535d18415df06e8eb7c"
+  integrity sha512-865m1BpRanY7k/Bgl8TjwEI0lNgjDUYxleDqJBgLixvc6LTOMHG4OC1lVWoswFUm8omqLf8hGA9UE8XptTo3/A==
   dependencies:
     "@cosmjs/amino" "^0.31.0"
     "@cosmjs/cosmwasm-stargate" "^0.31.0"
     "@cosmjs/crypto" "^0.31.0"
     "@cosmjs/encoding" "^0.31.0"
     "@kiruse/serde" "^0.8.0-rc.6"
-    "@oraichain/cosmwasm-vm-js" "^0.2.76"
+    "@oraichain/cosmwasm-vm-js" "^0.2.79"
     eventemitter3 "^5.0.0"
     protobufjs "^7.2.3"
     ts-results "^3.3.0"
