@@ -1,9 +1,14 @@
 import dotenv from "dotenv";
 import { EngineHandler, executeEngine, fetchSchedule } from "./index";
-import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraitrading-common";
+import {
+  UserWallet,
+  decrypt,
+  delay,
+  setupWallet,
+} from "@oraichain/oraitrading-common";
 import { WebhookClient, time, userMention } from "discord.js";
-import cors from 'cors';
-import express from 'express';
+import cors from "cors";
+import express from "express";
 
 dotenv.config();
 
@@ -26,12 +31,12 @@ async function getSender(rpcUrl: string): Promise<UserWallet | string> {
         hdPath: process.env.HD_PATH ?? "m/44'/118'/0'/0/0",
         rpcUrl,
         prefix: "orai",
-        gasPrices: "0.001"
+        gasPrices: "0.001",
       }
     );
     return sender;
   } catch (error: any) {
-    console.log({ error: error.message});
+    console.log({ error: error.message });
     return "Error: " + error.message;
   }
 }
@@ -40,59 +45,119 @@ async function handleExecuteEngine(
   sender: UserWallet,
   engine: string,
   insuranceFund: string
-): Promise<string> {
+): Promise<{ result: string; error: string }> {
   const date = new Date();
   let result = "";
-  const engineHandler = new EngineHandler(sender, engine, insuranceFund); 
-  try {  
-    const [tpslMsg, liquidateMsg, payFundingMsg] = await executeEngine(engineHandler);
-    if (tpslMsg.length > 0) {
-      console.dir(tpslMsg, { depth: 4 });
-      const res = await engineHandler.executeMultiple(tpslMsg);
-      if (res !== undefined) {
-        console.log(
-          "take profit | stop loss - txHash:",
-          res.transactionHash
-        );
-        result = result + `:receipt: BOT: ${sender.address} - take profit | stop loss - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
-      }
-    }
+  let error = "";
 
-    if (liquidateMsg.length > 0) {
-      console.dir(liquidateMsg, { depth: 4 });
-      const res = await engineHandler.executeMultiple(liquidateMsg);
-      if (res !== undefined) {
-        console.log(
-          "liquidate - txHash:",
-          res.transactionHash
-        );
-        result = result + `:receipt: BOT: ${sender.address} - liquidate - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
-      }
-    }
-
-    if (payFundingMsg.length > 0) {
-      console.dir(payFundingMsg, { depth: 4 });
-      const res = await engineHandler.executeMultiple(payFundingMsg);
-      if (res !== undefined) {
-        console.log(
-          "payfunding - txHash:",
-          res.transactionHash
-        );
-        result = result + `:receipt: BOT: ${sender.address} - payfunding - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
-      }
-    }
-    return result;
-  } catch (error) {
-    console.log(
-      "error in processing triggering TpSl: ",
-      { error }
+  const engineHandler = new EngineHandler(sender, engine, insuranceFund);
+  try {
+    const [tpslMsg, liquidateMsg, payFundingMsg] = await executeEngine(
+      engineHandler
     );
-    console.log("Send discord noti: ", error.message);
-    return (
+
+    // try triggering tp sl
+    try {
+      if (tpslMsg.length > 0) {
+        console.dir(tpslMsg, { depth: 4 });
+        const res = await engineHandler.executeMultiple(tpslMsg);
+        if (res !== undefined) {
+          console.log("take profit | stop loss - txHash:", res.transactionHash);
+          result =
+            result +
+            `:receipt: BOT: ${sender.address} - take profit | stop loss - txHash: ${res.transactionHash}` +
+            ` at ${time(date)}`;
+        }
+      }
+    } catch (err) {
+      console.log("Send discord noti: ", err.message);
+      console.log("error in processing triggering TpSl: ", { err });
+      error =
+        err +
+        `:red_circle: BOT: ${sender.address} - err ` +
+        err.message +
+        ` at ${time(date)}`;
+    }
+
+    // try liquidate
+    try {
+      if (liquidateMsg.length > 0) {
+        console.dir(liquidateMsg, { depth: 4 });
+        try {
+          const res = await engineHandler.executeMultiple(liquidateMsg);
+          if (res !== undefined) {
+            console.log("liquidate - txHash:", res.transactionHash);
+            result =
+              result +
+              `:receipt: BOT: ${sender.address} - liquidate - txHash: ${res.transactionHash}` +
+              ` at ${time(date)}`;
+          }
+        } catch (err) {
+          for (let msg of liquidateMsg) {
+            try {
+              const res = await engineHandler.executeMultiple([msg]);
+              if (res !== undefined) {
+                console.log("liquidate - txHash:", res.transactionHash);
+                result =
+                  result +
+                  `:receipt: BOT: ${sender.address} - liquidate - txHash: ${res.transactionHash}` +
+                  ` at ${time(date)}`;
+              }
+            } catch (err) {
+              console.log("Send discord noti: ", err.message);
+              console.log("error in processing liquidate: ", {
+                err,
+              });
+              error =
+                err +
+                `:red_circle: BOT: ${sender.address} - err ` +
+                err.message +
+                ` at ${time(date)}`;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.log("error in processing liquidate: ", {
+        err,
+      });
+    }
+
+    // try pay funding
+    try {
+      if (payFundingMsg.length > 0) {
+        console.dir(payFundingMsg, { depth: 4 });
+        const res = await engineHandler.executeMultiple(payFundingMsg);
+        if (res !== undefined) {
+          console.log("payfunding - txHash:", res.transactionHash);
+          result =
+            result +
+            `:receipt: BOT: ${sender.address} - payfunding - txHash: ${res.transactionHash}` +
+            ` at ${time(date)}`;
+        }
+      }
+    } catch (err) {
+      console.log("error in processing pay funding: ", { err });
+      console.log("Send discord noti: ", err.message);
+      error =
+        error +
+        `:red_circle: BOT: ${sender.address} - err ` +
+        err.message +
+        ` at ${time(date)}`;
+    }
+    return { result, error };
+  } catch (err) {
+    console.log("error in processing triggering TpSl: ", { err });
+    console.log("Send discord noti: ", err.message);
+    error =
+      error +
       `:red_circle: BOT: ${sender.address} - err ` +
-      error.message +
-      ` at ${time(date)}`
-    );
+      err.message +
+      ` at ${time(date)}`;
+    return {
+      result,
+      error,
+    };
   }
 }
 
@@ -142,11 +207,16 @@ async function handleExecuteEngine(
 
   while (true) {
     try {
-      const result = await handleExecuteEngine(sender, engineContract, insuranceFundContract);
-      if (result) {
-        if (result.includes("err"))
-          await webhookClient.send(result + mentionUserIds);
-        else await webhookClient.send(result);
+      const { result, error } = await handleExecuteEngine(
+        sender,
+        engineContract,
+        insuranceFundContract
+      );
+      if (result && result != "") {
+        await webhookClient.send(result);
+      }
+      if (error && error != "") {
+        await webhookClient.send(result + mentionUserIds);
       }
     } catch (error) {
       console.log({ error });
