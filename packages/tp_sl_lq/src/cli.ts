@@ -65,13 +65,29 @@ async function handleExecuteEngineCase(
         );
       }
     } catch (error) {
-      console.log(`error in processing triggering ${event}: `, { error });
-      console.log("Send discord noti: ", error.message);
-      await webhookClient.send(
-        `:red_circle: BOT: ${sender.address} - err ${
-          error.message
-        } [${event}] at ${time(date)} ${mentionUserIds}`
-      );
+      // try execute each message instead of combining them
+
+      for (let instruction of executeInstruction) {
+        try {
+          const res = await engineHandler.executeMultiple([instruction]);
+          if (res) {
+            console.log(`${event} - txHash:`, res.transactionHash);
+            await webhookClient.send(
+              `:receipt: BOT: ${sender.address} - ${event} - txHash: ${
+                res.transactionHash
+              } at ${time(date)}`
+            );
+          }
+        } catch (error) {
+          console.log(`error in processing triggering ${event}: `, { error });
+          console.log("Send discord noti: ", error.message);
+          await webhookClient.send(
+            `:red_circle: BOT: ${sender.address} - err ${
+              error.message
+            } [${event}] at ${time(date)} ${mentionUserIds}`
+          );
+        }
+      }
     }
   }
 }
@@ -98,32 +114,33 @@ async function handleExecuteEngine(
       engineHandler
     );
 
-    handleExecuteEngineCase(
-      sender,
-      engineHandler,
-      tpslMsg,
-      webhookClient,
-      mentionUserIds,
-      "Take profit | Stop loss"
-    );
+    const handleCase = async (
+      msg: ExecuteInstruction[],
+      action: "PayFunding" | "Liquidate" | "Take profit | Stop loss"
+    ) => {
+      try {
+        await handleExecuteEngineCase(
+          sender,
+          engineHandler,
+          msg,
+          webhookClient,
+          mentionUserIds,
+          action
+        );
+      } catch (error) {
+        console.log("error in processing triggering engine: ", { error });
+        console.log("Send discord noti: ", error.message);
+        await webhookClient.send(
+          `:red_circle: BOT: ${sender.address} - err ${error.message} at ${time(
+            date
+          )} ${mentionUserIds}`
+        );
+      }
+    };
 
-    handleExecuteEngineCase(
-      sender,
-      engineHandler,
-      liquidateMsg,
-      webhookClient,
-      mentionUserIds,
-      "Liquidate"
-    );
-
-    handleExecuteEngineCase(
-      sender,
-      engineHandler,
-      payFundingMsg,
-      webhookClient,
-      mentionUserIds,
-      "PayFunding"
-    );
+    await handleCase(tpslMsg, "Take profit | Stop loss");
+    await handleCase(liquidateMsg, "Liquidate");
+    await handleCase(payFundingMsg, "PayFunding");
   } catch (error) {
     console.log("error in processing triggering engine: ", { error });
     console.log("Send discord noti: ", error.message);
