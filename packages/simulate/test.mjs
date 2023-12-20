@@ -1,5 +1,4 @@
-import path from 'path';
-import { DownloadState, SimulateCosmWasmClient, Ok } from '@oraichain/cw-simulate';
+import { DownloadState, SimulateCosmWasmClient } from '@oraichain/cw-simulate';
 import { MarginedEngineClient, MarginedPricefeedClient } from '@oraichain/oraimargin-contracts-sdk';
 
 const sender = 'orai1fs25usz65tsryf0f8d5cpfmqgr0xwup4kjqpa0';
@@ -12,7 +11,7 @@ const contracts = {
   usdcAddr: 'orai15un8msx3n5zf9ahlxmfeqd2kwa5wm0nrpxer304m9nd5q6qq0g6sku5pdd'
 };
 
-const downloadState = new DownloadState('https://lcd.orai.io', path.resolve(__dirname, 'data'));
+const downloadState = new DownloadState('https://lcd.orai.io', 'data');
 
 // downloadState.saveState(contracts.usdcAddr);
 
@@ -38,19 +37,17 @@ const printPnL = async () => {
     for (const position of positions) {
       const pos = await engineContract.positionWithFundingPayment({ positionId: position.position_id, vamm: contracts.injusdcVamm });
       const pnl = await engineContract.unrealizedPnl({ positionId: position.position_id, calcOption: 'oracle', vamm: contracts.injusdcVamm });
-      // @ts-ignore
-      ret.push([pos.trader, pnl.position_notional, pnl.unrealized_pnl]);
+      pnl.trader = pos.trader;
+      ret.push(pnl);
     }
   }
-  console.log(ret.join('\n'));
+  console.table(ret);
 };
 
 console.log('oracle price', await priceFeedContract.getPrice({ key: 'INJ' }));
 await printPnL();
 const currentBlockTime = (client.app.time / 1e9) >> 0;
 await priceFeedContract.appendPrice({ key: 'INJ', price: '10000000', timestamp: currentBlockTime });
-// pass 1 hour with 3_600 seconds
-client.app.store.tx((setter) => Ok(setter('time')(client.app.time + 3_600 * 2 * 1e9)));
 await engineContract.payFunding({ vamm: contracts.injusdcVamm });
 console.log('oracle price', await priceFeedContract.getPrice({ key: 'INJ' }));
 await printPnL();
