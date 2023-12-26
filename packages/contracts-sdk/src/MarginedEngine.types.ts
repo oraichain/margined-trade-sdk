@@ -1,4 +1,4 @@
-import {Uint128, Direction, Addr, Integer, AssetInfo, Boolean} from "./types";
+import {Uint128, AssetInfo, Addr, Integer, Boolean, Direction} from "./types";
 export interface InstantiateMsg {
   eligible_collateral: string;
   fee_pool: string;
@@ -57,6 +57,12 @@ export type ExecuteMsg = {
   };
 } | {
   trigger_tp_sl: {
+    position_id: number;
+    take_profit: boolean;
+    vamm: string;
+  };
+} | {
+  trigger_multiple_tp_sl: {
     limit: number;
     side: Side;
     take_profit: boolean;
@@ -106,13 +112,6 @@ export type QueryMsg = {
   position: {
     position_id: number;
     vamm: string;
-  };
-} | {
-  all_positions: {
-    limit?: number | null;
-    order_by?: number | null;
-    start_after?: number | null;
-    trader: string;
   };
 } | {
   positions: {
@@ -180,6 +179,16 @@ export type QueryMsg = {
     vamm: string;
   };
 } | {
+  is_bad_debt: {
+    position_id: number;
+    vamm: string;
+  };
+} | {
+  is_liquidated: {
+    position_id: number;
+    vamm: string;
+  };
+} | {
   last_position_id: {};
 };
 export type PositionFilter = "none" | {
@@ -189,25 +198,6 @@ export type PositionFilter = "none" | {
 };
 export type PnlCalcOption = "spot_price" | "twap" | "oracle";
 export interface MigrateMsg {}
-export type ArrayOfPosition = Position[];
-export interface Position {
-  block_time: number;
-  direction: Direction;
-  entry_price: Uint128;
-  last_updated_premium_fraction: Integer;
-  margin: Uint128;
-  notional: Uint128;
-  pair: string;
-  position_id: number;
-  side: Side;
-  size: Integer;
-  spread_fee: Uint128;
-  stop_loss?: Uint128 | null;
-  take_profit: Uint128;
-  toll_fee: Uint128;
-  trader: Addr;
-  vamm: Addr;
-}
 export interface ConfigResponse {
   decimals: Uint128;
   eligible_collateral: AssetInfo;
@@ -229,12 +219,32 @@ export interface HooksResponse {
 export interface LastPositionIdResponse {
   last_position_id: number;
 }
+export interface Position {
+  block_time: number;
+  direction: Direction;
+  entry_price: Uint128;
+  last_updated_premium_fraction: Integer;
+  margin: Uint128;
+  notional: Uint128;
+  pair: string;
+  position_id: number;
+  side: Side;
+  size: Integer;
+  spread_fee: Uint128;
+  stop_loss?: Uint128 | null;
+  take_profit: Uint128;
+  toll_fee: Uint128;
+  trader: Addr;
+  vamm: Addr;
+}
 export interface PositionTpSlResponse {
   is_tpsl: boolean;
 }
+export type ArrayOfPosition = Position[];
 export interface StateResponse {
   bad_debt: Uint128;
   open_interest_notional: Uint128;
+  pause: boolean;
 }
 export interface TickResponse {
   entry_price: Uint128;

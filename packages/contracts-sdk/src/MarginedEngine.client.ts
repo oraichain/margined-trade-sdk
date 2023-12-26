@@ -6,8 +6,8 @@
 
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
-import {Uint128, Direction, Addr, Integer, AssetInfo, Boolean} from "./types";
-import {InstantiateMsg, ExecuteMsg, Side, QueryMsg, PositionFilter, PnlCalcOption, MigrateMsg, ArrayOfPosition, Position, ConfigResponse, PauserResponse, HooksResponse, LastPositionIdResponse, PositionTpSlResponse, StateResponse, TickResponse, TicksResponse, PositionUnrealizedPnlResponse} from "./MarginedEngine.types";
+import {Uint128, AssetInfo, Addr, Integer, Boolean, Direction} from "./types";
+import {InstantiateMsg, ExecuteMsg, Side, QueryMsg, PositionFilter, PnlCalcOption, MigrateMsg, ConfigResponse, PauserResponse, HooksResponse, LastPositionIdResponse, Position, PositionTpSlResponse, ArrayOfPosition, StateResponse, TickResponse, TicksResponse, PositionUnrealizedPnlResponse} from "./MarginedEngine.types";
 export interface MarginedEngineReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<ConfigResponse>;
@@ -26,17 +26,6 @@ export interface MarginedEngineReadOnlyInterface {
     positionId: number;
     vamm: string;
   }) => Promise<Position>;
-  allPositions: ({
-    limit,
-    orderBy,
-    startAfter,
-    trader
-  }: {
-    limit?: number;
-    orderBy?: number;
-    startAfter?: number;
-    trader: string;
-  }) => Promise<ArrayOfPosition>;
   positions: ({
     filter,
     limit,
@@ -134,6 +123,20 @@ export interface MarginedEngineReadOnlyInterface {
     takeProfit: boolean;
     vamm: string;
   }) => Promise<PositionTpSlResponse>;
+  isBadDebt: ({
+    positionId,
+    vamm
+  }: {
+    positionId: number;
+    vamm: string;
+  }) => Promise<Boolean>;
+  isLiquidated: ({
+    positionId,
+    vamm
+  }: {
+    positionId: number;
+    vamm: string;
+  }) => Promise<Boolean>;
   lastPositionId: () => Promise<LastPositionIdResponse>;
 }
 export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterface {
@@ -149,7 +152,6 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     this.isWhitelisted = this.isWhitelisted.bind(this);
     this.getWhitelist = this.getWhitelist.bind(this);
     this.position = this.position.bind(this);
-    this.allPositions = this.allPositions.bind(this);
     this.positions = this.positions.bind(this);
     this.tick = this.tick.bind(this);
     this.ticks = this.ticks.bind(this);
@@ -161,6 +163,8 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
     this.balanceWithFundingPayment = this.balanceWithFundingPayment.bind(this);
     this.positionWithFundingPayment = this.positionWithFundingPayment.bind(this);
     this.positionIsTpSl = this.positionIsTpSl.bind(this);
+    this.isBadDebt = this.isBadDebt.bind(this);
+    this.isLiquidated = this.isLiquidated.bind(this);
     this.lastPositionId = this.lastPositionId.bind(this);
   }
 
@@ -206,26 +210,6 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
       position: {
         position_id: positionId,
         vamm
-      }
-    });
-  };
-  allPositions = async ({
-    limit,
-    orderBy,
-    startAfter,
-    trader
-  }: {
-    limit?: number;
-    orderBy?: number;
-    startAfter?: number;
-    trader: string;
-  }): Promise<ArrayOfPosition> => {
-    return this.client.queryContractSmart(this.contractAddress, {
-      all_positions: {
-        limit,
-        order_by: orderBy,
-        start_after: startAfter,
-        trader
       }
     });
   };
@@ -413,6 +397,34 @@ export class MarginedEngineQueryClient implements MarginedEngineReadOnlyInterfac
       }
     });
   };
+  isBadDebt = async ({
+    positionId,
+    vamm
+  }: {
+    positionId: number;
+    vamm: string;
+  }): Promise<Boolean> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      is_bad_debt: {
+        position_id: positionId,
+        vamm
+      }
+    });
+  };
+  isLiquidated = async ({
+    positionId,
+    vamm
+  }: {
+    positionId: number;
+    vamm: string;
+  }): Promise<Boolean> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      is_liquidated: {
+        position_id: positionId,
+        vamm
+      }
+    });
+  };
   lastPositionId = async (): Promise<LastPositionIdResponse> => {
     return this.client.queryContractSmart(this.contractAddress, {
       last_position_id: {}
@@ -494,6 +506,15 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
     vamm: string;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   triggerTpSl: ({
+    positionId,
+    takeProfit,
+    vamm
+  }: {
+    positionId: number;
+    takeProfit: boolean;
+    vamm: string;
+  }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  triggerMultipleTpSl: ({
     limit,
     side,
     takeProfit,
@@ -560,6 +581,7 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     this.updateTpSl = this.updateTpSl.bind(this);
     this.closePosition = this.closePosition.bind(this);
     this.triggerTpSl = this.triggerTpSl.bind(this);
+    this.triggerMultipleTpSl = this.triggerMultipleTpSl.bind(this);
     this.liquidate = this.liquidate.bind(this);
     this.payFunding = this.payFunding.bind(this);
     this.depositMargin = this.depositMargin.bind(this);
@@ -699,6 +721,23 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     }, _fee, _memo, _funds);
   };
   triggerTpSl = async ({
+    positionId,
+    takeProfit,
+    vamm
+  }: {
+    positionId: number;
+    takeProfit: boolean;
+    vamm: string;
+  }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      trigger_tp_sl: {
+        position_id: positionId,
+        take_profit: takeProfit,
+        vamm
+      }
+    }, _fee, _memo, _funds);
+  };
+  triggerMultipleTpSl = async ({
     limit,
     side,
     takeProfit,
@@ -710,7 +749,7 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     vamm: string;
   }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
-      trigger_tp_sl: {
+      trigger_multiple_tp_sl: {
         limit,
         side,
         take_profit: takeProfit,
