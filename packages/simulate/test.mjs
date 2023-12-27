@@ -22,7 +22,11 @@ const contracts = {
 };
 
 const downloadState = new DownloadState('https://lcd.orai.io', 'data');
-// downloadState.saveState(contracts.usdcAddr);
+// downloadState.saveState(contracts.engineAddr);
+// downloadState.saveState(contracts.insuranceFundAddr);
+// downloadState.saveState(contracts.feePoolAddr);
+// downloadState.saveState(contracts.pricefeedAddr);
+// downloadState.saveState(contracts.injusdcVamm);
 
 const senderAddress = 'orai1fs25usz65tsryf0f8d5cpfmqgr0xwup4kjqpa0';
 const client = new SimulateCosmWasmClient({
@@ -54,7 +58,7 @@ const loadState = async (address, label) => {
 };
 
 const wasmMap = {
-  injusdcVamm: contractArtifacts.getContractDir('margined_vamm')
+  // injusdcVamm: contractArtifacts.getContractDir('margined_vamm')
 };
 
 await Promise.all(Object.entries(contracts).map(([label, contractAddress]) => loadState(contractAddress, label)));
@@ -75,6 +79,7 @@ const printPnL = async () => {
       const pos = await engineContract.positionWithFundingPayment({ positionId: position.position_id, vamm: contracts.injusdcVamm });
       const pnl = await engineContract.unrealizedPnl({ positionId: position.position_id, calcOption: 'oracle', vamm: contracts.injusdcVamm });
       pnl.trader = pos.trader;
+      pnl.position_id = pos.position_id;
       ret.push(pnl);
     }
   }
@@ -84,7 +89,7 @@ const printPnL = async () => {
 console.log('vamm state', await vammContract.state());
 console.log('index price', await vammContract.twapPrice({ interval: 30 }));
 
-console.log(await vammContract.migrateLiquidity({ liquidityMultiplier: '500000' }));
+// console.log(await vammContract.migrateLiquidity({ liquidityMultiplier: '500000' }));
 
 const trader = 'orai1fgk4uzrxetfxjy7s743p3ym2qqya6zwn0euakv';
 
@@ -114,3 +119,5 @@ console.log('index price', await vammContract.twapPrice({ interval: 30 }));
 // await engineContract.payFunding({ vamm: contracts.injusdcVamm });
 // console.log('oracle price', await priceFeedContract.getPrice({ key: 'INJ' }));
 await printPnL();
+
+// console.log(await engineContract.liquidate({ positionId: 6534, quoteAssetLimit: '0', vamm: contracts.injusdcVamm }));
