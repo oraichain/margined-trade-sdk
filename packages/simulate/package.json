@@ -1,5 +1,6 @@
 {
   "name": "@oraichain/oraimargin-contracts-simulate",
+  "type": "module",
   "version": "1.0.32",
   "license": "MIT"
 }

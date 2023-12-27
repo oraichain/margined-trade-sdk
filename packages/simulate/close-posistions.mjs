@@ -68,61 +68,66 @@ while (true) {
 
 let sportPrice = await oraiVammContract.spotPrice();
 console.log("Sport price before close:", sportPrice);
+await engineContract.liquidate({
+  positionId: 5995,
+  vamm: contracts.oraiusdcVamm,
+  quoteAssetLimit: "0",
+});
 
-let totalPNL = 0;
-for (let [index, position] of Object.entries(allPositionsOfBot)) {
-  let sportPrice = await oraiVammContract.spotPrice();
-  let botBalance = await usdcContract.balance({ address: BOT_ADDRESS });
-  console.log("Position size:", position.size);
-  console.log(
-    `${index} Sport price before close position ${position.position_id} : ${
-      Number(sportPrice) / 1000000
-    }, bot balance: ${Number(botBalance.balance) / 1000000}`
-  );
+// let totalPNL = 0;
+// for (let [index, position] of Object.entries(allPositionsOfBot)) {
+//   let sportPrice = await oraiVammContract.spotPrice();
+//   let botBalance = await usdcContract.balance({ address: BOT_ADDRESS });
+//   console.log("Position size:", position.size);
+//   console.log(
+//     `${index} Sport price before close position ${position.position_id} : ${
+//       Number(sportPrice) / 1000000
+//     }, bot balance: ${Number(botBalance.balance) / 1000000}`
+//   );
 
-  let pnl = (
-    await engineContract.unrealizedPnl({
-      calcOption: "spot_price",
-      positionId: position.position_id,
-      vamm: contracts.oraiusdcVamm,
-    })
-  ).unrealized_pnl;
+//   let pnl = (
+//     await engineContract.unrealizedPnl({
+//       calcOption: "spot_price",
+//       positionId: position.position_id,
+//       vamm: contracts.oraiusdcVamm,
+//     })
+//   ).unrealized_pnl;
 
-  totalPNL += Number(pnl);
-  if (index > 161) {
-    console.log({
-      positionId: position.position_id,
-      vamm: contracts.oraiusdcVamm,
-      quoteAssetLimit: "0",
-    });
+//   totalPNL += Number(pnl);
+//   if (index > 161) {
+//     console.log({
+//       positionId: position.position_id,
+//       vamm: contracts.oraiusdcVamm,
+//       quoteAssetLimit: "0",
+//     });
 
-    await engineContract.liquidate({
-      positionId: position.position_id,
-      vamm: contracts.oraiusdcVamm,
-      quoteAssetLimit: "0",
-    });
-  } else {
-    await engineContract.closePosition({
-      positionId: position.position_id,
-      vamm: contracts.oraiusdcVamm,
-      quoteAssetLimit: "0",
-    });
-  }
+//     await engineContract.liquidate({
+//       positionId: position.position_id,
+//       vamm: contracts.oraiusdcVamm,
+//       quoteAssetLimit: "0",
+//     });
+//   } else {
+//     await engineContract.closePosition({
+//       positionId: position.position_id,
+//       vamm: contracts.oraiusdcVamm,
+//       quoteAssetLimit: "0",
+//     });
+//   }
 
-  // let currBotBalance = await usdcContract.balance({ address: BOT_ADDRESS });
+//   // let currBotBalance = await usdcContract.balance({ address: BOT_ADDRESS });
 
-  sportPrice = await oraiVammContract.spotPrice();
-  let insuranceFundBalance = await usdcContract.balance({
-    address: contracts.insuranceFundAddr,
-  });
-  console.log(
-    `${index} Sport price after close position ${position.position_id} : ${
-      Number(sportPrice) / 1000000
-    }`
-  );
-  console.log(`total PNL: ${Number(totalPNL) / 1000000}`);
-  console.log("Insurance balance:", insuranceFundBalance);
-}
+//   sportPrice = await oraiVammContract.spotPrice();
+//   let insuranceFundBalance = await usdcContract.balance({
+//     address: contracts.insuranceFundAddr,
+//   });
+//   console.log(
+//     `${index} Sport price after close position ${position.position_id} : ${
+//       Number(sportPrice) / 1000000
+//     }`
+//   );
+//   console.log(`total PNL: ${Number(totalPNL) / 1000000}`);
+//   console.log("Insurance balance:", insuranceFundBalance);
+// }
 
 // sportPrice = await oraiVammContract.spotPrice();
 // console.log("Sport price after close:", sportPrice);

@@ -274,6 +274,7 @@ export interface MarginedVammInterface extends MarginedVammReadOnlyInterface {
   updateConfig: ({
     baseAssetHoldingCap,
     fluctuationLimitRatio,
+    initialMarginRatio,
     insuranceFund,
     marginEngine,
     openInterestNotionalCap,
@@ -284,6 +285,7 @@ export interface MarginedVammInterface extends MarginedVammReadOnlyInterface {
   }: {
     baseAssetHoldingCap?: Uint128;
     fluctuationLimitRatio?: Uint128;
+    initialMarginRatio?: Uint128;
     insuranceFund?: string;
     marginEngine?: string;
     openInterestNotionalCap?: Uint128;
@@ -327,6 +329,13 @@ export interface MarginedVammInterface extends MarginedVammReadOnlyInterface {
   }: {
     open: boolean;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  migrateLiquidity: ({
+    fluctuationLimitRatio,
+    liquidityMultiplier
+  }: {
+    fluctuationLimitRatio?: Uint128;
+    liquidityMultiplier: Uint128;
+  }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
 export class MarginedVammClient extends MarginedVammQueryClient implements MarginedVammInterface {
   client: SigningCosmWasmClient;
@@ -344,11 +353,13 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
     this.swapOutput = this.swapOutput.bind(this);
     this.settleFunding = this.settleFunding.bind(this);
     this.setOpen = this.setOpen.bind(this);
+    this.migrateLiquidity = this.migrateLiquidity.bind(this);
   }
 
   updateConfig = async ({
     baseAssetHoldingCap,
     fluctuationLimitRatio,
+    initialMarginRatio,
     insuranceFund,
     marginEngine,
     openInterestNotionalCap,
@@ -359,6 +370,7 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
   }: {
     baseAssetHoldingCap?: Uint128;
     fluctuationLimitRatio?: Uint128;
+    initialMarginRatio?: Uint128;
     insuranceFund?: string;
     marginEngine?: string;
     openInterestNotionalCap?: Uint128;
@@ -371,6 +383,7 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
       update_config: {
         base_asset_holding_cap: baseAssetHoldingCap,
         fluctuation_limit_ratio: fluctuationLimitRatio,
+        initial_margin_ratio: initialMarginRatio,
         insurance_fund: insuranceFund,
         margin_engine: marginEngine,
         open_interest_notional_cap: openInterestNotionalCap,
@@ -448,6 +461,20 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
     return await this.client.execute(this.sender, this.contractAddress, {
       set_open: {
         open
+      }
+    }, _fee, _memo, _funds);
+  };
+  migrateLiquidity = async ({
+    fluctuationLimitRatio,
+    liquidityMultiplier
+  }: {
+    fluctuationLimitRatio?: Uint128;
+    liquidityMultiplier: Uint128;
+  }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      migrate_liquidity: {
+        fluctuation_limit_ratio: fluctuationLimitRatio,
+        liquidity_multiplier: liquidityMultiplier
       }
     }, _fee, _memo, _funds);
   };
