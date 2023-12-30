@@ -244,6 +244,7 @@ export type ArrayOfPosition = Position[];
 export interface StateResponse {
   bad_debt: Uint128;
   open_interest_notional: Uint128;
+  pause: boolean;
 }
 export interface TickResponse {
   entry_price: Uint128;

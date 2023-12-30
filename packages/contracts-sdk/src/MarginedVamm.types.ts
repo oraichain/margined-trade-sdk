@@ -5,6 +5,7 @@ export interface InstantiateMsg {
   decimals: number;
   fluctuation_limit_ratio: Uint128;
   funding_period: number;
+  initial_margin_ratio: Uint128;
   insurance_fund?: string | null;
   margin_engine?: string | null;
   pricefeed: string;
@@ -17,6 +18,7 @@ export type ExecuteMsg = {
   update_config: {
     base_asset_holding_cap?: Uint128 | null;
     fluctuation_limit_ratio?: Uint128 | null;
+    initial_margin_ratio?: Uint128 | null;
     insurance_fund?: string | null;
     margin_engine?: string | null;
     open_interest_notional_cap?: Uint128 | null;
@@ -49,6 +51,11 @@ export type ExecuteMsg = {
 } | {
   set_open: {
     open: boolean;
+  };
+} | {
+  migrate_liquidity: {
+    fluctuation_limit_ratio?: Uint128 | null;
+    liquidity_multiplier: Uint128;
   };
 };
 export type QueryMsg = {
@@ -122,6 +129,7 @@ export interface ConfigResponse {
   decimals: Uint128;
   fluctuation_limit_ratio: Uint128;
   funding_period: number;
+  initial_margin_ratio: Uint128;
   insurance_fund: Addr;
   margin_engine: Addr;
   open_interest_notional_cap: Uint128;
