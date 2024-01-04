@@ -115,7 +115,8 @@ export const deployVamm = async (
     base_asset_reserve = toDecimals(10, decimals),
     quote_asset_reserve = toDecimals(100, decimals),
     toll_ratio = toDecimals(0.01, decimals),
-    spread_ratio = toDecimals(0.01, decimals)
+    spread_ratio = toDecimals(0.01, decimals),
+    initial_margin_ratio = toDecimals(0.05, decimals),
   }: {
     pricefeed: string;
     margin_engine?: string;
@@ -127,6 +128,7 @@ export const deployVamm = async (
     base_asset_reserve?: string;
     toll_ratio?: string;
     spread_ratio?: string;
+    initial_margin_ratio?: string;
   }
 ): Promise<MarginedVammClient> => {
   return new MarginedVammClient(
@@ -144,7 +146,8 @@ export const deployVamm = async (
       fluctuation_limit_ratio,
       pricefeed,
       margin_engine,
-      insurance_fund
+      insurance_fund,
+      initial_margin_ratio
     }).then((res) => res.contractAddress)
   );
 };
