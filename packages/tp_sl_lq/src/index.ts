@@ -13,8 +13,10 @@ import {
   Position,
   TickResponse,
   ExecuteMsg,
+  PositionFilter,
 } from "@oraichain/oraimargin-contracts-sdk/build/MarginedEngine.types";
 import { IScheduler, Scheduler } from "./scheduler";
+import { WebhookClient, time } from "discord.js";
 
 export class fetchSchedule extends Scheduler {
   // execute job every 3 minutes
@@ -70,34 +72,36 @@ export class EngineHandler {
     return (BigInt(amount) * BigInt(spread)) / BigInt(decimals);
   };
 
-  willTpSl = (
-    spotPrice: bigint,
-    takeProfitValue: bigint,
-    stopLossValue: bigint,
-    tpSpread: string,
-    slSpread: string,
+  willTpSl(
+    closePrice: bigint,
+    takeProfit: bigint,
+    stopLoss: bigint,
+    tpSpread: bigint,
+    slSpread: bigint,
     side: Side
-  ): boolean => {
-    let a = spotPrice;
-    let b = takeProfitValue;
-    let c = stopLossValue;
-    let d = spotPrice;
-    if (side === "sell") {
-      a = takeProfitValue;
-      b = spotPrice;
-      c = spotPrice;
-      d = stopLossValue;
+  ) {
+    let msg: String = "";
+    const tpCloseSpread = bigAbs(takeProfit - closePrice);
+    const slCloseSpread = bigAbs(stopLoss - closePrice);
+    // if spot_price is ~ take_profit or stop_loss, close position
+    if (side === "buy") {
+      if (closePrice > takeProfit || tpCloseSpread <= tpSpread) {
+        msg = "trigger_take_profit";
+      } else if (stopLoss > closePrice || slCloseSpread <= slSpread) {
+        msg = "trigger_stop_loss";
+      }
+    } else if (side === "sell") {
+      if (takeProfit > closePrice || tpCloseSpread <= tpSpread) {
+        msg = "trigger_take_profit";
+      } else if (
+        (closePrice > stopLoss && stopLoss > 0) ||
+        slCloseSpread <= slSpread
+      ) {
+        msg = "trigger_stop_loss";
+      }
     }
-    if (
-      a >= b ||
-      bigAbs(b - a) <= BigInt(tpSpread) ||
-      c >= d ||
-      (stopLossValue > 0 && bigAbs(d - c) <= BigInt(slSpread))
-    ) {
-      return true;
-    }
-    return false;
-  };
+    return msg;
+  }
 
   async getAllVamm(): Promise<Addr[]> {
     return (await this.insuranceClient.getAllVamm({})).vamm_list;
@@ -155,143 +159,217 @@ export class EngineHandler {
     return totalPositions;
   }
 
-  async triggerTpSl(
+  async queryPositions(
     vamm: Addr,
     side: Side,
-    takeProfit: boolean
-  ): Promise<ExecuteInstruction[]> {
-    const multipleMsg: ExecuteInstruction[] = [];
-    const willTriggerTpSl = await this.engineClient.positionIsTpSl({
-      vamm,
+    limit?: number
+  ): Promise<Position[]> {
+    let totalPositions: Position[] = [];
+    let positionQuery = {
+      limit: limit ?? 100,
+      orderBy: 1,
       side,
-      takeProfit,
-      limit: 5,
-    });
-    console.log(
-      `TP | SL - POSITION: ${side} - takeProfit: ${takeProfit} - is_tpsl: ${willTriggerTpSl.is_tpsl}`
-    );
-    if (!willTriggerTpSl.is_tpsl) return [];
-    let trigger_tp_sl: ExecuteInstruction = {
-      contractAddress: this.engine,
-      msg: {
-        trigger_multiple_tp_sl: {
-          vamm,
-          side,
-          take_profit: takeProfit,
-          limit: 5,
-        },
-      } as ExecuteMsg,
+      vamm,
+      filter: "none" as PositionFilter,
     };
-    multipleMsg.push(trigger_tp_sl);
-    return multipleMsg;
+    let positionsbyPrice = await this.engineClient.positions(positionQuery);
+    let length = positionsbyPrice.length;
+    while (length > 0) {
+      totalPositions = totalPositions.concat(positionsbyPrice);
+      const lastPositionId = positionsbyPrice.slice(-1)[0].position_id;
+      positionQuery["startAfter"] = lastPositionId;
+      positionsbyPrice = await this.engineClient.positions(positionQuery);
+      length = positionsbyPrice.length;
+    }
+    return totalPositions;
   }
 
-  async triggerLiquidate(
-    vamm: Addr,
-    side: Side
-  ): Promise<ExecuteInstruction[]> {
+  async triggerTpSl(vamm: Addr, side: Side): Promise<String[]> {
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
-    const multipleMsg: ExecuteInstruction[] = [];
-    const engineConfig = await this.engineClient.config();
-    const ticks = await this.queryAllTicks(vamm, side);
-    const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
-    console.log({ side, isOverSpreadLimit });
-    for (const tick of ticks) {
-      const positionbyPrice = await this.queryPositionsbyPrice(
-        vamm,
-        side,
-        tick.entry_price
+    const vammConfig = await vammClient.config();
+    const config = await this.engineClient.config();
+    let result: String[] = [];
+    const positions = await this.queryPositions(vamm, side);
+    for (const position of positions) {
+      const tpSpread = this.calculateSpreadValue(
+        position.take_profit,
+        config.tp_sl_spread,
+        config.decimals
       );
+      const slSpread = this.calculateSpreadValue(
+        position.stop_loss ?? "0",
+        config.tp_sl_spread,
+        config.decimals
+      );
+      const baseAmount = Math.abs(Number(position.size));
+      const closePrice = await vammClient.outputPrice({
+        amount: baseAmount.toString(),
+        direction: position.direction,
+      });
 
-      for (const position of positionbyPrice) {
-        let marginRatio = Number(
-          await this.engineClient.marginRatio({
-            positionId: position.position_id,
+      const willTriggetTpSl = this.willTpSl(
+        BigInt(closePrice),
+        BigInt(position.take_profit),
+        BigInt(position.stop_loss ?? "0"),
+        BigInt(tpSpread.toString()),
+        BigInt(slSpread.toString()),
+        position.side
+      );
+      console.log({
+        positionId: position.position_id,
+        pair: `${vammConfig.base_asset}/${vammConfig.quote_asset}`,
+      });
+      let takeProfit = false;
+      if (willTriggetTpSl === "") continue;
+      else if (willTriggetTpSl === "trigger_take_profit") {
+        takeProfit = true;
+      } else if (willTriggetTpSl === "trigger_stop_loss") {
+        takeProfit = false;
+      }
+      let trigger_tp_sl: ExecuteInstruction = {
+        contractAddress: this.engine,
+        msg: {
+          trigger_tp_sl: {
             vamm,
+            position_id: position.position_id,
+            take_profit: takeProfit,
+          },
+        } as ExecuteMsg,
+      };
+      try {
+        const res = await this.executeMultiple([trigger_tp_sl]);
+        if (res) {
+          console.log(
+            `${willTriggetTpSl} of position_id: ${position.position_id} - txHash:`,
+            res.transactionHash
+          );
+          result.push(
+            `pair: ${vammConfig.base_asset}/${
+              vammConfig.quote_asset
+            } - ${willTriggetTpSl.toUpperCase()} - position_id: ${
+              position.position_id
+            } - txHash: ${res.transactionHash}`
+          );
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    }
+    return result;
+  }
+
+  async triggerLiquidate(vamm: Addr, side: Side): Promise<String[]> {
+    const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
+    const engineConfig = await this.engineClient.config();
+    const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
+    const vammConfig = await vammClient.config();
+    console.log({ side, isOverSpreadLimit });
+    let result: String[] = [];
+    const positions = await this.queryPositions(vamm, side);
+    for (const position of positions) {
+      let marginRatio = Number(
+        await this.engineClient.marginRatio({
+          positionId: position.position_id,
+          vamm,
+        })
+      );
+      let liquidateFlag = false;
+      if (isOverSpreadLimit) {
+        const oracleMarginRatio = Number(
+          await this.engineClient.marginRatioByCalcOption({
+            vamm,
+            positionId: position.position_id,
+            calcOption: "oracle",
           })
         );
-        // console.log({
-        //   position_id: position.position_id,
-        //   marginRatio,
-        //   maintenance_margin_ratio: engineConfig.maintenance_margin_ratio,
-        // });
-        let liquidateFlag = false;
-        if (isOverSpreadLimit) {
-          const oracleMarginRatio = Number(
-            await this.engineClient.marginRatioByCalcOption({
-              vamm,
-              positionId: position.position_id,
-              calcOption: "oracle",
-            })
-          );
-          console.log({ oracleMarginRatio });
-          if (oracleMarginRatio - marginRatio > 0) {
-            marginRatio = oracleMarginRatio;
-            console.log({ new_marginRatio: marginRatio });
-          }
+        console.log({ oracleMarginRatio });
+        if (oracleMarginRatio - marginRatio > 0) {
+          marginRatio = oracleMarginRatio;
+          console.log({ new_marginRatio: marginRatio });
         }
-        if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
-          console.log("LIQUIDATE - POSITION:", position.position_id);
-          liquidateFlag = true;
-        }
+      }
+      if (marginRatio <= Number(engineConfig.maintenance_margin_ratio)) {
+        console.log("LIQUIDATE - POSITION:", position.position_id);
+        liquidateFlag = true;
+      }
 
-        if (liquidateFlag) {
-          let liquidate: ExecuteInstruction = {
-            contractAddress: this.engine,
-            msg: {
-              liquidate: {
-                position_id: position.position_id,
-                quote_asset_limit: "0",
-                vamm,
-              },
+      if (liquidateFlag) {
+        const liquidate: ExecuteInstruction = {
+          contractAddress: this.engine,
+          msg: {
+            liquidate: {
+              position_id: position.position_id,
+              quote_asset_limit: "0",
+              vamm,
             },
-          };
-          liquidateFlag = false;
-          multipleMsg.push(liquidate);
+          } as ExecuteMsg,
+        };
+        liquidateFlag = false;
+        try {
+          const res = await this.executeMultiple([liquidate]);
+          if (res) {
+            console.log(
+              `LIQUIDATE - position_id: ${position.position_id} - txHash:`,
+              res.transactionHash
+            );
+            result.push(
+              `pair: ${vammConfig.base_asset}/${vammConfig.quote_asset} - LIQUIDATE - position_id: ${position.position_id} - txHash: ${res.transactionHash}`
+            );
+          }
+        } catch (error) {
+          console.log({ error });
         }
       }
     }
-    return multipleMsg;
+    return result;
   }
 
-  async payFunding(vamm: Addr): Promise<ExecuteInstruction[]> {
+  async payFunding(vamm: Addr): Promise<String[]> {
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const vammState = await vammClient.state();
     const nextFundingTime = Number(vammState.next_funding_time);
+    const vammConfig = await vammClient.config();
     let time = Math.floor(Date.now() / 1000);
     console.log({ time, nextFundingTime });
-    
+    let result: String[] = [];
 
     if (time >= nextFundingTime) {
-      const payFunding: ExecuteMsg = {
-        pay_funding: {
-          vamm,
-        },
+      const payFunding: ExecuteInstruction = {
+        contractAddress: this.engine,
+        msg: {
+          pay_funding: {
+            vamm,
+          },
+        } as ExecuteMsg,
       };
       console.log("pay Funding rate");
-      return [
-        {
-          contractAddress: this.engine,
-          msg: payFunding,
-        },
-      ];
+      try {
+        const res = await this.executeMultiple([payFunding]);
+        if (res) {
+          console.log(`PAYFUNDING - txHash:`, res.transactionHash);
+          result.push(
+            `pair: ${vammConfig.base_asset}/${vammConfig.quote_asset} - PAYFUNDING - txHash: ${res.transactionHash}`
+          );
+        }
+      } catch (error) {
+        console.log({ error });
+      }
     }
-    return [];
+    return result;
   }
 }
 
 export async function executeEngine(
   engineHandler: EngineHandler
-): Promise<[ExecuteInstruction[], ExecuteInstruction[], ExecuteInstruction[]]> {
-  const vammList: Addr[] = await engineHandler.getAllVamm();
-  const executeTPSLPromises = vammList
-    .map((item) => [
-      engineHandler.triggerTpSl(item, "buy", true),
-      engineHandler.triggerTpSl(item, "buy", false),
-      engineHandler.triggerTpSl(item, "sell", true),
-      engineHandler.triggerTpSl(item, "sell", false),
-    ])
-    .flat();
+): Promise<[String[], String[], String[]]> {
+  const vammList = [
+    "orai1hgc4tmvuj6zuagyjpjjdrgwzj6ncgclm0n6rn4vwjg3wdxxyq0fs9k3ps9",
+    "orai1rujsndzwez98c9wg8vfp0fcjfeprddnlud5dweesd3j0qume9nzqvs0ykn",
+  ];
+
+  let tpslRes: String[] = [];
+  let liquidateRes: String[] = [];
+  let payFundingRes: String[] = [];
 
   const executeLiquidatePromises = vammList
     .map((item) => [
@@ -300,32 +378,35 @@ export async function executeEngine(
     ])
     .flat();
 
+  const executeTPSLPromises = vammList
+    .map((item) => [
+      engineHandler.triggerTpSl(item, "buy"),
+      engineHandler.triggerTpSl(item, "sell"),
+    ])
+    .flat();
+
   const executePayFundingPromises = vammList
     .map((item) => [engineHandler.payFunding(item)])
     .flat();
-
-  let tpslMsg: ExecuteInstruction[] = [];
-  let liquidateMsg: ExecuteInstruction[] = [];
-  let payFundingMsg: ExecuteInstruction[] = [];
+  
+  const liquidateResults = await Promise.allSettled(executeLiquidatePromises);
   const tpslResults = await Promise.allSettled(executeTPSLPromises);
+  const payFundingResults = await Promise.allSettled(executePayFundingPromises);
+
   for (let res of tpslResults) {
     if (res.status === "fulfilled") {
-      tpslMsg = tpslMsg.concat(res.value);
+      tpslRes = tpslRes.concat(res.value);
     }
   }
-
-  const liquidateResults = await Promise.allSettled(executeLiquidatePromises);
   for (let res of liquidateResults) {
     if (res.status === "fulfilled") {
-      liquidateMsg = liquidateMsg.concat(res.value);
+      liquidateRes = liquidateRes.concat(res.value);
     }
   }
-
-  const payFundingResults = await Promise.allSettled(executePayFundingPromises);
   for (let res of payFundingResults) {
     if (res.status === "fulfilled") {
-      payFundingMsg = payFundingMsg.concat(res.value);
+      payFundingRes = payFundingRes.concat(res.value);
     }
   }
-  return [tpslMsg, liquidateMsg, payFundingMsg];
+  return [tpslRes, liquidateRes, payFundingRes];
 }
