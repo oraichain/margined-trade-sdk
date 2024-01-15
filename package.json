@@ -17,7 +17,7 @@
   "dependencies": {
     "@cosmjs/amino": "^0.31",
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
-    "@oraichain/oraitrading-common": "^0.0.2",
+    "@oraichain/oraitrading-common": "^0.0.4",
     "@oraichain/oraimargin-contracts-build": "^1.0.32",
     "@oraichain/oraimargin-contracts-sdk": "^1.0.34",
     "@types/node-cron": "^3.0.10",
