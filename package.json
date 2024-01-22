@@ -23,7 +23,7 @@
     "node-cron": "^3.0.2"
   },
   "devDependencies": {
-    "@oraichain/cw-simulate": "^2.8.75",
+    "@oraichain/cw-simulate": "^2.8.76",
     "@types/node": "^18.15.8",
     "lerna": "^7.2.0",
     "patch-package": "^7.0.0",

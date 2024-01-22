@@ -1,16 +1,12 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "module": "esnext",
-        "baseUrl": ".",
-        "outDir": "build",
-        "declaration": true,
-        "rootDir": "src"
-    },
-    "include": [
-        "src/**/*.ts"
-    ],
-    "exclude": [
-        "node_modules/"
-    ]
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "baseUrl": ".",
+    "outDir": "build",
+    "declaration": true,
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules/"]
 }
