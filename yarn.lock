@@ -1332,11 +1332,6 @@
   resolved "https://registry.npmjs.org/@oraichain/oraidex-contracts-sdk/-/oraidex-contracts-sdk-1.0.22.tgz"
   integrity sha512-U6QoDDDKAutJ8W351hNpnPCEH5D0haXPPilxNkEE8+z5tYVbiGM4G4zjCxJgdtPRFZP0lZmvVI+T1gmd445uoQ==
 
-"@oraichain/oraitrading-common@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@oraichain/oraitrading-common/-/oraitrading-common-0.0.2.tgz#fe96b63206eb8fae4c7a035bc9fb5e63d86dd5e5"
-  integrity sha512-6EacOX5TznXRt+H0K3XgRztvZtHRem2doppfYSuMPZpWkNI57EaqWZgTtD58lXqWtznjdpyzdVolqqOFmHcKdA==
-
 "@oraichain/wasm-json-toolkit@^1.0.24":
   version "1.0.24"
   resolved "https://registry.npmjs.org/@oraichain/wasm-json-toolkit/-/wasm-json-toolkit-1.0.24.tgz"
