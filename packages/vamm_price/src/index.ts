@@ -27,8 +27,11 @@ export async function queryAllVammSpotPrice(
     client,
     insurance
   );
-  const allVamms = await insuranceClient.getAllVamm({});
-  const promiseSpotPrice = allVamms.vamm_list.map((item) =>
+  const allVamms = [
+    "orai1hgc4tmvuj6zuagyjpjjdrgwzj6ncgclm0n6rn4vwjg3wdxxyq0fs9k3ps9",
+    "orai1rujsndzwez98c9wg8vfp0fcjfeprddnlud5dweesd3j0qume9nzqvs0ykn",
+  ];
+  const promiseSpotPrice = allVamms.map((item) =>
     querySpotPrice(client, item)
   );
   const listvammPrices = await Promise.all(promiseSpotPrice);
