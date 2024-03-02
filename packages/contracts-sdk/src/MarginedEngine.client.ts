@@ -453,6 +453,11 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
     partialLiquidationRatio?: Uint128;
     tpSlSpread?: Uint128;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  updateOperator: ({
+    operator
+  }: {
+    operator?: string;
+  }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   updatePauser: ({
     pauser
   }: {
@@ -482,7 +487,7 @@ export interface MarginedEngineInterface extends MarginedEngineReadOnlyInterface
     marginAmount: Uint128;
     side: Side;
     stopLoss?: Uint128;
-    takeProfit: Uint128;
+    takeProfit?: Uint128;
     vamm: string;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   updateTpSl: ({
@@ -574,6 +579,7 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     this.sender = sender;
     this.contractAddress = contractAddress;
     this.updateConfig = this.updateConfig.bind(this);
+    this.updateOperator = this.updateOperator.bind(this);
     this.updatePauser = this.updatePauser.bind(this);
     this.addWhitelist = this.addWhitelist.bind(this);
     this.removeWhitelist = this.removeWhitelist.bind(this);
@@ -618,6 +624,17 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
         owner,
         partial_liquidation_ratio: partialLiquidationRatio,
         tp_sl_spread: tpSlSpread
+      }
+    }, _fee, _memo, _funds);
+  };
+  updateOperator = async ({
+    operator
+  }: {
+    operator?: string;
+  }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      update_operator: {
+        operator
       }
     }, _fee, _memo, _funds);
   };
@@ -668,7 +685,7 @@ export class MarginedEngineClient extends MarginedEngineQueryClient implements M
     marginAmount: Uint128;
     side: Side;
     stopLoss?: Uint128;
-    takeProfit: Uint128;
+    takeProfit?: Uint128;
     vamm: string;
   }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {

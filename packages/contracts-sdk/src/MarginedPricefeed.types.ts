@@ -18,6 +18,10 @@ export type ExecuteMsg = {
   update_owner: {
     owner: string;
   };
+} | {
+  update_executor: {
+    executor: string;
+  };
 };
 export type QueryMsg = {
   config: {};
@@ -41,9 +45,14 @@ export type QueryMsg = {
   get_last_round_id: {
     key: string;
   };
+} | {
+  get_executor: {};
 };
 export interface MigrateMsg {}
 export interface ConfigResponse {}
+export interface ExecutorResponse {
+  executor: Addr;
+}
 export type Uint64 = number;
 export interface OwnerResponse {
   owner: Addr;
