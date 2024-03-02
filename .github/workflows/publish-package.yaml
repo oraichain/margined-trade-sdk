@@ -32,7 +32,7 @@ jobs:
         # if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
       - name: Build
-        run: yarn build packages/contracts-sdk && yarn build packages/common && yarn --cwd packages/vamm_price build
+        run: yarn build
       - name: Authenticate with private NPM package
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
@@ -42,6 +42,20 @@ jobs:
         id: publish
         continue-on-error: true
         run: yarn deploy packages/vamm_price
+        env:
+          CI: false
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish oraimargin contracts build
+        id: publish-oraimargin-contracts-build
+        continue-on-error: true
+        run: yarn deploy packages/contracts-build
+        env:
+          CI: false
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish oraimargin contracts sdk
+        id: publish-oraimargin-contracts-sdk
+        continue-on-error: true
+        run: yarn deploy packages/contracts-sdk
         env:
           CI: false
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
