@@ -1,6 +1,6 @@
 {
   "name": "@oraichain/oraidex-future-vamm-price",
-  "version": "0.1.9",
+  "version": "1.0.2",
   "main": "build/cli.js",
   "bin": "build/cli.js",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "ws": "^8.13.0"
   },
   "dependencies": {
-    "@oraichain/oraimargin-contracts-sdk": "^1.0.34",
-    "@oraichain/oraitrading-common": "^0.0.4"
+    "@oraichain/oraimargin-contracts-sdk": "^1.0.2",
+    "@oraichain/oraitrading-common": "^1.0.2"
   }
 }

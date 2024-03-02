@@ -1,6 +1,6 @@
 {
   "name": "@oraichain/oraimargin-pricefeed",
-  "version": "0.0.1",
+  "version": "1.0.2",
   "main": "build/cli.js",
   "bin": "build/cli.js",
   "license": "MIT",
@@ -12,12 +12,12 @@
     "build": "ncc build src/cli.ts --no-source-map-register -t -m"
   },
   "dependencies": {
-    "@oraichain/oraitrading-common": "^0.0.4",
     "@cosmjs/tendermint-rpc": "^0.31.0",
     "@oraichain/common-contracts-build": "^1.0.26",
     "@oraichain/common-contracts-sdk": "^1.0.31",
     "@oraichain/oraidex-contracts-build": "^1.0.14",
     "@oraichain/oraidex-contracts-sdk": "^1.0.22",
+    "@oraichain/oraitrading-common": "^1.0.2",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
     "@vercel/ncc": "=0.34.0",
