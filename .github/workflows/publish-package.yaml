@@ -38,10 +38,10 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           git config --global user.email "mainnet@orai.io"
           git config --global user.name "oraichain_official"
-      - name: Publish
-        id: publish
+      - name: Publish oraimargin contracts sdk
+        id: publish-oraimargin-contracts-sdk
         continue-on-error: true
-        run: yarn deploy packages/vamm_price
+        run: yarn deploy packages/contracts-sdk
         env:
           CI: false
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -52,10 +52,10 @@ jobs:
         env:
           CI: false
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish oraimargin contracts sdk
-        id: publish-oraimargin-contracts-sdk
+      - name: Publish vamm price
+        id: publish-vamm-price
         continue-on-error: true
-        run: yarn deploy packages/contracts-sdk
+        run: yarn deploy packages/vamm_price
         env:
           CI: false
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
