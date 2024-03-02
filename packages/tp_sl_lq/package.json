@@ -4,11 +4,17 @@
   "main": "build/cli.js",
   "bin": "build/cli.js",
   "license": "MIT",
+  "files": [
+    "build/"
+  ],
   "scripts": {
     "start": "ts-node src/cli.ts",
     "build": "ncc build src/cli.ts --no-source-map-register -t -m"
   },
   "dependencies": {
+    "@oraichain/oraimargin-contracts-sdk": "^1.0.35",
+    "@oraichain/oraimargin-contracts-build": "^1.0.32",
+    "@oraichain/oraitrading-common": "^0.0.4",
     "@cosmjs/tendermint-rpc": "^0.31.0",
     "@oraichain/common-contracts-build": "^1.0.26",
     "@oraichain/common-contracts-sdk": "^1.0.31",
