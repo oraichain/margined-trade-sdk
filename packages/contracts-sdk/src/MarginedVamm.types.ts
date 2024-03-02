@@ -118,19 +118,7 @@ export type QueryMsg = {
     direction: Direction;
   };
 };
-export interface MigrateMsg {
-  base_asset: string;
-  decimals: number;
-  fluctuation_limit_ratio: Uint128;
-  funding_period: number;
-  initial_margin_ratio: Uint128;
-  insurance_fund: string;
-  margin_engine: string;
-  pricefeed: string;
-  quote_asset: string;
-  spread_ratio: Uint128;
-  toll_ratio: Uint128;
-}
+export interface MigrateMsg {}
 export interface CalcFeeResponse {
   spread_fee: Uint128;
   toll_fee: Uint128;

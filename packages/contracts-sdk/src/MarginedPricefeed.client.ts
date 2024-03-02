@@ -7,7 +7,7 @@
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
 import {Uint128, Addr} from "./types";
-import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, Uint64, OwnerResponse} from "./MarginedPricefeed.types";
+import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, ConfigResponse, ExecutorResponse, Uint64, OwnerResponse} from "./MarginedPricefeed.types";
 export interface MarginedPricefeedReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<ConfigResponse>;
@@ -36,6 +36,7 @@ export interface MarginedPricefeedReadOnlyInterface {
   }: {
     key: string;
   }) => Promise<Uint64>;
+  getExecutor: () => Promise<ExecutorResponse>;
 }
 export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyInterface {
   client: CosmWasmClient;
@@ -50,6 +51,7 @@ export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyIn
     this.getPreviousPrice = this.getPreviousPrice.bind(this);
     this.getTwapPrice = this.getTwapPrice.bind(this);
     this.getLastRoundId = this.getLastRoundId.bind(this);
+    this.getExecutor = this.getExecutor.bind(this);
   }
 
   config = async (): Promise<ConfigResponse> => {
@@ -112,6 +114,11 @@ export class MarginedPricefeedQueryClient implements MarginedPricefeedReadOnlyIn
       }
     });
   };
+  getExecutor = async (): Promise<ExecutorResponse> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      get_executor: {}
+    });
+  };
 }
 export interface MarginedPricefeedInterface extends MarginedPricefeedReadOnlyInterface {
   contractAddress: string;
@@ -139,6 +146,11 @@ export interface MarginedPricefeedInterface extends MarginedPricefeedReadOnlyInt
   }: {
     owner: string;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  updateExecutor: ({
+    executor
+  }: {
+    executor: string;
+  }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
 export class MarginedPricefeedClient extends MarginedPricefeedQueryClient implements MarginedPricefeedInterface {
   client: SigningCosmWasmClient;
@@ -153,6 +165,7 @@ export class MarginedPricefeedClient extends MarginedPricefeedQueryClient implem
     this.appendPrice = this.appendPrice.bind(this);
     this.appendMultiplePrice = this.appendMultiplePrice.bind(this);
     this.updateOwner = this.updateOwner.bind(this);
+    this.updateExecutor = this.updateExecutor.bind(this);
   }
 
   appendPrice = async ({
@@ -197,6 +210,17 @@ export class MarginedPricefeedClient extends MarginedPricefeedQueryClient implem
     return await this.client.execute(this.sender, this.contractAddress, {
       update_owner: {
         owner
+      }
+    }, _fee, _memo, _funds);
+  };
+  updateExecutor = async ({
+    executor
+  }: {
+    executor: string;
+  }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      update_executor: {
+        executor
       }
     }, _fee, _memo, _funds);
   };

@@ -6,6 +6,7 @@ export interface InstantiateMsg {
   insurance_fund?: string | null;
   liquidation_fee: Uint128;
   maintenance_margin_ratio: Uint128;
+  operator?: string | null;
   pauser: string;
   tp_sl_spread: Uint128;
 }
@@ -19,6 +20,10 @@ export type ExecuteMsg = {
     owner?: string | null;
     partial_liquidation_ratio?: Uint128 | null;
     tp_sl_spread?: Uint128 | null;
+  };
+} | {
+  update_operator: {
+    operator?: string | null;
   };
 } | {
   update_pauser: {
@@ -39,7 +44,7 @@ export type ExecuteMsg = {
     margin_amount: Uint128;
     side: Side;
     stop_loss?: Uint128 | null;
-    take_profit: Uint128;
+    take_profit?: Uint128 | null;
     vamm: string;
   };
 } | {
@@ -206,6 +211,7 @@ export interface ConfigResponse {
   insurance_fund?: Addr | null;
   liquidation_fee: Uint128;
   maintenance_margin_ratio: Uint128;
+  operator?: Addr | null;
   owner: Addr;
   partial_liquidation_ratio: Uint128;
   tp_sl_spread: Uint128;
@@ -232,7 +238,7 @@ export interface Position {
   size: Integer;
   spread_fee: Uint128;
   stop_loss?: Uint128 | null;
-  take_profit: Uint128;
+  take_profit?: Uint128 | null;
   toll_fee: Uint128;
   trader: Addr;
   vamm: Addr;
