@@ -1,9 +1,12 @@
 {
   "name": "@oraichain/oraimargin-contracts-sdk",
-  "version": "1.0.35",
+  "version": "1.0.2",
   "main": "build/index.js",
   "files": [
     "build/"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
 }
