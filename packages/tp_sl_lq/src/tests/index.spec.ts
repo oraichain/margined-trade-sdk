@@ -92,6 +92,7 @@ describe("perpetual-engine", () => {
     await engineContract.updateConfig({
       insuranceFund: insuranceFundContract.contractAddress,
     });
+    await pricefeedContract.updateExecutor({ executor: senderAddress });
 
     // mint insurance fund contract balance
     await usdcContract.mint({
@@ -138,7 +139,11 @@ describe("perpetual-engine", () => {
       })
     );
 
-    engineHandler = new EngineHandler(sender, engineContract.contractAddress, insuranceFundContract.contractAddress);
+    engineHandler = new EngineHandler(
+      sender,
+      engineContract.contractAddress,
+      insuranceFundContract.contractAddress
+    );
   });
 
   it("test_instantiation", async () => {
@@ -156,6 +161,7 @@ describe("perpetual-engine", () => {
       partial_liquidation_ratio: "0",
       tp_sl_spread: tpslSpread,
       liquidation_fee: liquidationFee,
+      operator: null,
     });
   });
 

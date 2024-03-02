@@ -2,5 +2,11 @@
   "name": "@oraichain/oraitrading-common",
   "version": "0.0.4",
   "main": "build/index.js",
+  "files": [
+    "build/"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
   "license": "MIT"
 }

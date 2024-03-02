@@ -5,7 +5,7 @@
   "bin": "build/cli.js",
   "license": "MIT",
   "files": [
-    "dist/"
+    "build/"
   ],
   "scripts": {
     "start": "ts-node src/cli.ts",
@@ -14,5 +14,9 @@
   "devDependencies": {
     "@types/ws": "^8.5.5",
     "ws": "^8.13.0"
+  },
+  "dependencies": {
+    "@oraichain/oraimargin-contracts-sdk": "^1.0.34",
+    "@oraichain/oraitrading-common": "^0.0.4"
   }
 }

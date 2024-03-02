@@ -1,10 +1,7 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "isolatedModules": false,
-        "lib": [
-            "ESNext",
-            "dom"
-        ],
-    },
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "isolatedModules": false,
+    "lib": ["ESNext", "dom"]
+  }
 }

@@ -9,5 +9,8 @@
   "license": "MIT",
   "dependencies": {
     "@oraichain/oraimargin-contracts-sdk": "^1.0.34"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
   }
 }
