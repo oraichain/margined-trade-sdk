@@ -45,6 +45,20 @@ jobs:
         env:
           CI: false
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish oraimargin contracts build
+        id: publish-oraimargin-contracts-build
+        continue-on-error: true
+        run: yarn deploy packages/contracts-build
+        env:
+          CI: false
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish oraimargin contracts sdk
+        id: publish-oraimargin-contracts-sdk
+        continue-on-error: true
+        run: yarn deploy packages/contracts-sdk
+        env:
+          CI: false
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Install latest version
         id: install
         if: steps.publish.outcome != 'failure'
