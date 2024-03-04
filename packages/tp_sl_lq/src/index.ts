@@ -192,7 +192,7 @@ export class EngineHandler {
     const positions = await this.queryPositions(vamm, side);
     for (const position of positions) {
       const tpSpread = this.calculateSpreadValue(
-        position.take_profit ?? "0",
+        position.take_profit,
         config.tp_sl_spread,
         config.decimals
       );
