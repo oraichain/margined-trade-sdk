@@ -85,7 +85,10 @@ export class EngineHandler {
     const slCloseSpread = bigAbs(stopLoss - closePrice);
     // if spot_price is ~ take_profit or stop_loss, close position
     if (side === "buy") {
-      if (closePrice > takeProfit || tpCloseSpread <= tpSpread) {
+      if (
+        (takeProfit > 0 && closePrice > takeProfit) ||
+        tpCloseSpread <= tpSpread
+      ) {
         msg = "trigger_take_profit";
       } else if (stopLoss > closePrice || slCloseSpread <= slSpread) {
         msg = "trigger_stop_loss";
