@@ -68,7 +68,7 @@ export class EngineHandler {
     spread: string,
     decimals: string
   ): bigint => {
-    if (decimals === "0") return 0n;
+    if (decimals === "0" || !amount) return 0n;
     return (BigInt(amount) * BigInt(spread)) / BigInt(decimals);
   };
 
@@ -388,7 +388,7 @@ export async function executeEngine(
   const executePayFundingPromises = vammList
     .map((item) => [engineHandler.payFunding(item)])
     .flat();
-  
+
   const liquidateResults = await Promise.allSettled(executeLiquidatePromises);
   const tpslResults = await Promise.allSettled(executeTPSLPromises);
   const payFundingResults = await Promise.allSettled(executePayFundingPromises);
