@@ -209,7 +209,7 @@ export class EngineHandler {
 
       const willTriggetTpSl = this.willTpSl(
         BigInt(closePrice),
-        BigInt(position.take_profit),
+        BigInt(position.take_profit ?? "0"),
         BigInt(position.stop_loss ?? "0"),
         BigInt(tpSpread.toString()),
         BigInt(slSpread.toString()),
