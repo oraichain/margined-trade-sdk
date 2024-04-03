@@ -1,6 +1,11 @@
 import dotenv from "dotenv";
 import { priceFeedHandler, executePriceFeed } from "./index";
-import { UserWallet, decrypt, delay, setupWallet } from "@oraichain/oraitrading-common";
+import {
+  UserWallet,
+  decrypt,
+  delay,
+  setupWallet,
+} from "@oraichain/oraitrading-common";
 import { WebhookClient, time, userMention } from "discord.js";
 
 dotenv.config();
@@ -15,12 +20,12 @@ async function getSender(rpcUrl: string): Promise<UserWallet | string> {
         hdPath: process.env.HD_PATH ?? "m/44'/118'/0'/0/0",
         rpcUrl,
         prefix: "orai",
-        gasPrices: "0.001"
+        gasPrices: "0.001",
       }
     );
     return sender;
   } catch (error: any) {
-    console.log({ error: error.message});
+    console.log({ error: error.message });
     return "Error: " + error.message;
   }
 }
@@ -31,26 +36,22 @@ async function handleExecutePriceFeed(
 ): Promise<string> {
   const date = new Date();
   let result = "";
-  const priceFeed = new priceFeedHandler(sender, engine); 
-  try {  
+  const priceFeed = new priceFeedHandler(sender, engine);
+  try {
     const priceMsg = await executePriceFeed(priceFeed);
     if (priceMsg.length > 0) {
       console.dir(priceMsg, { depth: 4 });
       const res = await priceFeed.executeMultiple(priceMsg);
       if (res !== undefined) {
-        console.log(
-          "appendPrice - txHash:",
-          res.transactionHash
-        );
-        result = `:receipt: BOT: ${sender.address} - appendPrice - txHash: ${res.transactionHash}` + ` at ${time(date)}`;
+        console.log("appendPrice - txHash:", res.transactionHash);
+        result =
+          `:receipt: BOT: ${sender.address} - appendPrice - txHash: ${res.transactionHash}` +
+          ` at ${time(date)}`;
       }
     }
     return result;
   } catch (error) {
-    console.log(
-      "error in processing appendPrice: ",
-      { error }
-    );
+    console.log("error in processing appendPrice: ", { error });
     console.log("Send discord noti: ", error.message);
     return (
       `:red_circle: BOT: ${sender.address} - err ` +

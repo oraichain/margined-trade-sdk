@@ -1,6 +1,6 @@
 {
   "name": "@oraichain/oraimargin-pricefeed",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "build/cli.js",
   "bin": "build/cli.js",
   "license": "MIT",
