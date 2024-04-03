@@ -90,6 +90,36 @@ export class priceFeedHandler {
       },
     ];
   }
+
+  async appendPrice(
+    priceFeed: Addr,
+    key: string,
+    url: string
+  ): Promise<ExecuteInstruction[]> {
+    const decimals = Number((await this.engineClient.config()).decimals);
+    const oraclePrice = Math.round((await getPriceFeed(key, url)) * decimals);
+    if (oraclePrice === 0) {
+      console.log("Oracle price is ZERO!");
+      return [];
+    }
+    console.log({ oraclePrice });
+    let time = Math.floor(Date.now() / 1000) - 12;
+    console.log({ time });
+    const appendPrice = {
+      append_price: {
+        key,
+        price: oraclePrice.toString(),
+        timestamp: time,
+      },
+    } as MarginedPricefeedTypes.ExecuteMsg;
+
+    return [
+      {
+        contractAddress: priceFeed,
+        msg: appendPrice,
+      },
+    ];
+  }
 }
 
 export async function executePriceFeed(
@@ -97,9 +127,30 @@ export async function executePriceFeed(
 ): Promise<ExecuteInstruction[]> {
   const priceFeed = process.env.PRICEFEED_CONTRACT;
   console.log({ priceFeed });
-  const appendOraiPrice = await engineHandler.appendOraiprice(priceFeed);
-  const appendInjPrice = await engineHandler.appendInjprice(priceFeed);
-  let priceMsg: ExecuteInstruction[] = [];
-  priceMsg = priceMsg.concat(appendOraiPrice, appendInjPrice);
+  const [appendOraiPrice, appendInjPrice, appendBTCPrice] = await Promise.all([
+    engineHandler.appendPrice(
+      priceFeed,
+      "ORAI",
+      "https://pricefeed.oraichainlabs.org/"
+    ),
+    engineHandler.appendPrice(
+      priceFeed,
+      "INJ",
+      "https://pricefeed-futures.oraichainlabs.org/inj"
+    ),
+    engineHandler.appendPrice(
+      priceFeed,
+      "BTC",
+      "https://pricefeed-futures.oraichainlabs.org/btc"
+    ),
+  ]);
+
+  const priceMsg: ExecuteInstruction[] = [
+    ...appendOraiPrice,
+    ...appendInjPrice,
+    ...appendBTCPrice,
+  ];
+
+  console.log(priceMsg);
   return priceMsg;
 }
