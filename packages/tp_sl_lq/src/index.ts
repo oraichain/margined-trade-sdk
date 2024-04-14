@@ -262,6 +262,8 @@ export class EngineHandler {
   }
 
   async triggerLiquidate(vamm: Addr, side: Side): Promise<String[]> {
+    let whitelistedTrader = process.env.WHITELIST_TRADER?.split(",") || [];
+
     const vammClient = new MarginedVammQueryClient(this.sender.client, vamm);
     const engineConfig = await this.engineClient.config();
     const isOverSpreadLimit = await vammClient.isOverSpreadLimit();
@@ -270,6 +272,9 @@ export class EngineHandler {
     let result: String[] = [];
     const positions = await this.queryPositions(vamm, side);
     for (const position of positions) {
+      if (whitelistedTrader.includes(position.trader)) {
+        continue;
+      }
       let marginRatio = Number(
         await this.engineClient.marginRatio({
           positionId: position.position_id,
