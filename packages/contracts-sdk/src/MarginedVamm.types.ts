@@ -57,6 +57,18 @@ export type ExecuteMsg = {
     fluctuation_limit_ratio?: Uint128 | null;
     liquidity_multiplier: Uint128;
   };
+} | {
+  repeg_price: {
+    new_price?: Uint128 | null;
+  };
+} | {
+  add_whitelist: {
+    address: string;
+  };
+} | {
+  remove_whitelist: {
+    address: string;
+  };
 };
 export type QueryMsg = {
   config: {};
