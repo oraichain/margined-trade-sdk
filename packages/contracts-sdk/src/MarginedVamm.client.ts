@@ -336,6 +336,21 @@ export interface MarginedVammInterface extends MarginedVammReadOnlyInterface {
     fluctuationLimitRatio?: Uint128;
     liquidityMultiplier: Uint128;
   }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  repegPrice: ({
+    newPrice
+  }: {
+    newPrice?: Uint128;
+  }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  addWhitelist: ({
+    address
+  }: {
+    address: string;
+  }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  removeWhitelist: ({
+    address
+  }: {
+    address: string;
+  }, _fee?: number | StdFee | "auto", _memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
 export class MarginedVammClient extends MarginedVammQueryClient implements MarginedVammInterface {
   client: SigningCosmWasmClient;
@@ -354,6 +369,9 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
     this.settleFunding = this.settleFunding.bind(this);
     this.setOpen = this.setOpen.bind(this);
     this.migrateLiquidity = this.migrateLiquidity.bind(this);
+    this.repegPrice = this.repegPrice.bind(this);
+    this.addWhitelist = this.addWhitelist.bind(this);
+    this.removeWhitelist = this.removeWhitelist.bind(this);
   }
 
   updateConfig = async ({
@@ -475,6 +493,39 @@ export class MarginedVammClient extends MarginedVammQueryClient implements Margi
       migrate_liquidity: {
         fluctuation_limit_ratio: fluctuationLimitRatio,
         liquidity_multiplier: liquidityMultiplier
+      }
+    }, _fee, _memo, _funds);
+  };
+  repegPrice = async ({
+    newPrice
+  }: {
+    newPrice?: Uint128;
+  }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      repeg_price: {
+        new_price: newPrice
+      }
+    }, _fee, _memo, _funds);
+  };
+  addWhitelist = async ({
+    address
+  }: {
+    address: string;
+  }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      add_whitelist: {
+        address
+      }
+    }, _fee, _memo, _funds);
+  };
+  removeWhitelist = async ({
+    address
+  }: {
+    address: string;
+  }, _fee: number | StdFee | "auto" = "auto", _memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      remove_whitelist: {
+        address
       }
     }, _fee, _memo, _funds);
   };
